@@ -11,28 +11,27 @@
     @vite(['resources/js/app.js', 'resources/css/app.css'])
     <title>Lemonade - Inscription</title>
     <style>
-        /* Left Side: Full-Screen Homepage Image */
         .left-side {
             position: relative;
-            width: 40vw; /* Full width */
-            height: 100vh; /* Full height */
+            width: 40vw;
+            height: 100vh;
             overflow: hidden;
         }
 
         .homepage-img {
             width: 100%;
             height: 100%;
-            object-fit: cover; /* Ensures the image fills without distortion */
+            object-fit: cover;
         }
 
-        /* Logo Positioned Inside Homepage Image */
         .logo-container {
             position: absolute;
             top: 10px;
-            right: 500px;
+            right: 480px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            margin: 5px;
+            gap: 8px;
         }
 
         .logo-container img {
@@ -61,7 +60,6 @@
         .social-btn:hover {
             background-color: #f5f5f5;
         }
-
         .login-btn {
             border-radius: 20px;
             padding: 10px;
@@ -73,6 +71,7 @@
         <div class="d-flex">
             <!-- Image Side -->
             <div class="left-side">
+
                 <!-- Logo Positioned Inside -->
                 <div class="logo-container">
                     <img 
@@ -123,12 +122,13 @@
                     </button>
                 </div>
 
-                <!-- Check app.css for Styling -->
+                <!-- Divider: Check app.css for Styling -->
                 <div class="divider relative mt-2">
                     <span></span>
                     <p class="bg-white fw-semibold">OU</p>
                 </div>
                 
+
                 <!-- "Déja un compte" Section -->
                 <div class="absolute top-4 right-4 text-black text-sm fw-semibold">
                     <p>Déjà un compte ? 
@@ -136,12 +136,25 @@
                     </p>
                 </div>
 
+
+
                 <!-- Authentication Form -->
                  <form method="POST" action="{{ route('register') }}" class="w-100" style="max-width: 400px;">
                     @csrf
 
+                    <!-- Name Input -->
+                    <div class="mb-2">
+                        <label for="nome" class="form-label">Nom</label>
+                        <input id="name" type="text" class="form-control @error('name') is-invalid @enderror" name="name" value="{{ old('name') }}" required autocomplete="name" autofocus>
+
+                        @error('name')
+                            <span class="invalid-feedback" role="alert">
+                                <strong>{{ $message }}</strong>
+                            </span>
+                        @enderror
+                    </div>
                     <!-- Email Input -->
-                    <div class="mb-3">
+                    <div class="mb-2">
                         <label for="email" class="form-label">Email</label>
                         <input id="email" type="email" class="form-control @error('email') is-invalid @enderror" name="email" value="{{ old('email') }}" required autocomplete="email" autofocus>
                         @error('email')
@@ -152,7 +165,7 @@
                     </div>
 
                     <!-- Password Input -->
-                    <div class="mb-3">
+                    <div class="mb-2">
                         <label for="password" class="form-label">Mot de passe</label>
                         <input id="password" type="password" class="form-control @error('password') is-invalid @enderror" name="password" required autocomplete="new-password">
                         @error('password')
@@ -162,6 +175,11 @@
                         @enderror
                     </div>
 
+                    <!-- Confirm Password Input -->
+                    <div class="mb-3">
+                        <label for="password-confirm" class="form-label">Confimer Mot de Passe</label>
+                        <input id="password-confirm" type="password" class="form-control" name="password_confirmation" required autocomplete="new-password">
+                    </div>
 
                     <div class="d-grid">
                         <button type="submit" class="bg-black text-white login-btn">

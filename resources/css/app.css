@@ -13,25 +13,26 @@ html {
     scroll-behavior: smooth;
 }
 
+/* CSS GLOBAL VARIABLES */
 :root {
     --pink-color: #ffb0c6;
     --light-mode-color: #fef4e5;
 }
 
 header {
-    padding: 50px 0; /* Increase padding for a taller header */
-    min-height: 160px; /* Adjust the minimum height */
+    padding: 50px 0;
+    min-height: 160px;
 }
 
 header .auth-btn button {
-    font-size: 16px; /* Increase font size */
-    padding: 12px 24px; /* Adjust padding for larger buttons */
-    min-width: 100px; /* Set a minimum width */
-    min-height: 45px; /* Set a minimum height */ /* Optional: Add rounded corners */
+    font-size: 16px;
+    padding: 12px 24px;
+    min-width: 100px;
+    min-height: 45px;
     font-family: "League Spartan", serif;
 }
 header .auth-btn button:first-child {
-    margin-right: 30px; /* Add space between buttons */
+    margin-right: 30px;
 }
 
 header .auth-btn button a {
@@ -79,6 +80,7 @@ footer .copyright {
     left: 50%;
     z-index: -1;
 }
+
 .highlight-text {
     display: inline-block;
     background: linear-gradient(to right, #ff6ec4, #ff92a5);
@@ -88,5 +90,5 @@ footer .copyright {
     font-weight: bold;
     border-radius: 25px;
     transform: rotate(-3deg);
-    margin-left: 30px; /* Moves the text & background to the right */
+    margin-left: 30px;
 }
