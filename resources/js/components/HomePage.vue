@@ -12,7 +12,7 @@
                         alt="Lemonade Logo"
                         class="logo"
                     />
-                    <span class="text-white fs-3 fw-bold">Lemonade.</span>
+                    <span class="text-white fs-3 fw-bold">Lemonade</span>
                 </div>
 
                 <div>
