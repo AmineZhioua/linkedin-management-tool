@@ -2,7 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-
 * {
     margin: 0;
     padding: 0;
@@ -15,27 +14,31 @@ html {
 }
 
 :root {
-    --pink-color: #FFB0C6;
-    --light-mode-color: #FEF4E5;
+    --pink-color: #ffb0c6;
+    --light-mode-color: #fef4e5;
 }
 
+header {
+    padding: 50px 0; /* Increase padding for a taller header */
+    min-height: 160px; /* Adjust the minimum height */
+}
 
-/* Header Styling Start */
 header .auth-btn button {
-    font-size: 14px;
-    text-align: center;
+    font-size: 16px; /* Increase font size */
+    padding: 12px 24px; /* Adjust padding for larger buttons */
+    min-width: 100px; /* Set a minimum width */
+    min-height: 45px; /* Set a minimum height */ /* Optional: Add rounded corners */
     font-family: "League Spartan", serif;
+}
+header .auth-btn button:first-child {
+    margin-right: 30px; /* Add space between buttons */
 }
 
 header .auth-btn button a {
     text-decoration: none;
     color: black;
 }
-/* Header Styling End */
 
-
-
-/* Main-Content Styling Start */
 .main-content {
     position: relative;
 }
@@ -61,17 +64,11 @@ header .auth-btn button a {
 .main-content .lead {
     font-family: "League Spartan", serif;
 }
-/* Main-Content Styling End */
 
-
-/* Footer Styling Start */
 footer .copyright {
     font-family: "League Spartan", serif;
 }
-/* Footer Styling End */
 
-
-/* Login Styling Start */
 .divider span {
     position: absolute;
     height: 1px;
@@ -81,4 +78,15 @@ footer .copyright {
     top: 35%;
     left: 50%;
     z-index: -1;
+}
+.highlight-text {
+    display: inline-block;
+    background: linear-gradient(to right, #ff6ec4, #ff92a5);
+    color: white;
+    padding: 10px 20px;
+    font-size: 3rem;
+    font-weight: bold;
+    border-radius: 25px;
+    transform: rotate(-3deg);
+    margin-left: 30px; /* Moves the text & background to the right */
 }

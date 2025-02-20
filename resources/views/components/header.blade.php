@@ -4,8 +4,8 @@
         <img 
             src="/build/assets/lemonade-logo.svg" 
             alt="Lemonade Logo"
-            height="40"
-            width="40"
+            height="60"
+            width="60"
         />
         <span class="text-white fs-5 fw-bold">Lemonade.</span>
     </div>

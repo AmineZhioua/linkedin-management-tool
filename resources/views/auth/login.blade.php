@@ -11,13 +11,40 @@
     @vite(['resources/js/app.js', 'resources/css/app.css'])
     <title>Lemonade - S'inscrire</title>
     <style>
-        .left-side img {
-            max-width: 90%;
-            height: 100%;
+        /* Left Side: Full-Screen Homepage Image */
+        .left-side {
+            position: relative;
+            width: 40vw; /* Full width */
+            height: 100vh; /* Full height */
+            overflow: hidden;
         }
+
+        .homepage-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Ensures the image fills without distortion */
+        }
+
+        /* Logo Positioned Inside Homepage Image */
+        .logo-container {
+            position: absolute;
+            top: 10px;
+            right: 500px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-container img {
+            height: 40px;
+            width: 200px;
+        }
+
+        /* Right Side (Form Section) */
         .right-side {
             padding: 50px;
         }
+
         .social-btn {
             display: flex;
             align-items: center;
@@ -30,9 +57,11 @@
             width: 100%;
             margin-bottom: 10px;
         }
+
         .social-btn:hover {
             background-color: #f5f5f5;
         }
+
         .login-btn {
             border-radius: 20px;
             padding: 10px;
@@ -43,25 +72,24 @@
     <div class="vh-100 overflow-hidden">
         <div class="d-flex">
             <!-- Image Side -->
-            <div class="left-side relative">
-                <div class="absolute flex align-items-center gap-2 top-2 left-3">
+            <div class="left-side">
+                <!-- Logo Positioned Inside -->
+                <div class="logo-container">
                     <img 
                         src="/build/assets/lemonade-logo.svg" 
                         alt="Lemonade Logo"
-                        height="40"
-                        width="40"
                     />
                     <img 
                         src="/build/assets/icons/lemonade-black.svg" 
-                        alt="lemonade-text"
-                        height="90"
-                        width="90"
+                        alt="Lemonade Text"
                     />
                 </div>
+
+                <!-- Full-Screen Homepage Image -->
                 <img 
                     src="/build/assets/mockup-homepage.png" 
                     alt="Login Image" 
-                    class="img-fluid"
+                    class="homepage-img"
                 />
             </div>
 
