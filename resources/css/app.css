@@ -1,3 +1,84 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+:root {
+    --pink-color: #FFB0C6;
+    --light-mode-color: #FEF4E5;
+}
+
+
+/* Header Styling Start */
+header .auth-btn button {
+    font-size: 14px;
+    text-align: center;
+    font-family: "League Spartan", serif;
+}
+
+header .auth-btn button a {
+    text-decoration: none;
+    color: black;
+}
+/* Header Styling End */
+
+
+
+/* Main-Content Styling Start */
+.main-content {
+    position: relative;
+}
+
+.main-content .top-line {
+    position: absolute;
+    transform: translateX(-50%);
+    height: 0.5px;
+    width: 1000%;
+    background-color: rgb(161, 159, 159);
+    top: 0;
+}
+
+.main-content .bottom-line {
+    position: absolute;
+    transform: translateX(-50%);
+    height: 0.5px;
+    width: 1000%;
+    background-color: rgb(161, 159, 159);
+    bottom: 0;
+}
+
+.main-content .lead {
+    font-family: "League Spartan", serif;
+}
+/* Main-Content Styling End */
+
+
+/* Footer Styling Start */
+footer .copyright {
+    font-family: "League Spartan", serif;
+}
+/* Footer Styling End */
+
+
+/* Login Styling Start */
+.divider span {
+    position: absolute;
+    height: 1px;
+    width: 280px;
+    background-color: rgb(189, 188, 188);
+    transform: translate(-50%, -50%);
+    top: 35%;
+    left: 50%;
+    z-index: -1;
+}
