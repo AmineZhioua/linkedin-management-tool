@@ -92,3 +92,54 @@ footer .copyright {
     transform: rotate(-3deg);
     margin-left: 30px;
 }
+
+
+/* Verify Page Styling */
+.card-border-gradient {
+    position: relative;
+    overflow: hidden;
+}
+
+.card-border-gradient::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(to right, #ff1ab2, #ffa331);
+}
+
+.icon-circle {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, #ff1ab2, #ffa331);
+    animation: pulse 2s infinite;
+}
+
+.verification-title {
+    font-family: 'League Spartan', sans-serif;
+    letter-spacing: -0.5px;
+}
+
+.verification-link {
+    text-decoration: none;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.verification-link::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: #ffb0c6;
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+.verification-link:hover::after {
+    transform: scaleX(1);
+}

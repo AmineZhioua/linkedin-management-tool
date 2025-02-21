@@ -137,7 +137,6 @@
                 </div>
 
 
-
                 <!-- Authentication Form -->
                  <form method="POST" action="{{ route('register') }}" class="w-100" style="max-width: 400px;">
                     @csrf

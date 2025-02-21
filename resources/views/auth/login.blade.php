@@ -29,10 +29,11 @@
         .logo-container {
             position: absolute;
             top: 10px;
-            right: 500px;
+            right: 480px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            margin: 5px;
+            gap: 8px;
         }
 
         .logo-container img {
@@ -87,7 +88,7 @@
 
                 <!-- Full-Screen Homepage Image -->
                 <img 
-                    src="/build/assets/mockup-homepage.png" 
+                    src="/build/assets/mockup-homepage-1.png" 
                     alt="Login Image" 
                     class="homepage-img"
                 />
@@ -96,13 +97,13 @@
             <!-- Form Side -->
             <div class="d-flex flex-grow-1 flex-col align-items-center justify-content-center">
                 <!-- Text -->
-                <div class="text-center">
+                <div class="text-center text-black">
                     <h1 class="fw-bold">Connecte-toi !</h1>
-                    <p class="text-muted">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
                 </div>
 
                 <!-- Google & Apple Buttons -->
-                <div class="d-flex flex-column gap-2 w-100" style="max-width: 400px;">
+                <div class="d-flex flex-column gap-2 w-100 text-black" style="max-width: 400px;">
                     <button class="social-btn">
                         <img 
                             src="/build/assets/icons/google-icon.svg" 
@@ -116,7 +117,7 @@
                         <img 
                             src="/build/assets/icons/apple-black.svg" 
                             alt="Apple Icon" 
-                            height="20" 
+                            height="20"
                             width="20"
                         />
                         Se Connecter avec Apple
