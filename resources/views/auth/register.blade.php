@@ -93,11 +93,11 @@
             </div>
 
             <!-- Form Side -->
-            <div class="d-flex flex-grow-1 flex-col align-items-center justify-content-center">
+            <div class="d-flex flex-grow-1 flex-col align-items-center justify-content-center text-black">
                 <!-- Text -->
                 <div class="text-center">
                     <h1 class="fw-bold">Crée un compte !</h1>
-                    <p class="text-muted">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
                 </div>
 
                 <!-- Google & Apple Buttons -->
