@@ -8,105 +8,31 @@
 
     @vite(['resources/js/app.js', 'resources/css/app.css'])
     <title>Lemonade - Reset Password</title>
-
-    <style>
-        .logo-container {
-            position: absolute;
-            top: 15px;
-            left: 15px;
-            display: flex;
-            align-items: center;
-        }
-
-        .logo-container img {
-            height: 30px;
-            width: auto;
-        }
-
-        .logo-container img:first-child {
-            height: 40px;
-            width: auto;
-            margin-right: 5px;
-        }
-
-        .verification-card {
-            border-radius: 20px;
-            padding: 30px;
-            text-align: center;
-            width: 100%;
-            max-width: 800px;
-            margin-top: -250px;
-        }
-
-        .icon-circle {
-            background: black;
-            width: 50px;
-            height: 50px;
-        }
-
-        .verification-link {
-            border: none;
-            background: none;
-            color: black;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .verification-link:hover {
-            text-decoration: underline;
-        }
-
-        .alert {
-            width: 100%;
-            max-width: 642px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        body {
-            background-color: white;
-        }
-
-        /* Footer Styling */
-        .footer {
-            background-color: #f8f9fa;
-            padding: 20px;
-            text-align: center;
-            position: absolute;
-            bottom: 0;
-            width: 100%;
-        }
-
-        .footer p {
-            margin: 0;
-        }
-
-        .footer a {
-            text-decoration: none;
-            color: #007bff;
-        }
-
-        .footer a:hover {
-            text-decoration: underline;
-        }
-    </style>
 </head>
 <body>
-    <div class="vh-100 d-flex flex-column align-items-center justify-content-center position-relative">
-        <!-- Logo (Top Left) -->
+    <div class="vh-100 d-flex flex-column align-items-center justify-content-center position-relative p-3 reset">
+        <!-- Lemonade Logo -->
         <div class="logo-container">
-            <img class="logo" 
-                src="/build/assets/lemonade-logo.svg" 
-                alt="Lemonade Logo"
-            />
-            <img 
-                src="/build/assets/icons/lemonade-black.svg" 
-                alt="Lemonade Text"
-            />
+            <a href="{{ route('welcome') }}" class="d-flex align-items-center gap-2">
+                <img 
+                    src="/build/assets/lemonade-logo.svg" 
+                    alt="Lemonade Logo"
+                    height="40"
+                    width="40"
+                />
+                <img 
+                    src="/build/assets/icons/lemonade-black.svg" 
+                    alt="Lemonade Text"
+                    class="lemonade-text"
+                    height="40"
+                    width="100"
+                />
+            </a>
         </div>
+        
 
         <!-- Reset Password Card -->
-        <div class="verification-card shadow-lg card-border-gradient">
+        <div class="verification-card shadow-lg card-border-gradient mt-1">
             <!-- Lock Icon -->
             <div class="icon-circle rounded-circle d-flex align-items-center justify-content-center mx-auto mb-4">
                 <img 
@@ -118,7 +44,7 @@
             </div>
 
             <h2 class="verification-title text-center mb-4 fw-bold fs-2">
-                Reset Your Password
+                Réinitialiser votre mot de passe
             </h2>
 
             <div class="card-body">
@@ -129,8 +55,15 @@
 
                     <!-- Email Input -->
                     <div class="mb-3">
-                        <label for="email" class="form-label fw-semibold">Email Address</label>
-                        <input id="email" type="email" class="form-control @error('email') is-invalid @enderror" name="email" value="{{ $email ?? old('email') }}" required autocomplete="email" autofocus>
+                        <label for="email" class="form-label fw-semibold">Addresse Email :</label>
+                        <input 
+                            id="email" 
+                            type="email" 
+                            class="form-control @error('email') is-invalid @enderror" 
+                            name="email" value="{{ $email ?? old('email') }}" 
+                            required autocomplete="email" 
+                            autofocus
+                        />
 
                         @error('email')
                             <span class="invalid-feedback" role="alert">
@@ -141,7 +74,7 @@
 
                     <!-- Password Input -->
                     <div class="mb-3">
-                        <label for="password" class="form-label fw-semibold">Password</label>
+                        <label for="password" class="form-label fw-semibold">Nouveau Mot de Passe :</label>
                         <input id="password" type="password" class="form-control @error('password') is-invalid @enderror" name="password" required autocomplete="new-password">
 
                         @error('password')
@@ -153,14 +86,14 @@
 
                     <!-- Confirm Password Input -->
                     <div class="mb-3">
-                        <label for="password-confirm" class="form-label fw-semibold">Confirm Password</label>
+                        <label for="password-confirm" class="form-label fw-semibold">Confirmer votre Mot de Passe :</label>
                         <input id="password-confirm" type="password" class="form-control" name="password_confirmation" required autocomplete="new-password">
                     </div>
 
                     <!-- Submit Button -->
                     <div class="d-grid">
                         <button type="submit" class="btn btn-primary fw-semibold">
-                            {{ __('Reset Password') }}
+                            {{ __('Réinitialiser') }}
                         </button>
                     </div>
                 </form>

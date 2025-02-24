@@ -19,10 +19,12 @@ html {
     --light-mode-color: #fef4e5;
 }
 
+
+
 /* ################ HEADER COMPONENT STYLING START ################ */
 header {
-    padding: 50px 0;
-    min-height: 160px;
+    padding: 30px 0;
+    min-height: 120px;
 }
 
 header .auth-btn button {
@@ -42,11 +44,14 @@ header .auth-btn button a {
 }
 /* ################ HEADER COMPONENT STYLING END ################ */
 
+
 /* ################ FOOTER COMPONENT STYLING START ################ */
 footer .copyright {
     font-family: "League Spartan", serif;
 }
 /* ################ FOOTER COMPONENT STYLING END ################ */
+
+
 
 .divider span {
     position: absolute;
@@ -59,6 +64,7 @@ footer .copyright {
     z-index: -1;
 }
 
+
 /* Verify Page Styling */
 .card-border-gradient {
     position: relative;
@@ -66,7 +72,7 @@ footer .copyright {
 }
 
 .card-border-gradient::before {
-    content: "";
+    content: '';
     position: absolute;
     top: 0;
     left: 0;
@@ -75,15 +81,8 @@ footer .copyright {
     background: linear-gradient(to right, #ff1ab2, #ffa331);
 }
 
-.icon-circle {
-    width: 80px;
-    height: 80px;
-    background: linear-gradient(135deg, #ff1ab2, #ffa331);
-    animation: pulse 2s infinite;
-}
-
 .verification-title {
-    font-family: "League Spartan", sans-serif;
+    font-family: 'League Spartan', sans-serif;
     letter-spacing: -0.5px;
 }
 
@@ -94,7 +93,7 @@ footer .copyright {
 }
 
 .verification-link::after {
-    content: "";
+    content: '';
     position: absolute;
     bottom: -2px;
     left: 0;
@@ -108,6 +107,9 @@ footer .copyright {
 .verification-link:hover::after {
     transform: scaleX(1);
 }
+
+
+
 
 /* ################ REGISTER AND LOGIN PAGE STYLING START ################ */
 .register .left-side,
@@ -166,6 +168,55 @@ footer .copyright {
     padding: 10px;
 }
 
+
+
+/* ################ VERIFY, EMAIL AND RESET PAGES STYLING START ################ */
+.verify .logo-container,
+.email .logo-container,
+.reset .logo-container {
+    position: absolute;
+    font-family: 'League Spartan', sans-serif;
+    display: flex;
+    align-items: center;
+    left: 0;
+    top: 10px;
+    margin-inline: 10px;
+    gap: 8px;
+    z-index: 10;
+}
+
+.verify .icon-circle,
+.email .icon-circle,
+.reset .icon-circle {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, #ff1ab2, #ffa331);
+    animation: pulse 2s infinite;
+}
+
+.verify .alert,
+.email .alert,
+.reset .alert {
+    font-family: 'League Spartan', sans-serif;
+    width: 100%;
+    max-width: 642px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.verify .verification-card,
+.email .verification-card,
+.reset .verification-card {
+    border-radius: 20px;
+    padding: 30px;
+    width: 100%;
+    max-width: 800px;
+    margin-top: -250px;
+}
+
+
+
+
 /* ################ REGISTER PAGE RESPONSIVENESS ################ */
 @media (max-width: 992px) {
     .register .form-side,
@@ -189,9 +240,5 @@ footer .copyright {
     .register .logo-container .lemonade-text,
     .login .logo-container .lemonade-text {
         display: none;
-    }
-    .register .left-side,
-    .login .left-side {
-        display: none; /* Ensures the image container is hidden */
     }
 }

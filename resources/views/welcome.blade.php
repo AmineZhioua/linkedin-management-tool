@@ -52,14 +52,14 @@
         .sidebar {
             position: fixed;
             top: 0;
-            right: 0; /* Move the sidebar to the right */
+            right: 0;
             width: 70%;
             height: 100vh;
             background-color: #fff;
-            box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1); /* Adjust shadow for right side */
+            box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
             display: none;
             flex-direction: column;
-            justify-content: center; /* Align buttons to center */
+            justify-content: center;
             padding: 20px;
             z-index: 1000;
         }
@@ -70,37 +70,31 @@
 
         .sidebar .login-btn,
         .sidebar .register-btn {
-            width: 100%; /* Ensure buttons take full width */
-            margin-bottom: 20px; /* Add spacing between buttons */
+            width: 100%;
+            margin-bottom: 20px;
             padding: 12px;
             font-size: 1.2rem;
             text-align: center;
-            border-radius: 25px; /* Rounded corners */
-            transition: background-color 0.3s ease; /* Smooth transition on hover */
+            border-radius: 25px;
+            transition: background-color 0.3s ease; 
         }
 
         .sidebar .login-btn:hover,
         .sidebar .register-btn:hover {
-            background-color: #f0f0f0; /* Light hover effect */
+            background-color: #f0f0f0;
         }
 
         .sidebar .login-btn a,
         .sidebar .register-btn a {
-            text-decoration: none; /* Remove underline from links */
-            color: black; /* Ensure text is black */
+            text-decoration: none;
+            color: black;
         }
 
-.sidebar-toggle {
-    display: block;
-    cursor: pointer;
-    position: absolute;
-    top: 15px;
-    right: 15px; /* Move the button to the right */
-    font-size: 24px;
-    z-index: 1100;
-}
+        .sidebar-toggle {
+            cursor: pointer;
+            z-index: 1100;
+        }
 
-        /* Hide sidebar on larger screens */
         @media (min-width: 768px) {
             .sidebar {
                 display: none;
@@ -173,8 +167,8 @@
     </div>
 
     <!-- Sidebar for Mobile -->
+    @guest
     <div class="sidebar bg-black" id="sidebar">
-        @guest
             @if (Route::has('login'))
                 <button class="login-btn bg-white fw-semibold">
                     <a href="{{ route('login') }}" class="text-black">Se Connecter</a>
@@ -186,18 +180,26 @@
                     <a href="{{ route('register') }}" class="text-black">S'inscrire</a>
                 </button>
             @endif
-        @endguest
     </div>
+    @else
+    <button class="nav-item dropdown bg-pink-200 px-3 py-1 rounded-2xl">
+        <a id="navbarDropdown" class="nav-link dropdown-toggle text-black" href="#" role="button"
+            data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
+            {{ Auth::user()->name }}
+        </a>
 
-    <!-- Sidebar Toggle Button -->
-    <div class="sidebar-toggle" id="toggleSidebar" onclick="toggleSidebar()">&#9776;</div>
+        <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+            <a class="dropdown-item bg-pink-200" href="{{ route('logout') }}"
+                onclick="event.preventDefault();
+                        document.getElementById('logout-form').submit();">
+                {{ __('Logout') }}
+            </a>
 
-    <script>
-        // Toggle sidebar visibility for mobile
-        const toggleSidebar = () => {
-            const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('show');
-        };
-    </script>
+            <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+                @csrf
+            </form>
+        </div>
+    </button>
+    @endguest
 </body>
 </html>

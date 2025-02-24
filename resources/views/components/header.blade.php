@@ -1,18 +1,35 @@
-<header class="d-flex align-items-center justify-between container p-4">
+<header class="d-flex align-items-center justify-content-between container p-2">
     <!-- Logo & Text -->
-    <div class="d-flex align-items-center gap-2">
+    <div class="d-flex align-items-center gap-2 flex-grow-1">
         <img 
             src="/build/assets/lemonade-logo.svg" 
             alt="Lemonade Logo"
-            height="60"
-            width="60"
+            height="40"
+            width="40"
         />
         <span class="text-white fs-5 fw-bold">Lemonade.</span>
     </div>
-    
+
+
+    <!-- Auth Buttons -->
     <div class="auth-btn d-flex align-items-center gap-2">
-        <!-- Show these buttons only on desktop -->
         @guest
+            <!-- Sidebar Toggle Button -->
+            <div class="sidebar-toggle" id="toggleSidebar" onclick="toggleSidebar()">
+                <img 
+                    src="/build/assets/icons/bars-solid.svg" 
+                    alt="Bars Icon"
+                    height="25"
+                    width="25" 
+                />
+            </div>
+            <script>
+                const toggleSidebar = () => {
+                    const sidebar = document.getElementById('sidebar');
+                    sidebar.classList.toggle('show');
+                };
+            </script>
+            
             @if (Route::has('login'))
                 <button class="bg-white fw-semibold px-3 py-1 rounded-2xl d-none d-md-block">
                     <a href="{{ route('login') }}">Se Connecter</a>
@@ -34,7 +51,7 @@
                 <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                     <a class="dropdown-item bg-pink-200" href="{{ route('logout') }}"
                         onclick="event.preventDefault();
-                                        document.getElementById('logout-form').submit();">
+                                document.getElementById('logout-form').submit();">
                         {{ __('Logout') }}
                     </a>
 

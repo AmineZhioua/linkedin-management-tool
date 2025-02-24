@@ -15,7 +15,7 @@
 <body>
     <div class="vh-100 overflow-hidden d-flex register">
         <!-- "Déja un compte" Section -->
-        <div class="absolute top-4 right-4 text-black text-sm fw-semibold">
+        <div class="absolute top-4 right-4 text-black text-sm fw-semibold" style="z-index: 10;">
             <p>Déjà un compte ? 
                 <a href="{{ route('login') }}" class="text-black fw-bold">Connecte toi !</a>
             </p>
@@ -23,19 +23,21 @@
 
         <!-- Lemonade Logo -->
         <div class="logo-container">
-            <img 
-                src="/build/assets/lemonade-logo.svg" 
-                alt="Lemonade Logo"
-                height="40"
-                width="40"
-            />
-            <img 
-                src="/build/assets/icons/lemonade-black.svg" 
-                alt="Lemonade Text"
-                class="lemonade-text"
-                height="40"
-                width="100"
-            />
+            <a href="{{ route('welcome') }}" class="d-flex align-items-center gap-2">
+                <img 
+                    src="/build/assets/lemonade-logo.svg" 
+                    alt="Lemonade Logo"
+                    height="40"
+                    width="40"
+                />
+                <img 
+                    src="/build/assets/icons/lemonade-black.svg" 
+                    alt="Lemonade Text"
+                    class="lemonade-text"
+                    height="40"
+                    width="100"
+                />
+            </a>
         </div>
 
         <!-- Image Side -->

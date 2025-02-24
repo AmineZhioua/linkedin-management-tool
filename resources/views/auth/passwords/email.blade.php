@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,81 +8,30 @@
 
     @vite(['resources/js/app.js', 'resources/css/app.css'])
     <title>Lemonade - Reset Password</title>
-    <style>
-        .logo-container {
-            position: absolute;
-            top: 15px;
-            left: 15px;
-            display: flex;
-            align-items: center;
-        }
-
-        .logo-container img {
-            height: 30px;
-            width: auto;
-        }
-
-        .logo-container img:first-child {
-            height: 40px;
-            width: auto;
-            margin-right: 5px;
-        }
-
-        .verification-card {
-            border-radius: 20px;
-            padding: 30px;
-            text-align: center;
-            width: 100%;
-            max-width: 800px;
-            margin-top: -250px;
-        }
-
-        .icon-circle {
-            background: black;
-            width: 50px;
-            height: 50px;
-        }
-
-        .verification-link {
-            border: none;
-            background: none;
-            color: black;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .verification-link:hover {
-            text-decoration: underline;
-        }
-
-        .alert {
-            width: 100%;
-            max-width: 642px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        body {
-            background-color: white;
-        }
-    </style>
 </head>
 <body>
-    <div class="vh-100 d-flex flex-column align-items-center justify-content-center position-relative">
-        <!-- Logo (Top Left) -->
+    <div class="vh-100 p-3 d-flex flex-column align-items-center justify-content-center position-relative email">
+        <!-- Lemonade Logo -->
         <div class="logo-container">
-            <img class="logo" 
-                src="/build/assets/lemonade-logo.svg" 
-                alt="Lemonade Logo"
-            />
-            <img 
-                src="/build/assets/icons/lemonade-black.svg" 
-                alt="Lemonade Text"
-            />
+            <a href="{{ route('welcome') }}" class="d-flex align-items-center gap-2">
+                <img 
+                    src="/build/assets/lemonade-logo.svg" 
+                    alt="Lemonade Logo"
+                    height="40"
+                    width="40"
+                />
+                <img 
+                    src="/build/assets/icons/lemonade-black.svg" 
+                    alt="Lemonade Text"
+                    class="lemonade-text"
+                    height="40"
+                    width="100"
+                />
+            </a>
         </div>
 
         <!-- Verification Card -->
-        <div class="verification-card shadow-lg card-border-gradient">
+        <div class="verification-card shadow-lg card-border-gradient mt-1">
             <!-- Lock Icon -->
             <div class="icon-circle rounded-circle d-flex align-items-center justify-content-center mx-auto mb-4">
                 <img 
@@ -95,7 +44,7 @@
 
             <!-- Title -->
             <h2 class="verification-title text-center mb-4 fw-bold fs-2">
-                Reset Your Password
+                Réinitialiser votre mot de passe
             </h2>
 
             <!-- Status Alert -->
@@ -110,8 +59,16 @@
                 @csrf
 
                 <div class="mb-3">
-                    <label for="email" class="form-label fw-semibold">Email Address</label>
-                    <input id="email" type="email" class="form-control @error('email') is-invalid @enderror" name="email" value="{{ old('email') }}" required autocomplete="email" autofocus>
+                    <label for="email" class="form-label fw-semibold">Entrer votre Addresse Email :</label>
+                    <input 
+                        id="email" 
+                        type="email" 
+                        placeholder="exemple@email.com"
+                        class="form-control @error('email') is-invalid @enderror" 
+                        name="email" value="{{ old('email') }}" 
+                        required autocomplete="email" 
+                        autofocus
+                    />
 
                     @error('email')
                         <span class="invalid-feedback" role="alert">
@@ -122,7 +79,7 @@
 
                 <div class="d-grid">
                     <button type="submit" class="btn btn-primary fw-semibold">
-                        {{ __('Send Password Reset Link') }}
+                        {{ __('Envoyer un Lien') }}
                     </button>
                 </div>
             </form>
