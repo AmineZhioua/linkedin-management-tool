@@ -66,6 +66,29 @@
         body {
             background-color: white;
         }
+
+        /* Footer Styling */
+        .footer {
+            background-color: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+        }
+
+        .footer p {
+            margin: 0;
+        }
+
+        .footer a {
+            text-decoration: none;
+            color: #007bff;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -87,7 +110,7 @@
             <!-- Lock Icon -->
             <div class="icon-circle rounded-circle d-flex align-items-center justify-content-center mx-auto mb-4">
                 <img 
-                    src="/build/assets/icons/envolope-white.svg"
+                    src="/build/assets/icons/envelope-white.svg"
                     alt="Lock Icon"
                     height="40"
                     width="40"
@@ -144,5 +167,6 @@
             </div>
         </div>
     </div>
+
 </body>
 </html>

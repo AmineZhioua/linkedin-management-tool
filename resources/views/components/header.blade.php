@@ -9,18 +9,20 @@
         />
         <span class="text-white fs-5 fw-bold">Lemonade.</span>
     </div>
+    
     <div class="auth-btn d-flex align-items-center gap-2">
+        <!-- Show these buttons only on desktop -->
         @guest
             @if (Route::has('login'))
-            <button class="bg-white fw-semibold px-3 py-1 rounded-2xl">
-                <a href="{{ route('login') }}">Se Connecter</a>
-            </button>
+                <button class="bg-white fw-semibold px-3 py-1 rounded-2xl d-none d-md-block">
+                    <a href="{{ route('login') }}">Se Connecter</a>
+                </button>
             @endif
 
             @if (Route::has('register'))
-            <button class="bg-white fw-semibold px-3 py-1 rounded-2xl">
-                <a href="{{ route('register') }}">S'inscrire</a>
-            </button>
+                <button class="bg-white fw-semibold px-3 py-1 rounded-2xl d-none d-md-block">
+                    <a href="{{ route('register') }}">S'inscrire</a>
+                </button>
             @endif
         @else
             <button class="nav-item dropdown bg-pink-200 px-3 py-1 rounded-2xl">
