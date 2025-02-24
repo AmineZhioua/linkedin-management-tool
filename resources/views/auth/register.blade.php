@@ -3,67 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
     
     @vite(['resources/js/app.js', 'resources/css/app.css'])
     <title>Lemonade - Inscription</title>
-    <style>
-        .left-side {
-            position: relative;
-            width: 40vw;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        .homepage-img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .logo-container {
-            position: absolute;
-            display: flex;
-            align-items: center;
-            top: 10px;
-            margin-inline: 10px;
-            gap: 8px;
-            z-index: 10;
-        }
-
-
-        /* Right Side (Form Section) */
-        .right-side {
-            padding: 50px;
-        }
-
-        .social-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            padding: 10px;
-            border: 1px solid black;
-            border-radius: 20px;
-            background-color: #fff;
-            width: 100%;
-            margin-bottom: 10px;
-        }
-
-        .social-btn:hover {
-            background-color: #f5f5f5;
-        }
-        .login-btn {
-            border-radius: 20px;
-            padding: 10px;
-        }
-    </style>
 </head>
 <body>
-    <div class="vh-100 overflow-hidden d-flex">
+    <div class="vh-100 overflow-hidden d-flex register">
         <!-- "Déja un compte" Section -->
         <div class="absolute top-4 right-4 text-black text-sm fw-semibold">
             <p>Déjà un compte ? 

@@ -19,6 +19,9 @@ html {
     --light-mode-color: #fef4e5;
 }
 
+
+
+/* ################ HEADER COMPONENT STYLING START ################ */
 header {
     padding: 50px 0;
     min-height: 160px;
@@ -39,36 +42,16 @@ header .auth-btn button a {
     text-decoration: none;
     color: black;
 }
+/* ################ HEADER COMPONENT STYLING END ################ */
 
-.main-content {
-    position: relative;
-}
 
-.main-content .top-line {
-    position: absolute;
-    transform: translateX(-50%);
-    height: 0.5px;
-    width: 1000%;
-    background-color: rgb(161, 159, 159);
-    top: 0;
-}
-
-.main-content .bottom-line {
-    position: absolute;
-    transform: translateX(-50%);
-    height: 0.5px;
-    width: 1000%;
-    background-color: rgb(161, 159, 159);
-    bottom: 0;
-}
-
-.main-content .lead {
-    font-family: "League Spartan", serif;
-}
-
+/* ################ FOOTER COMPONENT STYLING START ################ */
 footer .copyright {
     font-family: "League Spartan", serif;
 }
+/* ################ FOOTER COMPONENT STYLING END ################ */
+
+
 
 .divider span {
     position: absolute;
@@ -79,18 +62,6 @@ footer .copyright {
     top: 35%;
     left: 50%;
     z-index: -1;
-}
-
-.highlight-text {
-    display: inline-block;
-    background: linear-gradient(to right, #ff6ec4, #ff92a5);
-    color: white;
-    padding: 10px 20px;
-    font-size: 3rem;
-    font-weight: bold;
-    border-radius: 25px;
-    transform: rotate(-3deg);
-    margin-left: 30px;
 }
 
 
@@ -147,24 +118,85 @@ footer .copyright {
 
 
 
+/* ################ REGISTER AND LOGIN PAGE STYLING START ################ */
+.register .left-side,
+.login .left-side {
+    position: relative;
+    width: 40vw;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.register .homepage-img,
+.login .homepage-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.register .logo-container,
+.login .logo-container {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    top: 10px;
+    margin-inline: 10px;
+    gap: 8px;
+    z-index: 10;
+}
+
+.register .right-side,
+.login .right-side {
+    padding: 50px;
+}
+
+.register .social-btn,
+.login .social-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 10px;
+    border: 1px solid black;
+    border-radius: 20px;
+    background-color: #fff;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+.register .social-btn:hover,
+.login .social-btn:hover {
+    background-color: #f5f5f5;
+}
+
+.register .login-btn,
+.login .login-btn {
+    border-radius: 20px;
+    padding: 10px;
+}
+
 /* ################ REGISTER PAGE RESPONSIVENESS ################ */
 @media (max-width: 992px) {
-    .form-side {
+    .register .form-side,
+    .login .form-side {
         position: relative;
         transform: translateX(-50%);
         left: 50%;
         padding: 15px;
     }
-    .left-side {
+    .register .left-side,
+    .login .left-side {
         display: none;
     }
 }
 
 @media (max-width: 576px) {
-    .form-side div .social-btn span {
+    .register .form-side div .social-btn span,
+    .login .form-side div .social-btn span {
         display: none;
     }
-    .logo-container .lemonade-text {
+    .register .logo-container .lemonade-text,
+    .login .logo-container .lemonade-text {
         display: none;
     }
 }

@@ -8,6 +8,46 @@
     <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
     <title>Accueil - Lemonade</title>
     @vite(['resources/js/app.js', 'resources/css/app.css'])
+
+    <style>
+        .main-content {
+            position: relative;
+        }
+
+        .main-content .top-line {
+            position: absolute;
+            transform: translateX(-50%);
+            height: 0.5px;
+            width: 1000%;
+            background-color: rgb(161, 159, 159);
+            top: 0;
+        }
+
+        .main-content .bottom-line {
+            position: absolute;
+            transform: translateX(-50%);
+            height: 0.5px;
+            width: 1000%;
+            background-color: rgb(161, 159, 159);
+            bottom: 0;
+        }
+
+        .main-content .lead {
+            font-family: "League Spartan", serif;
+        }
+
+        .highlight-text {
+            display: inline-block;
+            background: linear-gradient(to right, #ff6ec4, #ff92a5);
+            color: white;
+            padding: 10px 20px;
+            font-size: 3rem;
+            font-weight: bold;
+            border-radius: 25px;
+            transform: rotate(-3deg);
+            margin-left: 30px;
+        }
+    </style>
 </head>
 <body>
     <div class="min-h-screen bg-black overflow-hidden">
