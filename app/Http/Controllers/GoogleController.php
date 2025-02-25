@@ -3,10 +3,10 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Laravel\Socialite\Facades\Socialite;
-use App\Models\User;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Carbon;
+use Laravel\Socialite\Facades\Socialite; // ✅ Import Socialite
+use App\Models\User; // ✅ Import User model
+use Illuminate\Support\Facades\Auth; // ✅ Import Auth
+use Illuminate\Support\Carbon; // ✅ Import Carbon for timestamps
 
 class GoogleController extends Controller
 {
@@ -20,7 +20,7 @@ class GoogleController extends Controller
         try {
             // Get the Google user data
             $google_user = Socialite::driver('google')->user();
-
+            
             // Check if the user already exists based on Google ID
             $user = User::where('google_id', $google_user->getId())->first();
 
@@ -30,22 +30,23 @@ class GoogleController extends Controller
                     'name' => $google_user->getName(),
                     'email' => $google_user->getEmail(),
                     'google_id' => $google_user->getId(),
-                    'email_verified_at' => Carbon::now(), // Mark email as verified
+                    'email_verified_at' => Carbon::now(), // ✅ Mark email as verified
                 ]);
-
+                
                 Auth::login($new_user);
                 return redirect()->intended('home');
             } else {
                 // If user exists, update their email_verified_at if not already set
                 if (!$user->email_verified_at) {
-                    $user->email_verified_at = Carbon::now(); // Mark email as verified
+                    $user->email_verified_at = Carbon::now(); // ✅ Mark email as verified
                     $user->save();
                 }
-
+                
                 Auth::login($user);
                 return redirect()->intended('home');
             }
         } catch (\Throwable $th) {
+            // Handle any errors and display them
             dd('Something went wrong!', $th->getMessage());
         }
     }
