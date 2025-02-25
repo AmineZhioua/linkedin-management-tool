@@ -3,10 +3,17 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+<<<<<<< HEAD
 use Laravel\Socialite\Facades\Socialite; // ✅ Import Socialite
 use App\Models\User; // ✅ Import User model
 use Illuminate\Support\Facades\Auth; // ✅ Import Auth
 use Illuminate\Support\Carbon; // ✅ Import Carbon for timestamps
+=======
+use Laravel\Socialite\Facades\Socialite;
+use Illuminate\Support\Str;
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+>>>>>>> bab1b1c (Google Auth fixed & DONE)
 
 class GoogleController extends Controller
 {
@@ -15,6 +22,7 @@ class GoogleController extends Controller
         return Socialite::driver('google')->redirect();
     }
 
+<<<<<<< HEAD
     public function callbackGoogle()
     {
         try {
@@ -51,3 +59,24 @@ class GoogleController extends Controller
         }
     }
 }
+=======
+
+    public function callback() {
+        $googleUser = Socialite::driver('google')->user();
+
+        $user = User::updateOrCreate(
+            ['google_id' => $googleUser->id],
+            [
+                'name' => $googleUser->name,
+                'email' => $googleUser->email,
+                'password' => Str::password(12),
+                'email_verified_at' => now(),
+            ]
+        );
+
+        Auth::login($user, true);
+
+        return redirect()->route('home');
+    }
+}
+>>>>>>> bab1b1c (Google Auth fixed & DONE)

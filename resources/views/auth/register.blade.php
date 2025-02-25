@@ -67,7 +67,13 @@
                         height="20" 
                         width="20"
                     />
+<<<<<<< HEAD
                     <span>Se Connecter avec Google</span></a>
+=======
+                    <a href="http://127.0.0.1:8000/auth/google/redirect" class="text-decoration-none text-black">
+                        Se Connecter avec Google
+                    </a>
+>>>>>>> bab1b1c (Google Auth fixed & DONE)
                 </button>
                 <button class="social-btn">
                     <img 

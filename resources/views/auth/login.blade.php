@@ -57,19 +57,18 @@
             </div>
 
             <!-- Google & Apple Buttons -->
-<div class="d-flex align-items-center flex-sm-column gap-2 w-100" style="max-width: 400px;">
-    <a href="{{ route('google-auth') }}" class="w-100">
-        <button class="social-btn w-100">
-            <img 
-                src="/build/assets/icons/google-icon.svg" 
-                alt="Google Icon" 
-                height="20" 
-                width="20"
-            />
-            <span>Se Connecter avec Google</span>
-        </button>
-    </a>
-
+            <div class="d-flex align-items-center flex-sm-column gap-2 w-100" style="max-width: 400px;">
+                <button class="social-btn">
+                    <img 
+                        src="/build/assets/icons/google-icon.svg" 
+                        alt="Google Icon" 
+                        height="20" 
+                        width="20"
+                    />
+                    <a href="http://127.0.0.1:8000/auth/google/redirect" class="text-decoration-none text-black">
+                        Se Connecter avec Google
+                    </a>
+                </button>
                 <button class="social-btn">
                     <img 
                         src="/build/assets/icons/apple-black.svg" 
