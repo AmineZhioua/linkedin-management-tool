@@ -59,7 +59,7 @@
             </div>
 
             <!-- Google & Apple Buttons -->
-            <div class="d-flex align-items-center flex-sm-column gap-2 w-100" style="max-width: 400px;">
+            <a href="{{ route('google-auth') }}" class="w-100"><div class="d-flex align-items-center flex-sm-column gap-2 w-100" style="max-width: 400px;">
                 <button class="social-btn">
                     <img 
                         src="/build/assets/icons/google-icon.svg" 
@@ -67,7 +67,7 @@
                         height="20" 
                         width="20"
                     />
-                    <span>Se Connecter avec Google</span>
+                    <span>Se Connecter avec Google</span></a>
                 </button>
                 <button class="social-btn">
                     <img 

@@ -30,7 +30,7 @@ class GoogleController extends Controller
                     'name' => $google_user->getName(),
                     'email' => $google_user->getEmail(),
                     'google_id' => $google_user->getId(),
-                    'email_verified_at' => Carbon::now(), // ✅ Mark email as verified
+                    'email_verified_at' => now(),
                 ]);
                 
                 Auth::login($new_user);

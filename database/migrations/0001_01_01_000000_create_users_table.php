@@ -1,52 +1,50 @@
 <?php
 
-namespace App\Http\Controllers;
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
-use Illuminate\Http\Request;
-use Laravel\Socialite\Facades\Socialite;
-use App\Models\User;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Carbon;
-
-class GoogleController extends Controller
+return new class extends Migration
 {
-    public function redirect()
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
     {
-        return Socialite::driver('google')->redirect();
+        Schema::create('users', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->string('email')->unique();
+            $table->timestamp('email_verified_at')->nullable();
+            $table->string('password')->nullable();
+            $table->string('google_id')->nullable();
+            $table->rememberToken();
+            $table->timestamps();
+        });
+
+        Schema::create('password_reset_tokens', function (Blueprint $table) {
+            $table->string('email')->primary();
+            $table->string('token');
+            $table->timestamp('created_at')->nullable();
+        });
+
+        Schema::create('sessions', function (Blueprint $table) {
+            $table->string('id')->primary();
+            $table->foreignId('user_id')->nullable()->index();
+            $table->string('ip_address', 45)->nullable();
+            $table->text('user_agent')->nullable();
+            $table->longText('payload');
+            $table->integer('last_activity')->index();
+        });
     }
 
-    public function callbackGoogle()
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
     {
-        try {
-            // Get the Google user data
-            $google_user = Socialite::driver('google')->user();
-
-            // Check if the user already exists based on Google ID
-            $user = User::where('google_id', $google_user->getId())->first();
-
-            if (!$user) {
-                // If no user exists, create a new user and mark as verified
-                $new_user = User::create([
-                    'name' => $google_user->getName(),
-                    'email' => $google_user->getEmail(),
-                    'google_id' => $google_user->getId(),
-                    'email_verified_at' => Carbon::now(), // Mark email as verified
-                ]);
-
-                Auth::login($new_user);
-                return redirect()->intended('home');
-            } else {
-                // If user exists, update their email_verified_at if not already set
-                if (!$user->email_verified_at) {
-                    $user->email_verified_at = Carbon::now(); // Mark email as verified
-                    $user->save();
-                }
-
-                Auth::login($user);
-                return redirect()->intended('home');
-            }
-        } catch (\Throwable $th) {
-            dd('Something went wrong!', $th->getMessage());
-        }
+        Schema::dropIfExists('users');
+        Schema::dropIfExists('password_reset_tokens');
+        Schema::dropIfExists('sessions');
     }
-}
+};
