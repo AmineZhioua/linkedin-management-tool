@@ -223,6 +223,10 @@ footer .copyright {
     .login .form-side div .social-btn span {
         display: none;
     }
+    .register .form-side div .social-btn a,
+    .login .form-side div .social-btn a {
+        display: none;
+    }
     .register .logo-container .lemonade-text,
     .login .logo-container .lemonade-text {
         display: none;
