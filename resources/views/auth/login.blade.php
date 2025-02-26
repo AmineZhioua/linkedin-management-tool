@@ -65,7 +65,7 @@
                         height="20" 
                         width="20"
                     />
-                    <a href="http://127.0.0.1:8000/auth/google/redirect" class="text-decoration-none text-black">
+                    <a href="{{ route('google-auth') }}" class="text-decoration-none text-black">
                         Se Connecter avec Google
                     </a>
                 </button>

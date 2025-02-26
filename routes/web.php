@@ -9,13 +9,19 @@ Route::get('/', function () {
     return view('welcome');
 })->name('welcome');
 
+
 Auth::routes([
     'verify' => true,
 ]);
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home')->middleware('verified');
 
+Route::get('/pricing', function() {
+    return view('/pages/pricing');
+})->name('pricing');
 
-Route::get('auth/google/redirect', [GoogleController::class, 'redirect']);
+
+
+Route::get('auth/google/redirect', [GoogleController::class, 'redirect'])->name('google-auth');
 
 Route::get('auth/google/callback', [GoogleController::class, 'callback']);
