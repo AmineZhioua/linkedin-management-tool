@@ -4,6 +4,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\GoogleController;
+use App\Http\Controllers\SubscriptionController;
+
 
 Route::get('/', function () {
     return view('welcome');
@@ -19,6 +21,9 @@ Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name
 Route::get('/pricing', function() {
     return view('/pages/pricing');
 })->name('pricing');
+
+Route::get('/subscriptions', [SubscriptionController::class, 'index']);
+
 
 
 

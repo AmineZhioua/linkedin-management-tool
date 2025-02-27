@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    
+
     @vite(['resources/js/app.js', 'resources/css/app.css'])
     <title>Lemonade - Pricing</title>
     <style>
@@ -24,24 +24,11 @@
 <body class="container overflow-hidden">
     <!-- Header Section -->
     <header class="d-flex justify-content-between align-items-center py-3">
-        <!-- Lemonade Logo -->
         <a href="{{ route('welcome') }}" class="d-flex align-items-center gap-2">
-            <img 
-                src="/build/assets/lemonade-logo.svg" 
-                alt="Lemonade Logo"
-                height="40"
-                width="40"
-            />
-            <img 
-                src="/build/assets/icons/lemonade-black.svg" 
-                alt="Lemonade Text"
-                class="lemonade-text"
-                height="40"
-                width="100"
-            />
+            <img src="/build/assets/lemonade-logo.svg" alt="Lemonade Logo" height="40" width="40" />
+            <img src="/build/assets/icons/lemonade-black.svg" alt="Lemonade Text" class="lemonade-text" height="40" width="100" />
         </a>
 
-        <!-- Account Button -->
         <button class="nav-item dropdown bg-pink-200 px-3 py-1 rounded-2xl">
             <a id="navbarDropdown" class="nav-link dropdown-toggle text-black" href="#" role="button"
                 data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
@@ -50,8 +37,7 @@
 
             <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                 <a class="dropdown-item bg-pink-200" href="{{ route('logout') }}"
-                    onclick="event.preventDefault();
-                            document.getElementById('logout-form').submit();">
+                    onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                     {{ __('Logout') }}
                 </a>
 
@@ -62,9 +48,8 @@
         </button>
     </header>
 
-
     <!-- Pricing Section -->
-    <main class="d-flex justify-content-center align-items-center flex-col mt-4 relative">
+    <main class="d-flex justify-content-center align-items-center flex-col mt-4 relative" id="app">
         <span class="top-line"></span>
 
         <!-- Title -->
@@ -72,18 +57,32 @@
 
         <!-- Buttons -->
         <div class="d-flex justify-content-center align-items-center gap-2 mt-3 text-black price-btns">
-            <button class="text-white bg-purple-800 px-5 py-2 rounded-3xl">
+            <button class="text-white bg-purple-800 px-5 py-2 rounded-3xl" @click="togglePricingMode('monthly')">
                 Mensuel
             </button>
-            <button class="text-white bg-orange-500 px-5 py-2 rounded-3xl">
+            <button class="text-white bg-orange-500 px-5 py-2 rounded-3xl" @click="togglePricingMode('yearly')">
                 Annuel
             </button>
         </div>
 
-        <!-- Pricing Cards -->
-        <div class="flex flex-col md:flex-row justify-center items-center gap-6 w-full max-w-5xl">
-            <!-- Cards -->
+        <!-- Pricing Cards with margin below buttons -->
+        <div class="flex flex-col md:flex-row justify-center items-center gap-6 w-full max-w-5xl mt-6">
+            <card
+                v-for="(subscription, index) in subscriptions"
+                :key="index"
+                :title="subscription.name"
+                :price="pricingMode === 'monthly' ? subscription.price : subscription.yearly_price"
+                :description="subscription.description"
+                :benefits="subscription.features"
+            ></card>
         </div>
     </main>
+
+    <script>
+        // Passing subscriptions data from Blade to Vue via a global div element
+        window.subscriptions = @json($subscriptions);
+    </script>
+
+    @vite('resources/js/app.js')
 </body>
 </html>
