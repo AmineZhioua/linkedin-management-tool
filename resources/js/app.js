@@ -1,5 +1,3 @@
-// resources/js/app.js
-
 import { createApp } from "vue"; // Import Vue
 
 import "bootstrap/dist/css/bootstrap.min.css";

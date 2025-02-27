@@ -71,7 +71,7 @@
                 v-for="(subscription, index) in subscriptions"
                 :key="index"
                 :title="subscription.name"
-                :price="pricingMode === 'monthly' ? subscription.price : subscription.yearly_price"
+                :price="pricingMode === 'monthly' ? subscription.monthly_price : subscription.yearly_price"
                 :description="subscription.description"
                 :benefits="subscription.features"
             ></card>
@@ -79,7 +79,6 @@
     </main>
 
     <script>
-        // Passing subscriptions data from Blade to Vue via a global div element
         window.subscriptions = @json($subscriptions);
     </script>
 

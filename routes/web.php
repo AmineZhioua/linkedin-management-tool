@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\GoogleController;
+use App\Http\Controllers\StripeController;
 use App\Http\Controllers\SubscriptionController;
 
 
@@ -18,15 +19,11 @@ Auth::routes([
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home')->middleware('verified');
 
-Route::get('/pricing', function() {
-    return view('/pages/pricing');
-})->name('pricing');
-
 Route::get('/subscriptions', [SubscriptionController::class, 'index']);
 
+Route::post('/session', [StripeController::class, 'session'])->name('session');
 
-
-
+// Google Auth Routes
 Route::get('auth/google/redirect', [GoogleController::class, 'redirect'])->name('google-auth');
 
 Route::get('auth/google/callback', [GoogleController::class, 'callback']);

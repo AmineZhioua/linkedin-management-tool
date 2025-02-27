@@ -14,7 +14,8 @@ return new class extends Migration
     Schema::create('subscriptions', function (Blueprint $table) {
         $table->id();
         $table->string('name');
-        $table->decimal('price', 8, 2);
+        $table->decimal('monthly_price', 8, 2);
+        $table->decimal('yearly_price', 8, 2);
         $table->text('description')->nullable();
         $table->json('features'); // Store features as JSON
         $table->timestamps();

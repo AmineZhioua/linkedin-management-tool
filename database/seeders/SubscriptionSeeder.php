@@ -15,14 +15,16 @@ class SubscriptionSeeder extends Seeder
     {
         Subscription::create([
             'name' => 'Basic Plan',
-            'price' => 0.00,
+            'monthly_price' => 22,
+            'yearly_price' => 120,
             'description' => 'Offert pour ton abonnement',
             'features' => json_encode(['Hausse de 100 likes', 'Accès limité']),
         ]);
 
         Subscription::create([
             'name' => 'Premium Plan',
-            'price' => 9.99,
+            'monthly_price' => 19,
+            'yearly_price' => 59.99,
             'description' => 'Accès premium avec plus de fonctionnalités',
             'features' => json_encode(['Hausse de 500 likes', 'Accès illimité', 'Support prioritaire']),
         ]);
