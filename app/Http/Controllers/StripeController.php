@@ -2,9 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Contract;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Stripe\Stripe;
 use Stripe\Checkout\Session;
+use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
+
 
 class StripeController extends Controller
 {
@@ -16,10 +21,11 @@ class StripeController extends Controller
         require_once 'D:\Work\Laravel-workspace\lemonade\vendor\autoload.php';
         require_once 'D:\Work\Laravel-workspace\lemonade\config\stripe.php';
 
-        Stripe::setApiKey(config('stripe.secret_key'));
+        Stripe::setApiKey(env('STRIPE_SECRET_KEY'));
 
         $YOUR_DOMAIN = 'http://127.0.0.1:8000';
         $price = $request->get('price');
+        $pricingMode = $request->get('pricingMode');
         $title = $request->get('title');
 
         $checkout_session = Session::create([
@@ -36,10 +42,35 @@ class StripeController extends Controller
                 ]
             ],
             'mode' => 'payment',
-            'success_url' => $YOUR_DOMAIN . '/home',
-            'cancel_url' => $YOUR_DOMAIN . '/',
+            'success_url' => route('success', ['pricingMode' => $pricingMode]),
+            'cancel_url' => $YOUR_DOMAIN . '/subscriptions',
         ]);
 
         return response()->json(['url' => $checkout_session->url]);
+    }
+
+
+    public function success(Request $request) {
+        $userId = Auth::id();
+        
+        $pricingMode = $request->query('pricingMode');
+
+        // Calculate expiration date
+        $expirationDate = ($pricingMode === 'mensuel') ? Carbon::now()->addDays(30) : Carbon::now()->addYear();
+
+        $linkedin = true;
+        $whatsapp = true;
+
+        // Create or update the contract
+        Contract::updateOrCreate(
+            ['user_id' => $userId],
+            [
+                'linkedin' => $linkedin,
+                'whatsapp' => $whatsapp,
+                'date_expiration' => $expirationDate,
+            ]
+        );
+        
+        return redirect()->route('home')->with('success', 'Subscription activated successfully!');
     }
 }

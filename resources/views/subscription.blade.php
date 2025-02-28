@@ -55,39 +55,10 @@
         <!-- Title -->
         <h1 class="text-black text-3xl font-bold">Des tarifs abordables mais un suivi de qualité !</h1>
 
-        
-        <!-- Buttons (Do not remove) -->
-        <!-- <div class="d-flex justify-content-center align-items-center gap-2 mt-3 text-black price-btns">
-            <button 
-                class="text-white bg-purple-800 px-5 py-2 rounded-3xl" 
-                :class="{ 'opacity-50': pricingMode === 'mensuel' }" 
-                @click="setSubscriptionType('mensuel')"
-            >
-                Mensuel
-            </button>
-            <button 
-                class="text-white bg-orange-500 px-5 py-2 rounded-3xl" 
-                :class="{ 'opacity-50': pricingMode === 'annuel' }" 
-                @click="setSubscriptionType('annuel')"
-            >
-                Annuel
-            </button>
-        </div> -->
-
-        <!-- Pricing Cards with margin below buttons -->
+        <!-- Pricing Cards Section -->
         <div class="flex flex-col md:flex-row justify-center items-center gap-6 w-full max-w-5xl mt-6">
-            <subscription-buttons>
-                <card
-                    v-for="(subscription, index) in subscriptions"
-                    :key="index"
-                    :title="subscription.name"
-                    :monthly_price="subscription.monthly_price"
-                    :yearly_price="subscription.yearly_price"
-                    :description="subscription.description"
-                    :benefits="subscription.features"
-                    :pricingMode="pricingMode"
-                />
-            </subscription-buttons>
+            <!-- Pricing Cards & Buttons Vue Component -->
+            <subscription-cards :subscriptions="subscriptions" />
         </div>
     </main>
 
