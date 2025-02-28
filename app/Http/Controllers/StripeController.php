@@ -19,8 +19,8 @@ class StripeController extends Controller
 
     // Create a new session for the payment
     public function session(Request $request) {
-        require_once 'D:\Work\Laravel-workspace\lemonade\vendor\autoload.php';
-        require_once 'D:\Work\Laravel-workspace\lemonade\config\stripe.php';
+        require_once 'C:\Users\SBS\Desktop\lemonade\vendor\autoload.php';
+        require_once 'C:\Users\SBS\Desktop\lemonade\config\stripe.php';
 
         Stripe::setApiKey(env('STRIPE_SECRET_KEY'));
 
@@ -51,13 +51,11 @@ class StripeController extends Controller
     }
 
 
-    // Success Method for Subscription payment
     public function success(Request $request) {
         $userId = Auth::id();
 
         $pricingMode = $request->query('pricingMode');
 
-        // Calculate expiration date
         $expirationDate = ($pricingMode === 'mensuel') ? Carbon::now()->addDays(30) : Carbon::now()->addYear();
 
         $linkedin = true;
