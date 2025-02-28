@@ -2,7 +2,7 @@
     <div class="flex-1 max-w-[350px] border-2 border-orange-300 rounded-xl p-6 shadow-lg">
         <h2 class="text-lg font-bold">{{ title }}</h2>
         <p class="text-2xl font-semibold text-black">
-            {{ price }} € / {{ pricingMode === "monthly" ? "mois" : "an" }}
+            {{ pricingMode === "mensuel" ? monthly_price + "€ / mois" : yearly_price + "€ / an" }}
         </p>
         <p class="text-sm text-gray-600">{{ description }}</p>
         <form @submit.prevent="handleSubmit">
@@ -10,6 +10,7 @@
             <input type="hidden" name="_token" :value="csrfToken" />
             <input type="hidden" name="title" :value="title" />
             <input type="hidden" name="price" :value="price" />
+            <input type="hidden" name="pricingMode" :value="pricingMode" />
 
             <button type="submit" class="mt-4 w-full py-2 bg-black text-white rounded-md">
                 Démarrer
@@ -34,19 +35,20 @@
     export default {
         props: {
             title: String,
-            price: [String, Number],
+            monthly_price: [String, Number],
+            yearly_price: [String, Number],
             description: String,
             benefits: Array,
+            pricingMode: String,
         },
+        inject: ['pricingMode'],
         data() {
             return {
-                pricingMode: "monthly",
                 csrfToken: document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
             };
         },
         computed: {
             parsedBenefits() {
-                // Ensure benefits are an array and parse them if necessary
                 return Array.isArray(this.benefits)
                     ? this.benefits
                     : JSON.parse(this.benefits);
@@ -60,6 +62,7 @@
                         _token: this.csrfToken,
                         title: this.title,
                         price: this.price,
+                        pricingMode: this.pricingMode,
                     });
 
                     window.location.href = response.data.url;

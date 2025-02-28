@@ -1,16 +1,13 @@
-import { createApp } from "vue"; // Import Vue
-
+import { createApp } from "vue";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap";
-
-// Import your components
 import Card from "./components/Card.vue";
+import SubscriptionButtons from "./components/SubscriptionButtons.vue";
 
-// Create and mount the Vue app
+
 const app = createApp({
     data() {
         return {
-            pricingMode: "monthly", // Default to monthly pricing
             subscriptions: window.subscriptions, // Accessing subscriptions from the global window object
         };
     },
@@ -22,5 +19,6 @@ const app = createApp({
 });
 
 app.component("card", Card);
+app.component("subscription-buttons", SubscriptionButtons);
 
 app.mount("#app");
