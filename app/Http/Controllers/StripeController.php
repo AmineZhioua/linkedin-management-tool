@@ -17,6 +17,7 @@ class StripeController extends Controller
         return view('checkout');
     }
 
+    // Create a new session for the payment
     public function session(Request $request) {
         require_once 'D:\Work\Laravel-workspace\lemonade\vendor\autoload.php';
         require_once 'D:\Work\Laravel-workspace\lemonade\config\stripe.php';
@@ -50,9 +51,10 @@ class StripeController extends Controller
     }
 
 
+    // Success Method for Subscription payment
     public function success(Request $request) {
         $userId = Auth::id();
-        
+
         $pricingMode = $request->query('pricingMode');
 
         // Calculate expiration date

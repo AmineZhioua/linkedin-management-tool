@@ -19,14 +19,14 @@ Auth::routes([
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home')->middleware('verified');
 
-Route::get('/subscriptions', [SubscriptionController::class, 'index']);
-
-Route::post('/session', [StripeController::class, 'session'])->name('session');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/session', [StripeController::class, 'session'])->name('session');
     Route::get('/success', [StripeController::class, 'success'])->name('success');
     // Route::get('/cancel', [StripeController::class, 'cancel'])->name('cancel');
+
+    // Subscription Routes
+    Route::get('/subscriptions', [SubscriptionController::class, 'index']);
 });
 
 // Google Auth Routes
