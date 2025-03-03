@@ -27,8 +27,18 @@
             <div
                 v-for="(subscription, index) in subscriptions"
                 :key="index"
-                class="flex-1 max-w-[350px] border-2 border-orange-300 rounded-xl p-6 shadow-lg"
+                class="flex-1 max-w-[350px] border-2 border-orange-300 rounded-xl p-6 shadow-lg relative"
             >
+                <!-- Discount Section -->
+                <div class="absolute top-0 right-0 mt-2 mr-2">
+                    <span
+                        v-if="subscription.discount"
+                        class="bg-red-500 text-white px-2 py-1 rounded-md"
+                    >
+                        -{{ subscription.discount }}%
+                    </span>
+                </div>
+                
                 <h2 class="text-lg font-bold">{{ subscription.name }}</h2>
                 <p class="text-2xl font-semibold text-black">
                     {{
@@ -48,11 +58,13 @@
                         name="title"
                         :value="subscription.name"
                     />
+                    
                     <input
                         type="hidden"
                         name="pricingMode"
                         :value="pricingMode"
                     />
+                    
                     <input
                         type="hidden"
                         name="price"

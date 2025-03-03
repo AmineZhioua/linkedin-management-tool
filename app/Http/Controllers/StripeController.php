@@ -17,23 +17,32 @@ class StripeController extends Controller
         return view('checkout');
     }
 
+
+    // Session Function
     public function session(Request $request) {
-        require_once base_path('vendor/autoload.php'); // Using Laravel's base_path()
+        require_once base_path('vendor/autoload.php');
         
         Stripe::setApiKey(env('STRIPE_SECRET_KEY'));
 
         $price = $request->get('price');
         $pricingMode = $request->get('pricingMode');
-        $subscriptionId = $request->get('subscription_id'); // Using ID instead of title
+        $subscriptionId = $request->get('subscription_id');
+        $discount = $request->get('discount');
+
 
         // Store session data for later retrieval
         $request->session()->put('subscription_id', $subscriptionId);
         $request->session()->put('subscription_pricing_mode', $pricingMode);
 
-        // Get subscription details from DB
+
         $subscription = Subscription::find($subscriptionId);
         if (!$subscription) {
             return response()->json(['error' => 'Subscription not found'], 404);
+        }
+
+        // Calculate price
+        if($discount > 0) {
+            $price = $price - ($price * $discount / 100);
         }
 
         $checkout_session = Session::create([
@@ -57,6 +66,9 @@ class StripeController extends Controller
         return response()->json(['url' => $checkout_session->url]);
     }
 
+
+
+    // Success Function
     public function success(Request $request) {
         $userId = Auth::id();
         $pricingMode = $request->query('pricingMode');
@@ -75,7 +87,7 @@ class StripeController extends Controller
         // Determine expiration date
         $expirationDate = ($pricingMode === 'mensuel') ? Carbon::now()->addMonth() : Carbon::now()->addYear();
 
-        // Store subscription in user_subscriptions table
+
         UserSubscription::updateOrCreate(
             ['user_id' => $userId, 'subscription_id' => $subscription->id],
             ['date_expiration' => $expirationDate]
@@ -87,7 +99,11 @@ class StripeController extends Controller
         return redirect()->route('home')->with('success_payment', 'Your Subscription for ' . $subscription->name . ' is now Activated!');
     }
 
+
+
+    // Cancel Function
     public function cancel() {
+        // This function is gonna be more developed in the future
         return redirect()->route('subscriptions')->with('cancel_payment', 'Subscription Cancelled!');
     }
 }
