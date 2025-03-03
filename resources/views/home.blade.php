@@ -8,6 +8,13 @@
                 <div class="card-header">{{ __('Dashboard') }}</div>
 
                 <div class="card-body">
+                    <!-- Alert When the User buys a Subscription -->
+                    @if(session('success_payment'))
+                        <div class="alert alert-success">
+                            {{ session('success_payment') }}
+                        </div>
+                    @endif
+                    
                     @if (session('status'))
                         <div class="alert alert-success" role="alert">
                             {{ session('status') }}

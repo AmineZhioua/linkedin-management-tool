@@ -48,9 +48,22 @@
         </button>
     </header>
 
+    <!-- Alert when User Cancels Subscription -->
+    <!-- @if(session('cancel_payment'))
+    <div class="alert alert-warning">
+        {{ session('cancel_payment') }}
+    </div>
+    @endif -->
+
     <!-- Pricing Section -->
     <main id="app" class="d-flex justify-content-center align-items-center flex-col mt-4 relative">
         <span class="top-line"></span>
+
+        @if(session('expired'))
+        <div class="alert alert-warning">
+            {{ session('expired') }}
+        </div>
+        @endif
 
         <!-- Title -->
         <h1 class="text-black text-3xl font-bold">Des tarifs abordables mais un suivi de qualité !</h1>

@@ -12,7 +12,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
-            'subscriptions' => \App\Http\Middleware\CheckValidSubscription::class,
+            'check.subscriptions' => \App\Http\Middleware\CheckValidSubscription::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

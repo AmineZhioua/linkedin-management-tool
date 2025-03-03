@@ -1,9 +1,8 @@
 <?php
+
 namespace App\Http\Middleware;
 
 use Closure;
-use Illuminate\Support\Facades\Route;
-
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
@@ -11,26 +10,30 @@ use App\Models\Contract;
 
 class CheckValidSubscription
 {
-    /**
-     * Handle an incoming request.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
-     * @return mixed
-     */
     public function handle(Request $request, Closure $next)
-{
-    $userId = Auth::id();
+    {
+        $userId = Auth::id();
 
-    if ($userId) {
-        $validContract = Contracts::where('user_id', $userId)
+        if (!$userId) {
+            return redirect()->route('login');
+        }
+
+        $userHasSubscription = Contract::where('user_id', $userId)->exists();
+
+        if (!$userHasSubscription) {
+            return redirect()->route('subscriptions');
+        }
+
+        // Check if user has a valid subscription
+        $validSubscription = Contract::where('user_id', $userId)
             ->where('date_expiration', '>', Carbon::now())
             ->exists();
 
-        if (!$validContract) {
-            return redirect()->route('subscriptions');
+        if (!$validSubscription) {
+            return redirect()->route('subscriptions')
+                ->with('expired', 'Your subscription has expired. Please renew your subscription to continue.');
         }
-    }
 
-    return $next($request);
-}}
+        return $next($request);
+    }
+}

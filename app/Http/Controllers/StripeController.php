@@ -16,14 +16,13 @@ class StripeController extends Controller
         return view('checkout');
     }
 
-    // Create a new session for the payment
+
     public function session(Request $request) {
-        require_once 'C:\Users\SBS\Desktop\lemonade\vendor\autoload.php';
-        require_once 'C:\Users\SBS\Desktop\lemonade\config\stripe.php';
+        require_once 'D:\Work\Laravel-workspace\lemonade\vendor\autoload.php';
+        require_once 'D:\Work\Laravel-workspace\lemonade\config\stripe.php';
 
         Stripe::setApiKey(env('STRIPE_SECRET_KEY'));
 
-        $YOUR_DOMAIN = 'http://127.0.0.1:8000';
         $price = $request->get('price');
         $pricingMode = $request->get('pricingMode');
         $title = $request->get('title');
@@ -36,7 +35,7 @@ class StripeController extends Controller
             'line_items' => [
                 [
                     'price_data' => [
-                        'currency' => 'usd',
+                        'currency' => 'eur',
                         'product_data' => [
                             'name' => $title,
                         ],
@@ -47,30 +46,26 @@ class StripeController extends Controller
             ],
             'mode' => 'payment',
             'success_url' => route('success', ['pricingMode' => $pricingMode, 'title' => $title]),
-            'cancel_url' => $YOUR_DOMAIN . '/subscriptions',
+            'cancel_url' => route('cancel'),
         ]);
 
         return response()->json(['url' => $checkout_session->url]);
     }
 
-    // Handle subscription success and update contract
+
+    // Success function
     public function success(Request $request) {
         $userId = Auth::id();
         $pricingMode = $request->query('pricingMode');
         $title = $request->query('title');
 
-        // Fallback to session if query param not available
         if (empty($title)) {
             $title = $request->session()->get('subscription_title');
-            Log::info('Retrieved title from session:', ['title' => $title]);
         }
-
-        Log::info('Subscription Plan Title:', ['title' => $title]);
 
         // Calculate expiration date based on subscription type
         $expirationDate = ($pricingMode === 'mensuel') ? Carbon::now()->addMonth() : Carbon::now()->addYear();
 
-        // Default values for the contract
         $linkedin = 0;
         $whatsapp = 0;
 
@@ -84,14 +79,6 @@ class StripeController extends Controller
             $whatsapp = 1;
         }
 
-        Log::info('Setting contract values:', [
-            'user_id' => $userId,
-            'linkedin' => $linkedin,
-            'whatsapp' => $whatsapp,
-            'expiration' => $expirationDate
-        ]);
-
-        // Create or update the contract
         Contract::updateOrCreate(
             ['user_id' => $userId],
             [
@@ -102,9 +89,16 @@ class StripeController extends Controller
             ]
         );
 
-        // Clear session data
         $request->session()->forget(['subscription_title', 'subscription_pricing_mode']);
 
-        return redirect()->route('home')->with('success', 'Subscription activated successfully!');
+        return redirect()->route('home')->with('success_payment', 'Your Subscription for ' . $title . ' is now Activated!');
+    }
+
+
+
+    // Cancel Function
+    public function cancel() {
+        // This function is gonna be more developed in the future to cancel the subscription or subscriptions
+        return redirect()->route('subscriptions')->with('cancel_payment', 'Subscription Cancelled!');
     }
 }
