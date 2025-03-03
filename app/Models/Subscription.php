@@ -15,6 +15,9 @@ class Subscription extends Model
         'yearly_price',
         'description',
         'features',
+        'linkedin',
+        'whatsapp',
+        'discount',
     ];
 
     protected $casts = [

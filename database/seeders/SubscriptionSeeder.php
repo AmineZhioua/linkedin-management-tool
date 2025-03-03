@@ -14,19 +14,36 @@ class SubscriptionSeeder extends Seeder
        public function run()
     {
         Subscription::create([
-            'name' => 'Basic Plan',
+            'name' => 'LinkedIn Plan',
             'monthly_price' => 22,
             'yearly_price' => 120,
             'description' => 'Offert pour ton abonnement',
             'features' => json_encode(['Hausse de 100 likes', 'Accès limité']),
+            'linkedin' => true,
+            'whatsapp' => false,
+            'discount' => 0,
         ]);
 
         Subscription::create([
-            'name' => 'Premium Plan',
+            'name' => 'WhatsApp Plan',
             'monthly_price' => 19,
             'yearly_price' => 59.99,
             'description' => 'Accès premium avec plus de fonctionnalités',
             'features' => json_encode(['Hausse de 500 likes', 'Accès illimité', 'Support prioritaire']),
+            'linkedin' => false,
+            'whatsapp' => true,
+            'discount' => 0,
+        ]);
+
+        Subscription::create([
+            'name' => 'WhatsApp & LinkedIn Plan',
+            'monthly_price' => 50,
+            'yearly_price' => 150,
+            'description' => 'Accès premium avec plus de fonctionnalités',
+            'features' => json_encode(['Hausse de 500 likes', 'Accès illimité', 'Support prioritaire']),
+            'linkedin' => true,
+            'whatsapp' => true,
+            'discount' => 10,
         ]);
     }
 }

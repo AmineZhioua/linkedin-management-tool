@@ -9,16 +9,15 @@ class Contract extends Model
 {
     use HasFactory;
 
+    protected $table = 'user_subscriptions';
+
     protected $fillable = [
         'user_id',
-        'linkedin',
-        'whatsapp',
+        'subscription_id',
         'date_expiration',
     ];
 
     protected $casts = [
-        'linkedin' => 'boolean',
-        'whatsapp' => 'boolean',
         'date_expiration' => 'date',
     ];
 

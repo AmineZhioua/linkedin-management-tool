@@ -59,9 +59,32 @@
                         :value="
                             pricingMode === 'mensuel'
                                 ? subscription.monthly_price
-                                : subscription.yearly_price
-                        "
+                                : subscription.yearly_price"
                     />
+
+                    <input 
+                        type="hidden" 
+                        name="subscription_id" 
+                        :value="subscription.id"
+                    />
+                    <input 
+                        type="hidden"
+                        name="linkedin"
+                        :value="subscription.linkedin"
+                    />
+
+                    <input 
+                        type="hidden"
+                        name="whatsapp"
+                        :value="subscription.whatsapp"
+                    />
+
+                    <input 
+                        type="hidden"
+                        name="discount"
+                        :value="subscription.discount"
+                    />
+
 
                     <button
                         type="submit"
@@ -129,6 +152,10 @@ export default {
                     title: subscription.name,
                     price: price,
                     pricingMode: pricingMode.value,
+                    subscription_id: subscription.id,
+                    linkedin: subscription.linkedin,
+                    whatsapp: subscription.whatsapp,
+                    discount: subscription.discount,
                 });
 
                 window.location.href = response.data.url;
