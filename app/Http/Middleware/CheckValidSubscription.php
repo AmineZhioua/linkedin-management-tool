@@ -6,7 +6,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
-use App\Models\Contract;
+use App\Models\UserSubscription;
 
 class CheckValidSubscription
 {
@@ -18,14 +18,13 @@ class CheckValidSubscription
             return redirect()->route('login');
         }
 
-        $userHasSubscription = Contract::where('user_id', $userId)->exists();
+        $userHasSubscription = UserSubscription::where('user_id', $userId)->exists();
 
         if (!$userHasSubscription) {
             return redirect()->route('subscriptions');
         }
 
-        // Check if user has a valid subscription
-        $validSubscription = Contract::where('user_id', $userId)
+        $validSubscription = UserSubscription::where('user_id', $userId)
             ->where('date_expiration', '>', Carbon::now())
             ->exists();
 

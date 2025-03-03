@@ -2,7 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Contract;
+use App\Models\UserSubscription;
+use App\Models\Subscription;
 use Illuminate\Http\Request;
 use Stripe\Stripe;
 use Stripe\Checkout\Session;
@@ -16,20 +17,24 @@ class StripeController extends Controller
         return view('checkout');
     }
 
-
     public function session(Request $request) {
-        require_once 'D:\Work\Laravel-workspace\lemonade\vendor\autoload.php';
-        require_once 'D:\Work\Laravel-workspace\lemonade\config\stripe.php';
-
+        require_once base_path('vendor/autoload.php'); // Using Laravel's base_path()
+        
         Stripe::setApiKey(env('STRIPE_SECRET_KEY'));
 
         $price = $request->get('price');
         $pricingMode = $request->get('pricingMode');
-        $title = $request->get('title');
+        $subscriptionId = $request->get('subscription_id'); // Using ID instead of title
 
         // Store session data for later retrieval
-        $request->session()->put('subscription_title', $title);
+        $request->session()->put('subscription_id', $subscriptionId);
         $request->session()->put('subscription_pricing_mode', $pricingMode);
+
+        // Get subscription details from DB
+        $subscription = Subscription::find($subscriptionId);
+        if (!$subscription) {
+            return response()->json(['error' => 'Subscription not found'], 404);
+        }
 
         $checkout_session = Session::create([
             'line_items' => [
@@ -37,7 +42,7 @@ class StripeController extends Controller
                     'price_data' => [
                         'currency' => 'eur',
                         'product_data' => [
-                            'name' => $title,
+                            'name' => $subscription->name,
                         ],
                         'unit_amount' => $price * 100,
                     ],
@@ -45,60 +50,44 @@ class StripeController extends Controller
                 ]
             ],
             'mode' => 'payment',
-            'success_url' => route('success', ['pricingMode' => $pricingMode, 'title' => $title]),
+            'success_url' => route('success', ['pricingMode' => $pricingMode, 'subscription_id' => $subscriptionId]),
             'cancel_url' => route('cancel'),
         ]);
 
         return response()->json(['url' => $checkout_session->url]);
     }
 
-
-    // Success function
     public function success(Request $request) {
         $userId = Auth::id();
         $pricingMode = $request->query('pricingMode');
-        $title = $request->query('title');
+        $subscriptionId = $request->query('subscription_id');
 
-        if (empty($title)) {
-            $title = $request->session()->get('subscription_title');
+        if (empty($subscriptionId)) {
+            $subscriptionId = $request->session()->get('subscription_id');
         }
 
-        // Calculate expiration date based on subscription type
+        // Retrieve the subscription from the database
+        $subscription = Subscription::find($subscriptionId);
+        if (!$subscription) {
+            return redirect()->route('subscriptions')->with('error', 'Subscription not found!');
+        }
+
+        // Determine expiration date
         $expirationDate = ($pricingMode === 'mensuel') ? Carbon::now()->addMonth() : Carbon::now()->addYear();
 
-        $linkedin = 0;
-        $whatsapp = 0;
-
-        // Set values based on the subscription name
-        if ($title === 'Linkedin Plan') {
-            $linkedin = 1;
-        } elseif ($title === 'Whatsapp plan') {
-            $whatsapp = 1;
-        } elseif ($title === 'Pack Linkedin & Whatsapp') {
-            $linkedin = 1;
-            $whatsapp = 1;
-        }
-
-        Contract::updateOrCreate(
-            ['user_id' => $userId],
-            [
-                'linkedin' => $linkedin,
-                'whatsapp' => $whatsapp,
-                'date_expiration' => $expirationDate,
-                'updated_at' => Carbon::now(),
-            ]
+        // Store subscription in user_subscriptions table
+        UserSubscription::updateOrCreate(
+            ['user_id' => $userId, 'subscription_id' => $subscription->id],
+            ['date_expiration' => $expirationDate]
         );
 
-        $request->session()->forget(['subscription_title', 'subscription_pricing_mode']);
+        // Clear session data
+        $request->session()->forget(['subscription_id', 'subscription_pricing_mode']);
 
-        return redirect()->route('home')->with('success_payment', 'Your Subscription for ' . $title . ' is now Activated!');
+        return redirect()->route('home')->with('success_payment', 'Your Subscription for ' . $subscription->name . ' is now Activated!');
     }
 
-
-
-    // Cancel Function
     public function cancel() {
-        // This function is gonna be more developed in the future to cancel the subscription or subscriptions
         return redirect()->route('subscriptions')->with('cancel_payment', 'Subscription Cancelled!');
     }
 }
