@@ -18,7 +18,7 @@ class SubscriptionSeeder extends Seeder
             'monthly_price' => 22,
             'yearly_price' => 120,
             'description' => 'Offert pour ton abonnement',
-            'features' => json_encode(['Hausse de 100 likes', 'Accès limité']),
+            'features' => json_encode(['Hausse de 100 likes', 'Accès limité', 'Support prioritaire']),
             'linkedin' => true,
             'whatsapp' => false,
             'discount' => 0,

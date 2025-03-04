@@ -21,7 +21,7 @@
         }
     </style>
 </head>
-<body class="container overflow-hidden">
+<body class="container overflow-y-scroll">
     <!-- Header Section -->
     <header class="d-flex justify-content-between align-items-center py-3">
         <a href="{{ route('welcome') }}" class="d-flex align-items-center gap-2">
@@ -48,16 +48,8 @@
         </button>
     </header>
 
-    <!-- Alert when User Cancels Subscription -->
-    <!-- @if(session('cancel_payment'))
-    <div class="alert alert-warning">
-        {{ session('cancel_payment') }}
-    </div>
-    @endif -->
-
     <!-- Pricing Section -->
     <main id="app" class="d-flex justify-content-center align-items-center flex-col mt-4 relative">
-        <span class="top-line"></span>
 
         @if(session('expired'))
         <div class="alert alert-warning">
@@ -66,19 +58,14 @@
         @endif
 
         <!-- Title -->
-        <h1 class="text-black text-3xl font-bold">Des tarifs abordables mais un suivi de qualité !</h1>
+        <h1 class="text-black text-3xl font-bold text-center">Des tarifs abordables mais un suivi de qualité !</h1>
 
-        <!-- Pricing Cards Section -->
-        <div class="flex flex-col md:flex-row justify-center items-center gap-6 w-full max-w-5xl mt-6">
-            <!-- Pricing Cards & Buttons Vue Component -->
-            <subscription-cards :subscriptions="subscriptions" />
-        </div>
+        <!-- Pricing Cards & Buttons Vue Component (SubscriptionCards.vue) -->
+        <subscription-cards :subscriptions="subscriptions" />
     </main>
 
     <script>
         window.subscriptions = @json($subscriptions);
     </script>
-
-    @vite('resources/js/app.js')
 </body>
 </html>

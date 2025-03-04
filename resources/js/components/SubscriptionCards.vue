@@ -1,123 +1,113 @@
 <template>
-    <div>
-        <!-- Subscription Type Buttons -->
-        <div
-            class="d-flex justify-content-center align-items-center gap-2 mt-3 text-black price-btns"
-        >
-            <button
-                class="text-white bg-purple-800 px-5 py-2 rounded-3xl"
-                :class="{ 'opacity-50': pricingMode === 'mensuel' }"
-                @click="setSubscriptionType('mensuel')"
-            >
-                Mensuel
-            </button>
-            <button
-                class="text-white bg-orange-500 px-5 py-2 rounded-3xl"
-                :class="{ 'opacity-50': pricingMode === 'annuel' }"
-                @click="setSubscriptionType('annuel')"
-            >
-                Annuel
-            </button>
+    <div class="cards-container">
+        <!-- Subscription Type Buttons Section -->
+        <div class="pricing-toggle-container text-center mt-4 mb-0">
+            <div class="d-inline-flex bg-light p-1 rounded-pill shadow-sm gap-3">
+                <button
+                    class="btn rounded-pill px-4 py-2 position-relative"
+                    :class="pricingMode === 'mensuel' ? 'btn-active text-white' : 'btn-inactive'"
+                    @click="setSubscriptionType('mensuel')"
+                >
+                    <span class="position-relative z-2">Mensuel</span>
+                </button>
+                
+                <button
+                    class="btn rounded-pill px-4 py-2 position-relative"
+                    :class="pricingMode === 'annuel' ? 'btn-active text-white' : 'btn-inactive'"
+                    @click="setSubscriptionType('annuel')"
+                >
+                    <span class="position-relative z-2">Annuel</span>
+                </button>
+            </div>
         </div>
 
-        <!-- Pricing Cards -->
-        <div
-            class="flex flex-col md:flex-row justify-center items-center gap-6 w-full max-w-5xl mt-6"
-        >
-            <div
-                v-for="(subscription, index) in subscriptions"
-                :key="index"
-                class="flex-1 max-w-[350px] border-2 border-orange-300 rounded-xl p-6 shadow-lg relative"
-            >
-                <!-- Discount Section -->
-                <div class="absolute top-0 right-0 mt-2 mr-2">
-                    <span
-                        v-if="subscription.discount"
-                        class="bg-red-500 text-white px-2 py-1 rounded-md"
+        <!-- Pricing Cards Section -->
+        <div class="cards">
+            <!-- Cards -->
+            <div class="container py-4">
+                <div class="row justify-content-center">
+                    <div
+                        v-for="(subscription, index) in subscriptions"
+                        :key="index"
+                        class="col-md-4 mb-4"
                     >
-                        -{{ subscription.discount }}%
-                    </span>
+                        <div 
+                            class="card border-0 rounded-4 shadow-sm position-relative" 
+                            style="border: 2px solid #FFE8E0 !important; max-width: 350px; margin: 0 auto;"
+                        >
+                            <div class="card-body p-4">
+                                <!-- Title -->
+                                <h2 class="fw-bold text-xl mb-1">{{ subscription.name }}</h2>
+                                
+                                <!-- Price -->
+                                <h3 class="fw-semibold text-muted text-2xl my-3 ml-2">
+                                    {{ pricingMode === "mensuel" ? 
+                                    (subscription.monthly_price + "€ /mois") : (subscription.yearly_price + "€ /an") 
+                                    }}
+                                </h3>
+                                
+                                <!-- Subtitle -->
+                                <p class="text-muted mb-4">
+                                    {{ subscription.description || "Offert pour ton abonnement" }}
+                                </p>
+                                
+                                <!-- Button -->
+                                <form @submit.prevent="handleSubmit(subscription)">
+                                    <input type="hidden" name="_token" :value="csrfToken" />
+                                    <input type="hidden" name="title" :value="subscription.name" />
+                                    <input type="hidden" name="pricingMode" :value="pricingMode" />
+                                    <input
+                                        type="hidden"
+                                        name="price"
+                                        :value="pricingMode === 'mensuel' ? 
+                                            subscription.monthly_price : 
+                                            subscription.yearly_price"
+                                    />
+                                    <input type="hidden" name="subscription_id" :value="subscription.id" />
+                                    <input type="hidden" name="linkedin" :value="subscription.linkedin" />
+                                    <input type="hidden" name="whatsapp" :value="subscription.whatsapp" />
+                                    <input type="hidden" name="discount" :value="subscription.discount" />
+                                    
+                                    <button
+                                        type="submit"
+                                        class="btn text-white bg-black w-100 rounded-pill py-2 fw-medium"
+                                    >
+                                        Démarrer
+                                    </button>
+                                </form>
+                                
+                                <!-- Divider -->
+                                <hr class="my-4" />
+                                
+                                <!-- Features List -->
+                                <p class="fw-medium mb-3">
+                                    {{ subscription.name === "Création Dashboard" ? "Création d'un dashboard 100% en ligne" : "Fonctionnalités incluses" }}
+                                </p>
+                                
+                                <ul class="list-unstyled">
+                                    <li
+                                        v-for="(benefit, idx) in parsedBenefits(subscription.features)"
+                                        :key="idx"
+                                        class="d-flex align-items-center gap-2 mb-2"
+                                    >
+                                    <img src="\build\assets\icons\check-green.svg" alt="check-icon" />
+                                    <span>{{ benefit }}</span>
+                                    </li>
+                                </ul>
+                                
+                                <!-- Discount Badge -->
+                                <div 
+                                    v-if="subscription.discount" 
+                                    class="position-absolute top-0 end-0 translate-middle-y me-3"
+                                >
+                                    <span class="badge bg-red-600 rounded-pill px-3 py-2 fs-6">
+                                    -{{ subscription.discount }}%
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                
-                <h2 class="text-lg font-bold">{{ subscription.name }}</h2>
-                <p class="text-2xl font-semibold text-black">
-                    {{
-                        pricingMode === "mensuel"
-                            ? subscription.monthly_price + "€ / mois"
-                            : subscription.yearly_price + "€ / an"
-                    }}
-                </p>
-                <p class="text-sm text-gray-600">
-                    {{ subscription.description }}
-                </p>
-
-                <form @submit.prevent="handleSubmit(subscription)">
-                    <input type="hidden" name="_token" :value="csrfToken" />
-                    <input
-                        type="hidden"
-                        name="title"
-                        :value="subscription.name"
-                    />
-                    
-                    <input
-                        type="hidden"
-                        name="pricingMode"
-                        :value="pricingMode"
-                    />
-                    
-                    <input
-                        type="hidden"
-                        name="price"
-                        :value="
-                            pricingMode === 'mensuel'
-                                ? subscription.monthly_price
-                                : subscription.yearly_price"
-                    />
-
-                    <input 
-                        type="hidden" 
-                        name="subscription_id" 
-                        :value="subscription.id"
-                    />
-                    <input 
-                        type="hidden"
-                        name="linkedin"
-                        :value="subscription.linkedin"
-                    />
-
-                    <input 
-                        type="hidden"
-                        name="whatsapp"
-                        :value="subscription.whatsapp"
-                    />
-
-                    <input 
-                        type="hidden"
-                        name="discount"
-                        :value="subscription.discount"
-                    />
-
-
-                    <button
-                        type="submit"
-                        class="mt-4 w-full py-2 bg-black text-white rounded-md"
-                    >
-                        Démarrer
-                    </button>
-                </form>
-
-                <hr class="my-4" />
-                <ul class="text-left">
-                    <li
-                        v-for="(benefit, idx) in parsedBenefits(
-                            subscription.features
-                        )"
-                        :key="idx"
-                        class="flex items-center"
-                    >
-                        <span class="text-green-500">✔</span> {{ benefit }}
-                    </li>
-                </ul>
             </div>
         </div>
     </div>
@@ -190,3 +180,64 @@ export default {
     },
 };
 </script>
+
+
+<style scoped>
+    .cards-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 30px;
+    }
+
+    .cards {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 30px;
+    }
+
+    .card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border-radius: 1rem;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+    }
+
+    .card.highlight {
+        border: 2px solid #0d6efd !important;
+        transform: scale(1.05);
+    }
+
+    @media (max-width: 768px) {
+        .card {
+            margin-bottom: 2rem;
+        }
+    }
+
+    .pricing-toggle-container {
+        margin: 2rem 0;
+    }
+
+    .btn-active {
+        background: linear-gradient(135deg, rgb(255 16 185) 0%, rgb(255 125 82) 100%);
+        font-weight: 600;
+        box-shadow: 0 2px 5px rgba(79, 70, 229, 0.3);
+        transition: all 0.3s ease;
+    }
+
+    .btn-inactive {
+        background: transparent;
+        color: #6B7280;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .btn-inactive:hover {
+        background: rgba(255, 16, 183, 0.236);
+        color: white;
+    }
+</style>
