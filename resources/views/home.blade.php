@@ -15,11 +15,17 @@
                         </div>
                     @endif
                     
-                    @if (session('status'))
+                    @if(session('status'))
                         <div class="alert alert-success" role="alert">
                             {{ session('status') }}
                         </div>
                     @endif
+
+                    <popup path="/build/assets/popups/like-popup.svg">
+                        <p>
+                            Your Subscription is now Activated!
+                        </p>
+                    </popup>
 
                     {{ __('You are logged in!') }}
                 </div>

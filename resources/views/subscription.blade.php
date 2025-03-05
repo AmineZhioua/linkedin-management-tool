@@ -21,7 +21,7 @@
         }
     </style>
 </head>
-<body class="container overflow-y-scroll">
+<body class="container overflow-y-scroll" id="app">
     <!-- Header Section -->
     <header class="d-flex justify-content-between align-items-center py-3">
         <a href="{{ route('welcome') }}" class="d-flex align-items-center gap-2">
@@ -49,7 +49,7 @@
     </header>
 
     <!-- Pricing Section -->
-    <main id="app" class="d-flex justify-content-center align-items-center flex-col mt-4 relative">
+    <main class="d-flex justify-content-center align-items-center flex-col mt-4 relative">
 
         @if(session('expired'))
         <div class="alert alert-warning">
@@ -62,6 +62,9 @@
 
         <!-- Pricing Cards & Buttons Vue Component (SubscriptionCards.vue) -->
         <subscription-cards :subscriptions="subscriptions" />
+
+        <!-- Popup Component (Popup.vue) -->
+        <popup message="test test" path="/build/assets/popups/like-popup.svg"></popup>
     </main>
 
     <script>
