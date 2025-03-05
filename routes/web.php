@@ -19,7 +19,7 @@ Auth::routes([
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])
     ->name('home')
-    ->middleware('verified', 'auth', 'check.subscriptions'); // Applied Check Valid Subscription Middleware
+    ->middleware('verified', 'auth', 'check.subscriptions'); // Applied CheckValidSubscription Middleware
 
 
 Route::middleware(['auth', 'verified'])->group(function () {

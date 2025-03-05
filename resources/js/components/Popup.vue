@@ -1,5 +1,5 @@
 <template>
-    <div class="overlay" @click.self="closePopup">
+    <div v-if="isVisible" class="overlay" @click.self="closePopup">
         <div class="popup">
             <button class="close-btn" @click="closePopup">&times;</button>
             <img 
@@ -22,15 +22,20 @@ export default {
             required: true
         }   
     },
+    data() {
+        return {
+            isVisible: true, // Controls the visibility of the popup
+        };
+    },
     methods: {
         closePopup() {
-            this.$emit('close');
+            this.isVisible = false;
         }
     }
 };
 </script>
 
-<style scoped>
+<style>
     .overlay {
         position: fixed;
         top: 0;
@@ -43,10 +48,13 @@ export default {
         align-items: center;
         backdrop-filter: blur(5px);
         animation: fadeIn 0.3s ease-in-out;
-        visibility: visible;
+        z-index: 1000;
     }
 
     .popup {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
         background-color: white;
         padding: 80px;
         border-radius: 12px;

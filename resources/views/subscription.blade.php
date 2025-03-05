@@ -48,23 +48,23 @@
         </button>
     </header>
 
+    @if(session('expired'))
+    <popup path="/build/assets/popups/sad-face.svg">
+        <p>
+            Your subscription has expired. Please renew your subscription to continue.
+        </p>
+    </popup>
+    @endif
+
     <!-- Pricing Section -->
     <main class="d-flex justify-content-center align-items-center flex-col mt-4 relative">
-
-        @if(session('expired'))
-        <div class="alert alert-warning">
-            {{ session('expired') }}
-        </div>
-        @endif
 
         <!-- Title -->
         <h1 class="text-black text-3xl font-bold text-center">Des tarifs abordables mais un suivi de qualité !</h1>
 
         <!-- Pricing Cards & Buttons Vue Component (SubscriptionCards.vue) -->
         <subscription-cards :subscriptions="subscriptions" />
-
-        <!-- Popup Component (Popup.vue) -->
-        <popup message="test test" path="/build/assets/popups/like-popup.svg"></popup>
+        
     </main>
 
     <script>

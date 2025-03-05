@@ -8,11 +8,13 @@
                 <div class="card-header">{{ __('Dashboard') }}</div>
 
                 <div class="card-body">
-                    <!-- Alert When the User buys a Subscription -->
+                    <!-- Alert When the User buys a Subscription using the (Popup.vue) Component -->
                     @if(session('success_payment'))
-                        <div class="alert alert-success">
-                            {{ session('success_payment') }}
-                        </div>
+                        <popup path="/build/assets/popups/like-popup.svg">
+                            <p>
+                                Your Subscription is now Activated!
+                            </p>
+                        </popup>
                     @endif
                     
                     @if(session('status'))
@@ -20,12 +22,6 @@
                             {{ session('status') }}
                         </div>
                     @endif
-
-                    <popup path="/build/assets/popups/like-popup.svg">
-                        <p>
-                            Your Subscription is now Activated!
-                        </p>
-                    </popup>
 
                     {{ __('You are logged in!') }}
                 </div>
