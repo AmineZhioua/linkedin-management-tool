@@ -8,7 +8,7 @@
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
     
-    @vite(['resources/js/app.js', 'resources/css/app.css'])
+    @vite(['resources/js/app.js', 'resources/css/app.css', 'resources/js/utils.js'])
     <title>Lemonade - Connexion au Compte</title>
 </head>
 <body>
@@ -69,15 +69,6 @@
                         Se Connecter avec Google
                     </a>
                 </button>
-                <button class="social-btn">
-                    <img 
-                        src="/build/assets/icons/apple-black.svg" 
-                        alt="Apple Icon" 
-                        height="20" 
-                        width="20"
-                    />
-                    <span>Se Connecter avec Apple</span>
-                </button>
             </div>
 
             <!-- Check app.css for Styling -->
@@ -113,7 +104,24 @@
                 <!-- Password Input -->
                 <div class="mb-3">
                     <label for="password" class="form-label">Mot de passe</label>
-                    <input id="password" type="password" class="form-control @error('password') is-invalid @enderror" name="password" required autocomplete="current-password">
+                    <div class="flex relative">
+                        <input 
+                            id="password" 
+                            type="password" 
+                            class="form-control @error('password') is-invalid @enderror" 
+                            name="password" 
+                            required 
+                            autocomplete="current-password"
+                        />
+                        <!-- Show & Hide Password Icon -->
+                        <img 
+                            src="/build/assets/icons/visibility-off.svg" 
+                            alt="visibility-on" 
+                            class="absolute right-2 top-2 cursor-pointer"
+                            id="password-icon"
+                        />
+                    </div>
+                    
                     @error('password')
                         <span class="invalid-feedback" role="alert">
                             <strong>{{ $message }}</strong>
