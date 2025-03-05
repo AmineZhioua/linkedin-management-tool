@@ -13,18 +13,3 @@ passwordIcon.addEventListener('click', () => {
         passwordIcon.src="/build/assets/icons/visibility-off.svg";
     }
 });
-
-
-// Function to toggle the visibility of the CONFIRM PASSWORD field
-let confirmPasswordInput = document.getElementById('password-confirm');
-let confirmPasswordIcon = document.getElementById('confirm-password-icon');
-
-confirmPasswordIcon.addEventListener('click', () => {
-    if (confirmPasswordInput.type === 'password') {
-        confirmPasswordInput.type = 'text';
-        confirmPasswordIcon.src="/build/assets/icons/visibility-on.svg";
-    } else {
-        confirmPasswordInput.type = 'password';
-        confirmPasswordIcon.src="/build/assets/icons/visibility-off.svg";
-    }
-});

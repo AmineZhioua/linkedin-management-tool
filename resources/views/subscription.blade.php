@@ -58,17 +58,13 @@
 
     <!-- Pricing Section -->
     <main class="d-flex justify-content-center align-items-center flex-col mt-4 relative">
-
         <!-- Title -->
         <h1 class="text-black text-3xl font-bold text-center">Des tarifs abordables mais un suivi de qualité !</h1>
 
         <!-- Pricing Cards & Buttons Vue Component (SubscriptionCards.vue) -->
-        <subscription-cards :subscriptions="subscriptions" />
+        <subscription-cards :subscriptions="{{ json_encode($subscriptions) }}" />
         
     </main>
-
-    <script>
-        window.subscriptions = @json($subscriptions);
-    </script>
+    
 </body>
 </html>

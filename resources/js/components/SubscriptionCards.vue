@@ -188,13 +188,15 @@ import axios from "axios";
 
 export default {
     props: {
-        subscriptions: Array,
+        subscriptions: {
+            type: Array,
+            required: true,
+        },
     },
+    
     setup() {
         const pricingMode = ref("mensuel");
-        const csrfToken = document
-            .querySelector('meta[name="csrf-token"]')
-            .getAttribute("content");
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute("content");
 
         const setSubscriptionType = (type) => {
             pricingMode.value = type;
@@ -202,9 +204,7 @@ export default {
 
         const parsedBenefits = (benefits) => {
             try {
-                return Array.isArray(benefits)
-                    ? benefits
-                    : JSON.parse(benefits);
+                return Array.isArray(benefits) ? benefits : JSON.parse(benefits);
             } catch (error) {
                 console.error("Error parsing benefits:", error);
                 return [];
@@ -212,10 +212,7 @@ export default {
         };
 
         const handleSubmit = async (subscription) => {
-            const price =
-                pricingMode.value === "mensuel"
-                    ? subscription.monthly_price
-                    : subscription.yearly_price;
+            const price = pricingMode.value === "mensuel" ? subscription.monthly_price : subscription.yearly_price;
 
             try {
                 const response = await axios.post("/session", {
@@ -250,66 +247,68 @@ export default {
 };
 </script>
 
+
+
 <style scoped>
-.cards-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 30px;
-}
-
-.cards {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 30px;
-}
-
-.card {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    border-radius: 1rem;
-}
-
-.card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
-}
-
-.card.highlight {
-    border: 2px solid #0d6efd !important;
-    transform: scale(1.05);
-}
-
-@media (max-width: 768px) {
-    .card {
-        margin-bottom: 2rem;
+    .cards-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 30px;
     }
-}
 
-.pricing-toggle-container {
-    margin: 2rem 0;
-}
+    .cards {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 30px;
+    }
 
-.btn-active {
-    background: linear-gradient(
-        135deg,
-        rgb(255 16 185) 0%,
-        rgb(255 125 82) 100%
-    );
-    font-weight: 600;
-    box-shadow: 0 2px 5px rgba(79, 70, 229, 0.3);
-    transition: all 0.3s ease;
-}
+    .card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border-radius: 1rem;
+    }
 
-.btn-inactive {
-    background: transparent;
-    color: #6b7280;
-    font-weight: 500;
-    transition: all 0.3s ease;
-}
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+    }
 
-.btn-inactive:hover {
-    background: rgba(255, 16, 183, 0.236);
-    color: white;
-}
+    .card.highlight {
+        border: 2px solid #0d6efd !important;
+        transform: scale(1.05);
+    }
+
+    @media (max-width: 768px) {
+        .card {
+            margin-bottom: 2rem;
+        }
+    }
+
+    .pricing-toggle-container {
+        margin: 2rem 0;
+    }
+
+    .btn-active {
+        background: linear-gradient(
+            135deg,
+            rgb(255 16 185) 0%,
+            rgb(255 125 82) 100%
+        );
+        font-weight: 600;
+        box-shadow: 0 2px 5px rgba(79, 70, 229, 0.3);
+        transition: all 0.3s ease;
+    }
+
+    .btn-inactive {
+        background: transparent;
+        color: #6b7280;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .btn-inactive:hover {
+        background: rgba(255, 16, 183, 0.236);
+        color: white;
+    }
 </style>
