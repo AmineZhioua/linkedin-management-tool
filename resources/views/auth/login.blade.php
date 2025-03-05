@@ -131,7 +131,12 @@
 
                 <!-- Remember Me -->
                 <div class="mb-3 form-check">
-                    <input class="form-check-input" type="checkbox" name="remember" id="remember" {{ old('remember') ? 'checked' : '' }}>
+                    <input 
+                        class="form-check-input" 
+                        type="checkbox" 
+                        name="remember" 
+                        id="remember" {{ old('remember') ? 'checked' : '' }}
+                    />
                     <label class="form-check-label" for="remember">
                         Se souvenir de moi
                     </label>

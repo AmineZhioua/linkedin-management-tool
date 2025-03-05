@@ -24,7 +24,7 @@ export default {
     },
     data() {
         return {
-            isVisible: true, // Controls the visibility of the popup
+            isVisible: true,
         };
     },
     methods: {
@@ -35,7 +35,7 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
     .overlay {
         position: fixed;
         top: 0;
