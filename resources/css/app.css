@@ -382,7 +382,7 @@ footer .copyright {
     transform: rotate(-3deg);
     margin-left: 20px;
 }
-
+/* 
 @keyframes rotate360 {
     from {
         transform: rotate(0deg);
@@ -394,4 +394,4 @@ footer .copyright {
 
 .dashboard-img {
     animation: rotate360 30s linear infinite;
-}
+} */

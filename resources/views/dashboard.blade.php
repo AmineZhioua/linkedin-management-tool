@@ -15,21 +15,17 @@
     <title>Lemonade - Dashboard</title>
     <style>
         body {
-            font-family: "League Spartan", serif;
+            font-family: "League Spartan", Arial, sans-serif;
             height: 100vh;
+            width: 100vw;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            overflow: hidden;
+            overflow-x: hidden;
         }
 
-        .top-line {
-            position: absolute;
-            transform: translateX(-50%);
-            height: 0.5px;
-            width: 1000%;
-            background-color: rgb(161, 159, 159);
-            top: 0;
+        .task-btns button:last-of-type {
+            border: 1px solid black;
         }
     </style>
 </head>
@@ -43,8 +39,6 @@
 
             <!-- Landing Section -->
             <div class="d-flex justify-content-between align-items-center py-4 relative">
-                <!-- Top Line -->
-                <span class="top-line"></span>
 
                 <!-- Main Text Section -->
                 <div class="text-white flex-grow-1">
@@ -82,10 +76,37 @@
     </div>
 
     <!-- Tasks Section -->
-    <div class="container">
-        <div class="flex justify-content-between">
+    <div class="container py-2">
+        <!-- Text & Button Section -->
+        <div class="flex justify-content-between mt-32">
             <h1 class="text-black">Taches à Réaliser</h1>
             <button class="bg-white text-black">Ajouter</button>
+        </div>
+
+        <!-- Tasks List Section -->
+        <div class="flex justify-content-between align-items-center p-4 bg-green-400 rounded-xl mt-2">
+            <img 
+                src="/build/assets/icons/paint.svg" 
+                alt="paint-icon" 
+                class="bg-white p-2 rounded-full mr-8 relative top-[-50px]" 
+            />
+            <div class="text-black flex-grow-1 px-2">
+                <h1 class="text-3xl">Plateforme de marque</h1>
+                <h1 class="text-2xl text-slate-700">75%</h1>
+                <p class="text-muted fw-semibold">Plus que quelques taches!</p>
+                <span>---------------</span>
+            </div>
+
+            <div class="task-btns flex flex-col align-items-center gap-2">
+                <button class="bg-black text-white py-2 px-4 rounded-full">
+                    Finir la Tache
+                </button>
+
+                <button class="bg-transparent text-black py-2 px-4 rounded-full flex align-items-center gap-2">
+                    Tout voir
+                    <img src="/build/assets/icons/arrow-down.svg" alt="arrow-down" />
+                </button>
+            </div>
         </div>
     </div>
 </body>
