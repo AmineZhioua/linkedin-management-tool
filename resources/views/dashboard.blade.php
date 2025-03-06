@@ -57,7 +57,7 @@
                     alt="dashboard" 
                     height="400" 
                     width="420"
-                    class="dashboard-img"
+                    class="dashboard-img d-none d-lg-block"
                 />
 
                 <div id="circle-container" class="flex absolute bottom-[-8%] left-[-120px]" style="z-index: -1;">
@@ -83,7 +83,7 @@
             <button class="bg-white text-black">Ajouter</button>
         </div>
 
-        <!-- Tasks List Section -->
+        <!-- Tasks Card Section -->
         <div class="flex justify-content-between align-items-center p-4 bg-green-400 rounded-xl mt-2">
             <img 
                 src="/build/assets/icons/paint.svg" 

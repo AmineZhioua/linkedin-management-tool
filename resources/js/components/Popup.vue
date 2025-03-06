@@ -1,7 +1,9 @@
 <template>
     <div v-if="isVisible" class="overlay" @click.self="closePopup">
         <div class="popup">
-            <button class="close-btn" @click="closePopup">&times;</button>
+            <button class="close-btn" @click="closePopup">
+                <img src="/build/assets/icons/close.svg" alt="close-icon" />
+            </button>
             <img 
                 :src="path" 
                 alt="like-icon" 
