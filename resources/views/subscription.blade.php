@@ -12,21 +12,25 @@
         .price-btns button {
             box-shadow: 0 4px 6px 0px rgb(0 0 0 / 76%);
         }
-        .top-line {
-            position: absolute;
-            height: 1px;
-            width: 200%;
-            background-color: rgb(161 159 159 / 60%);
-            top: -40px;
-        }
     </style>
 </head>
 <body class="container overflow-y-scroll" id="app">
     <!-- Header Section -->
     <header class="d-flex justify-content-between align-items-center py-3">
         <a href="{{ route('welcome') }}" class="d-flex align-items-center gap-2">
-            <img src="/build/assets/lemonade-logo.svg" alt="Lemonade Logo" height="40" width="40" />
-            <img src="/build/assets/icons/lemonade-black.svg" alt="Lemonade Text" class="lemonade-text" height="40" width="100" />
+            <img 
+                src="/build/assets/lemonade-logo.svg" 
+                alt="Lemonade Logo" 
+                height="40" 
+                width="40" 
+            />
+            <img 
+                src="/build/assets/icons/lemonade-black.svg" 
+                alt="Lemonade Text" 
+                class="lemonade-text" 
+                height="40" 
+                width="100" 
+            />
         </a>
 
         <button class="nav-item dropdown bg-pink-200 px-3 py-1 rounded-2xl">
@@ -51,7 +55,7 @@
     @if(session('expired'))
     <popup path="/build/assets/popups/sad-face.svg">
         <p>
-            Your subscription has expired. Please renew your subscription to continue.
+            {{ session('expired') }}
         </p>
     </popup>
     @endif
@@ -65,6 +69,6 @@
         <subscription-cards :subscriptions="{{ json_encode($subscriptions) }}" />
         
     </main>
-    
+
 </body>
 </html>

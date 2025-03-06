@@ -34,3 +34,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 // Google Auth Routes
 Route::get('auth/google/redirect', [GoogleController::class, 'redirect'])->name('google-auth');
 Route::get('auth/google/callback', [GoogleController::class, 'callback']);
+
+
+// Dashboard Route for testing
+Route::get('/dashboard', function () {
+    return view('dashboard');
+})->name('dashboard');

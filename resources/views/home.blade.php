@@ -12,7 +12,7 @@
                     @if(session('success_payment'))
                         <popup path="/build/assets/popups/like-popup.svg">
                             <p>
-                                Your Subscription is now Activated!
+                                {{ session('success_payment') }}
                             </p>
                         </popup>
                     @endif

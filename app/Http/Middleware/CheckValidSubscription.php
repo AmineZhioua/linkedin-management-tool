@@ -30,7 +30,7 @@ class CheckValidSubscription
 
         if (!$validSubscription) {
             return redirect()->route('subscriptions')
-                ->with('expired', 'Your subscription has expired. Please renew your subscription to continue.');
+                ->with('expired', 'Your subscription has expired. Please renew it to continue.');
         }
 
         return $next($request);
