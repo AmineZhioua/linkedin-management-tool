@@ -18,19 +18,8 @@
     <!-- Header Section -->
     <header class="d-flex justify-content-between align-items-center py-3">
         <a href="{{ route('welcome') }}" class="d-flex align-items-center gap-2">
-            <img 
-                src="/build/assets/lemonade-logo.svg" 
-                alt="Lemonade Logo" 
-                height="40" 
-                width="40" 
-            />
-            <img 
-                src="/build/assets/icons/lemonade-black.svg" 
-                alt="Lemonade Text" 
-                class="lemonade-text" 
-                height="40" 
-                width="100" 
-            />
+            <img src="/build/assets/lemonade-logo.svg" alt="Lemonade Logo" height="40" width="40" />
+            <img src="/build/assets/icons/lemonade-black.svg" alt="Lemonade Text" class="lemonade-text" height="40" width="100" />
         </a>
 
         <button class="nav-item dropdown bg-pink-200 px-3 py-1 rounded-2xl">
@@ -44,7 +33,6 @@
                     onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                     {{ __('Logout') }}
                 </a>
-
                 <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
                     @csrf
                 </form>
@@ -54,9 +42,7 @@
 
     @if(session('expired'))
     <popup path="/build/assets/popups/sad-face.svg">
-        <p>
-            {{ session('expired') }}
-        </p>
+        <p>{{ session('expired') }}</p>
     </popup>
     @endif
 
@@ -65,10 +51,17 @@
         <!-- Title -->
         <h1 class="text-black text-3xl font-bold text-center">Des tarifs abordables mais un suivi de qualité !</h1>
 
+        <!-- Coupon Code Input -->
+        <div class="mt-4 w-full text-center">
+            <input type="text" id="coupon-code" class="p-2 border rounded" placeholder="Entrez votre code promo">
+            <button id="apply-coupon" class="bg-green-500 text-white px-4 py-2 rounded">Appliquer</button>
+            <p id="coupon-message" class="text-red-500 mt-2"></p>
+        </div>
+
         <!-- Pricing Cards & Buttons Vue Component (SubscriptionCards.vue) -->
         <subscription-cards :subscriptions="{{ json_encode($subscriptions) }}" />
-        
     </main>
 
+    <!-- NO INLINE SCRIPT HERE - It's moved to the component -->
 </body>
 </html>

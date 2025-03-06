@@ -33,7 +33,6 @@
 
         <!-- Pricing Cards Section -->
         <div class="cards">
-            <!-- Cards -->
             <div class="container py-4">
                 <div class="row justify-content-center">
                     <div
@@ -55,17 +54,46 @@
                                     {{ subscription.name }}
                                 </h2>
 
-                                <!-- Price -->
+                                <!-- Price with discount display -->
                                 <h3
                                     class="fw-semibold text-muted text-2xl my-3 ml-2"
                                 >
-                                    {{
-                                        pricingMode === "mensuel"
-                                            ? subscription.monthly_price +
-                                              "€ /mois"
-                                            : subscription.yearly_price +
-                                              "€ /an"
-                                    }}
+                                    <template v-if="appliedDiscount.amount > 0">
+                                        <span
+                                            class="text-decoration-line-through me-2"
+                                        >
+                                            {{
+                                                pricingMode === "mensuel"
+                                                    ? subscription.monthly_price +
+                                                      "€"
+                                                    : subscription.yearly_price +
+                                                      "€"
+                                            }}
+                                        </span>
+                                        <span class="text-success">
+                                            {{
+                                                calculateDiscountedPrice(
+                                                    pricingMode === "mensuel"
+                                                        ? subscription.monthly_price
+                                                        : subscription.yearly_price
+                                                )
+                                            }}€
+                                            {{
+                                                pricingMode === "mensuel"
+                                                    ? "/mois"
+                                                    : "/an"
+                                            }}
+                                        </span>
+                                    </template>
+                                    <template v-else>
+                                        {{
+                                            pricingMode === "mensuel"
+                                                ? subscription.monthly_price +
+                                                  "€ /mois"
+                                                : subscription.yearly_price +
+                                                  "€ /an"
+                                        }}
+                                    </template>
                                 </h3>
 
                                 <!-- Subtitle -->
@@ -76,7 +104,7 @@
                                     }}
                                 </p>
 
-                                <!-- Button -->
+                                <!-- Subscription Form -->
                                 <form
                                     @submit.prevent="handleSubmit(subscription)"
                                 >
@@ -99,9 +127,11 @@
                                         type="hidden"
                                         name="price"
                                         :value="
-                                            pricingMode === 'mensuel'
-                                                ? subscription.monthly_price
-                                                : subscription.yearly_price
+                                            calculateDiscountedPrice(
+                                                pricingMode === 'mensuel'
+                                                    ? subscription.monthly_price
+                                                    : subscription.yearly_price
+                                            )
                                         "
                                     />
                                     <input
@@ -155,7 +185,7 @@
                                         class="d-flex align-items-center gap-2 mb-2"
                                     >
                                         <img
-                                            src="\build\assets\icons\check-green.svg"
+                                            src="/build/assets/icons/check-green.svg"
                                             alt="check-icon"
                                         />
                                         <span>{{ benefit }}</span>
@@ -173,6 +203,17 @@
                                         -{{ subscription.discount }}%
                                     </span>
                                 </div>
+
+                                <!-- Coupon Discount Badge -->
+                                <div
+                                    v-if="appliedDiscount.amount > 0"
+                                    class="position-absolute bottom-0 start-0 translate-middle-y ms-3"
+                                >
+                                    <span
+                                        class="badge bg-success rounded-pill px-3 py-2 fs-6"
+                                    >
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -183,7 +224,7 @@
 </template>
 
 <script>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import axios from "axios";
 
 export default {
@@ -193,10 +234,18 @@ export default {
             required: true,
         },
     },
-    
+
     setup() {
         const pricingMode = ref("mensuel");
-        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute("content");
+        const csrfToken = document
+            .querySelector('meta[name="csrf-token"]')
+            .getAttribute("content");
+
+        // Add new state for discount
+        const appliedDiscount = ref({
+            amount: 0,
+            type: "percentage",
+        });
 
         const setSubscriptionType = (type) => {
             pricingMode.value = type;
@@ -204,21 +253,97 @@ export default {
 
         const parsedBenefits = (benefits) => {
             try {
-                return Array.isArray(benefits) ? benefits : JSON.parse(benefits);
+                return Array.isArray(benefits)
+                    ? benefits
+                    : JSON.parse(benefits);
             } catch (error) {
                 console.error("Error parsing benefits:", error);
                 return [];
             }
         };
 
+        // Calculate price with discount applied
+        const calculateDiscountedPrice = (originalPrice) => {
+            originalPrice = parseFloat(originalPrice);
+            if (appliedDiscount.value.amount <= 0) {
+                return originalPrice;
+            }
+
+            if (appliedDiscount.value.type === "percentage") {
+                return Math.max(
+                    0,
+                    originalPrice -
+                        (originalPrice * appliedDiscount.value.amount) / 100
+                ).toFixed(2);
+            } else {
+                return Math.max(
+                    0,
+                    originalPrice - appliedDiscount.value.amount
+                ).toFixed(2);
+            }
+        };
+
+        // Set up coupon application handler
+        const setupCouponHandler = () => {
+            const applyButton = document.getElementById("apply-coupon");
+            if (!applyButton) return;
+
+            applyButton.addEventListener("click", function () {
+                const couponCode = document.getElementById("coupon-code").value;
+                const messageEl = document.getElementById("coupon-message");
+
+                axios
+                    .post(
+                        "/apply-coupon",
+                        { coupon_code: couponCode },
+                        {
+                            headers: {
+                                "X-CSRF-TOKEN": csrfToken,
+                                "Content-Type": "application/json",
+                            },
+                        }
+                    )
+                    .then((response) => {
+                        const data = response.data;
+                        if (data.success) {
+                            // Display success message
+                            messageEl.innerText = "Code promo appliqué !";
+                            messageEl.classList.remove("text-red-500");
+                            messageEl.classList.add("text-green-500");
+
+                            // Update the discount state
+                            appliedDiscount.value = {
+                                amount: data.discount,
+                                type: data.type,
+                            };
+                        } else {
+                            messageEl.innerText = data.error;
+                            messageEl.classList.add("text-red-500");
+                            messageEl.classList.remove("text-green-500");
+                        }
+                    })
+                    .catch((error) => {
+                        console.error("Error:", error);
+                        messageEl.innerText =
+                            "Une erreur s'est produite. Veuillez réessayer.";
+                        messageEl.classList.add("text-red-500");
+                    });
+            });
+        };
+
         const handleSubmit = async (subscription) => {
-            const price = pricingMode.value === "mensuel" ? subscription.monthly_price : subscription.yearly_price;
+            const basePrice =
+                pricingMode.value === "mensuel"
+                    ? subscription.monthly_price
+                    : subscription.yearly_price;
+
+            const finalPrice = calculateDiscountedPrice(basePrice);
 
             try {
                 const response = await axios.post("/session", {
                     _token: csrfToken,
                     title: subscription.name,
-                    price: price,
+                    price: finalPrice, // Use discounted price
                     pricingMode: pricingMode.value,
                     subscription_id: subscription.id,
                     linkedin: subscription.linkedin,
@@ -236,79 +361,84 @@ export default {
             }
         };
 
+        // Set up once the component is mounted
+        onMounted(() => {
+            setupCouponHandler();
+        });
+
         return {
             pricingMode,
             setSubscriptionType,
             parsedBenefits,
             handleSubmit,
             csrfToken,
+            calculateDiscountedPrice,
+            appliedDiscount,
         };
     },
 };
 </script>
 
-
-
 <style scoped>
-    .cards-container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 30px;
-    }
+.cards-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+}
 
-    .cards {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 30px;
-    }
+.cards {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 30px;
+}
 
+.card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-radius: 1rem;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+}
+
+.card.highlight {
+    border: 2px solid #0d6efd !important;
+    transform: scale(1.05);
+}
+
+@media (max-width: 768px) {
     .card {
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-        border-radius: 1rem;
+        margin-bottom: 2rem;
     }
+}
 
-    .card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
-    }
+.pricing-toggle-container {
+    margin: 2rem 0;
+}
 
-    .card.highlight {
-        border: 2px solid #0d6efd !important;
-        transform: scale(1.05);
-    }
+.btn-active {
+    background: linear-gradient(
+        135deg,
+        rgb(255 16 185) 0%,
+        rgb(255 125 82) 100%
+    );
+    font-weight: 600;
+    box-shadow: 0 2px 5px rgba(79, 70, 229, 0.3);
+    transition: all 0.3s ease;
+}
 
-    @media (max-width: 768px) {
-        .card {
-            margin-bottom: 2rem;
-        }
-    }
+.btn-inactive {
+    background: transparent;
+    color: #6b7280;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
 
-    .pricing-toggle-container {
-        margin: 2rem 0;
-    }
-
-    .btn-active {
-        background: linear-gradient(
-            135deg,
-            rgb(255 16 185) 0%,
-            rgb(255 125 82) 100%
-        );
-        font-weight: 600;
-        box-shadow: 0 2px 5px rgba(79, 70, 229, 0.3);
-        transition: all 0.3s ease;
-    }
-
-    .btn-inactive {
-        background: transparent;
-        color: #6b7280;
-        font-weight: 500;
-        transition: all 0.3s ease;
-    }
-
-    .btn-inactive:hover {
-        background: rgba(255, 16, 183, 0.236);
-        color: white;
-    }
+.btn-inactive:hover {
+    background: rgba(255, 16, 183, 0.236);
+    color: white;
+}
 </style>
