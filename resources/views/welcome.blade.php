@@ -15,19 +15,18 @@
         <x-header />
 
         <!-- Main Content -->
-        <main class="container main-content text-white py-5">
+        <main class="container main-content text-white py-2">
             <!-- Line at the Top -->
             <span class="top-line"></span>
 
-            <div class="d-flex align-items-center justify-content-between">
+            <div class="d-flex justify-content-between align-items-center py-3">
                 <!-- Text Content -->
-                <div class="flex-grow-1">
-                    <h1 class="display-4 fw-bold">Créer et organiser</h1>
-                    <h2 class="highlight-text">votre communication</h2>
-                    <h1 class="display-4 fw-bold">digitale.</h1>
-                    <p class="lead">
-                        Devenez un pro en programmant et personnalisant vos
-                        prochains posts.
+                <div class="text-white flex-grow-1">
+                    <h1 class="fw-bold text-5xl">Créer et organiser</h1>
+                    <h2 class="highlight-text my-4">votre communication</h2>
+                    <h1 class="fw-bold text-5xl">digitale.</h1>
+                    <p class="lead fw-semibold mt-4 text-lg">
+                        Devenez un pro en programmant et personnalisant <br>vos prochains posts.
                     </p>
                 </div>
 

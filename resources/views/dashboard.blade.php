@@ -22,6 +22,15 @@
             justify-content: space-between;
             overflow: hidden;
         }
+
+        .top-line {
+            position: absolute;
+            transform: translateX(-50%);
+            height: 0.5px;
+            width: 1000%;
+            background-color: rgb(161, 159, 159);
+            top: 0;
+        }
     </style>
 </head>
 <body>
@@ -30,9 +39,13 @@
         <x-header />
 
         <!-- Main Content Section -->
-        <main class="container flex flex-col justify-content-between">
+        <main class="container">
+
             <!-- Landing Section -->
-            <div class="d-flex justify-content-between align-items-center py-3 relative">
+            <div class="d-flex justify-content-between align-items-center py-4 relative">
+                <!-- Top Line -->
+                <span class="top-line"></span>
+
                 <!-- Main Text Section -->
                 <div class="text-white flex-grow-1">
                     <h1 class="fw-bold text-5xl">Bienvenue sur ton</h1>
@@ -50,6 +63,7 @@
                     alt="dashboard" 
                     height="400" 
                     width="420"
+                    class="dashboard-img"
                 />
 
                 <div id="circle-container" class="flex absolute bottom-[-8%] left-[-120px]" style="z-index: -1;">
@@ -69,10 +83,10 @@
 
     <!-- Tasks Section -->
     <div class="container">
-    <div class="flex justify-content-between">
-        <h1 class="text-black">Taches à Réaliser</h1>
-        <button class="bg-white text-black">Ajouter</button>
-    </div>
+        <div class="flex justify-content-between">
+            <h1 class="text-black">Taches à Réaliser</h1>
+            <button class="bg-white text-black">Ajouter</button>
+        </div>
     </div>
 </body>
 </html>
