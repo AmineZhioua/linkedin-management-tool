@@ -41,3 +41,7 @@ Route::get('auth/google/callback', [GoogleController::class, 'callback']);
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->name('dashboard');
+
+
+// LinkedIn Auth Route
+Route::get('/login-linkedin', [App\Http\Controllers\LinkedInController::class, 'index'])->name('login-linkedin');
