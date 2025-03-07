@@ -55,19 +55,12 @@
                                 </h2>
 
                                 <!-- Price with discount display -->
-                                <h3
-                                    class="fw-semibold text-muted text-2xl my-3 ml-2"
-                                >
+                                <h3 class="fw-semibold text-muted text-2xl my-3 ml-2">
                                     <template v-if="appliedDiscount.amount > 0">
-                                        <span
-                                            class="text-decoration-line-through me-2"
-                                        >
+                                        <span class="text-decoration-line-through me-2">
                                             {{
-                                                pricingMode === "mensuel"
-                                                    ? subscription.monthly_price +
-                                                      "€"
-                                                    : subscription.yearly_price +
-                                                      "€"
+                                                pricingMode === "mensuel" ? subscription.monthly_price + "€" 
+                                                    : subscription.yearly_price + "€"
                                             }}
                                         </span>
                                         <span class="text-success">
@@ -98,16 +91,11 @@
 
                                 <!-- Subtitle -->
                                 <p class="text-muted mb-4">
-                                    {{
-                                        subscription.description ||
-                                        "Offert pour ton abonnement"
-                                    }}
+                                    {{ subscription.description }}
                                 </p>
 
                                 <!-- Subscription Form -->
-                                <form
-                                    @submit.prevent="handleSubmit(subscription)"
-                                >
+                                <form @submit.prevent="handleSubmit(subscription)">
                                     <input
                                         type="hidden"
                                         name="_token"
@@ -126,13 +114,11 @@
                                     <input
                                         type="hidden"
                                         name="price"
-                                        :value="
-                                            calculateDiscountedPrice(
+                                        :value="calculateDiscountedPrice(
                                                 pricingMode === 'mensuel'
                                                     ? subscription.monthly_price
                                                     : subscription.yearly_price
-                                            )
-                                        "
+                                            )"
                                     />
                                     <input
                                         type="hidden"
@@ -178,9 +164,7 @@
 
                                 <ul class="list-unstyled">
                                     <li
-                                        v-for="(benefit, idx) in parsedBenefits(
-                                            subscription.features
-                                        )"
+                                        v-for="(benefit, idx) in parsedBenefits(subscription.features)"
                                         :key="idx"
                                         class="d-flex align-items-center gap-2 mb-2"
                                     >
@@ -193,25 +177,11 @@
                                 </ul>
 
                                 <!-- Discount Badge -->
-                                <div
-                                    v-if="subscription.discount"
+                                <div v-if="subscription.discount" 
                                     class="position-absolute top-0 end-0 translate-middle-y me-3"
                                 >
-                                    <span
-                                        class="badge bg-red-600 rounded-pill px-3 py-2 fs-6"
-                                    >
+                                    <span class="badge bg-red-600 rounded-pill px-3 py-2 fs-6">
                                         -{{ subscription.discount }}%
-                                    </span>
-                                </div>
-
-                                <!-- Coupon Discount Badge -->
-                                <div
-                                    v-if="appliedDiscount.amount > 0"
-                                    class="position-absolute bottom-0 start-0 translate-middle-y ms-3"
-                                >
-                                    <span
-                                        class="badge bg-success rounded-pill px-3 py-2 fs-6"
-                                    >
                                     </span>
                                 </div>
                             </div>
@@ -237,9 +207,7 @@ export default {
 
     setup() {
         const pricingMode = ref("mensuel");
-        const csrfToken = document
-            .querySelector('meta[name="csrf-token"]')
-            .getAttribute("content");
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute("content");
 
         // Add new state for discount
         const appliedDiscount = ref({
@@ -270,16 +238,9 @@ export default {
             }
 
             if (appliedDiscount.value.type === "percentage") {
-                return Math.max(
-                    0,
-                    originalPrice -
-                        (originalPrice * appliedDiscount.value.amount) / 100
-                ).toFixed(2);
+                return Math.max(0, originalPrice - (originalPrice * appliedDiscount.value.amount) / 100).toFixed(2);
             } else {
-                return Math.max(
-                    0,
-                    originalPrice - appliedDiscount.value.amount
-                ).toFixed(2);
+                return Math.max(0, originalPrice - appliedDiscount.value.amount).toFixed(2);
             }
         };
 
@@ -292,18 +253,14 @@ export default {
                 const couponCode = document.getElementById("coupon-code").value;
                 const messageEl = document.getElementById("coupon-message");
 
-                axios
-                    .post(
-                        "/apply-coupon",
-                        { coupon_code: couponCode },
+                axios.post("/apply-coupon", { coupon_code: couponCode },
                         {
                             headers: {
                                 "X-CSRF-TOKEN": csrfToken,
                                 "Content-Type": "application/json",
                             },
                         }
-                    )
-                    .then((response) => {
+                    ).then((response) => {
                         const data = response.data;
                         if (data.success) {
                             // Display success message
@@ -321,11 +278,8 @@ export default {
                             messageEl.classList.add("text-red-500");
                             messageEl.classList.remove("text-green-500");
                         }
-                    })
-                    .catch((error) => {
-                        console.error("Error:", error);
-                        messageEl.innerText =
-                            "Une erreur s'est produite. Veuillez réessayer.";
+                    }).catch(() => {
+                        messageEl.innerText = "Une erreur s'est produite. Veuillez réessayer plus tard.";
                         messageEl.classList.add("text-red-500");
                     });
             });
@@ -343,7 +297,7 @@ export default {
                 const response = await axios.post("/session", {
                     _token: csrfToken,
                     title: subscription.name,
-                    price: finalPrice, // Use discounted price
+                    price: finalPrice,
                     pricingMode: pricingMode.value,
                     subscription_id: subscription.id,
                     linkedin: subscription.linkedin,
@@ -353,15 +307,11 @@ export default {
 
                 window.location.href = response.data.url;
             } catch (error) {
-                console.error(
-                    "Error:",
-                    error.response ? error.response.data : error.message
-                );
-                alert("An error occurred. Please try again.");
+                console.error("Error:", error.response ? error.response.data : error.message);
+                alert("Une erreur s'est produite. Veuillez réessayer plus tard.");
             }
         };
 
-        // Set up once the component is mounted
         onMounted(() => {
             setupCouponHandler();
         });
@@ -380,65 +330,65 @@ export default {
 </script>
 
 <style scoped>
-.cards-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 30px;
-}
-
-.cards {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 30px;
-}
-
-.card {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    border-radius: 1rem;
-}
-
-.card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
-}
-
-.card.highlight {
-    border: 2px solid #0d6efd !important;
-    transform: scale(1.05);
-}
-
-@media (max-width: 768px) {
-    .card {
-        margin-bottom: 2rem;
+    .cards-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 30px;
     }
-}
 
-.pricing-toggle-container {
-    margin: 2rem 0;
-}
+    .cards {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 30px;
+    }
 
-.btn-active {
-    background: linear-gradient(
-        135deg,
-        rgb(255 16 185) 0%,
-        rgb(255 125 82) 100%
-    );
-    font-weight: 600;
-    box-shadow: 0 2px 5px rgba(79, 70, 229, 0.3);
-    transition: all 0.3s ease;
-}
+    .card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border-radius: 1rem;
+    }
 
-.btn-inactive {
-    background: transparent;
-    color: #6b7280;
-    font-weight: 500;
-    transition: all 0.3s ease;
-}
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+    }
 
-.btn-inactive:hover {
-    background: rgba(255, 16, 183, 0.236);
-    color: white;
-}
+    .card.highlight {
+        border: 2px solid #0d6efd !important;
+        transform: scale(1.05);
+    }
+
+    @media (max-width: 768px) {
+        .card {
+            margin-bottom: 2rem;
+        }
+    }
+
+    .pricing-toggle-container {
+        margin: 2rem 0;
+    }
+
+    .btn-active {
+        background: linear-gradient(
+            135deg,
+            rgb(255 16 185) 0%,
+            rgb(255 125 82) 100%
+        );
+        font-weight: 600;
+        box-shadow: 0 2px 5px rgba(79, 70, 229, 0.3);
+        transition: all 0.3s ease;
+    }
+
+    .btn-inactive {
+        background: transparent;
+        color: #6b7280;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .btn-inactive:hover {
+        background: rgba(255, 16, 183, 0.236);
+        color: white;
+    }
 </style>

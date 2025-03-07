@@ -53,8 +53,18 @@
 
         <!-- Coupon Code Input -->
         <div class="mt-4 w-full text-center">
-            <input type="text" id="coupon-code" class="p-2 border rounded" placeholder="Entrez votre code promo">
-            <button id="apply-coupon" class="bg-green-500 text-white px-4 py-2 rounded">Appliquer</button>
+            <input 
+                type="text" 
+                id="coupon-code" 
+                class="py-2 px-6 border rounded-full mr-2" 
+                placeholder="Entrez votre Code Promo"
+            />
+            <button 
+                id="apply-coupon" 
+                class="bg-pink-300 text-white px-4 py-2 rounded-full"
+            >
+                Appliquer
+            </button>
             <p id="coupon-message" class="text-red-500 mt-2"></p>
         </div>
 

@@ -42,27 +42,18 @@ public function applyCoupon(Request $request) {
         $price = floatval($request->get('price'));
         $pricingMode = $request->get('pricingMode');
         $subscriptionId = $request->get('subscription_id');
-        $discount = 0;
-
-        $couponCode = session('applied_coupon');
+        $discount = $request->get('discount');
 
         $subscription = Subscription::find($subscriptionId);
         if (!$subscription) {
-            return response()->json(['error' => 'Subscription not found'], 404);
+            return redirect()->route('subscriptions')
+                ->with('subscription_notfound', "Abonnement supprimé ou n'est pas trouvé!");
         }
-
-        if (!empty($couponCode)) {
-            $coupon = Coupon::where('code', $couponCode)->first();
-            if ($coupon && $coupon->isValid()) {
-                $discount = ($coupon->type === 'percentage') 
-                    ? ($price * $coupon->discount) / 100 
-                    : $coupon->discount;
-            } else {
-                session()->forget('applied_coupon');
-            }
+        
+        // Apply Discount if available
+        if ($discount > 0) {
+            $price = $price - ($price * $discount / 100);
         }
-
-        $finalPrice = max(0, $price - $discount);
 
         try {
             $checkout_session = Session::create([
@@ -70,7 +61,7 @@ public function applyCoupon(Request $request) {
                     'price_data' => [
                         'currency' => 'eur',
                         'product_data' => ['name' => $subscription->name],
-                        'unit_amount' => intval($finalPrice * 100),
+                        'unit_amount' => intval($price * 100),
                     ],
                     'quantity' => 1,
                 ]],
@@ -80,12 +71,15 @@ public function applyCoupon(Request $request) {
             ]);
 
             return response()->json(['url' => $checkout_session->url]);
+
         } catch (\Exception $e) {
-            Log::error('Stripe Checkout Error: ' . $e->getMessage());
-            return response()->json(['error' => 'An error occurred while creating the checkout session.'], 500);
+            return redirect()->route('subscriptions')
+                ->with('payment_error', "Une Erreur s'est produite! Réessayez plus tard.");
         }
     }
 
+
+    // Success Payment Function
     public function success(Request $request) {
         $userId = Auth::id();
         $pricingMode = $request->query('pricingMode');
@@ -93,22 +87,28 @@ public function applyCoupon(Request $request) {
 
         $subscription = Subscription::find($subscriptionId);
         if (!$subscription) {
-            return redirect()->route('subscriptions')->with('error', 'Subscription not found!');
+            return redirect()->route('subscriptions')
+                ->with('subscription_notfound', "Abonnement supprimé ou n'est pas trouvé!");
         }
 
         $expirationDate = ($pricingMode === 'mensuel') ? Carbon::now()->addMonth() : Carbon::now()->addYear();
 
         UserSubscription::updateOrCreate(
-            ['user_id' => $userId, 'subscription_id' => $subscription->id],
+            [
+                'user_id' => $userId, 
+                'subscription_id' => $subscription->id
+            ],
             ['date_expiration' => $expirationDate]
         );
 
-        session()->forget(['subscription_id', 'subscription_pricing_mode', 'applied_coupon']);
+        session()->forget(['subscription_id', 'pricingMode']);
 
-        return redirect()->route('home')->with('success_payment', 'Your Subscription is now Activated!');
+        return redirect()->route('home')->with('success_payment', 'Votre Abonnement  est maintenant Activé!');
     }
 
+
+
     public function cancel() {
-        return redirect()->route('subscriptions')->with('cancel_payment', 'Subscription Cancelled!');
+        return redirect()->route('subscriptions')->with('cancel_payment', 'Abonnement Annulé!');
     }
 }
