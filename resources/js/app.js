@@ -4,13 +4,7 @@ import "bootstrap";
 import SubscriptionCards from "./components/SubscriptionCards.vue";
 import Popup from "./components/Popup.vue";
 
-const app = createApp({
-    data() {
-        return {
-            subscriptions: window.subscriptions, // Accessing subscriptions from the global window object
-        };
-    },
-});
+const app = createApp();
 
 app.component("subscription-cards", SubscriptionCards);
 app.component("popup", Popup);

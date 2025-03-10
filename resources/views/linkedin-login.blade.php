@@ -77,7 +77,7 @@
                         height="30" 
                         width="30"
                     />
-                    <a href="#" class="text-decoration-none text-black">
+                    <a href="{{ route('linkedin.auth') }}" class="text-decoration-none text-black">
                         Se Connecter avec LinkedIn
                     </a>
                 </button>
