@@ -11,6 +11,7 @@ class LinkedinUser extends Model
         'linkedin_id',
         'linkedin_firstname',
         'linkedin_lastname',
+        'linkedin_picture',
         'linkedin_token',
         'linkedin_refresh_token',
     ];

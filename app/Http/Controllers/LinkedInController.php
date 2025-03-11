@@ -41,7 +41,7 @@ class LinkedInController extends Controller
             $state = $request->query('state');
     
             if (!$code || !$state) {
-                return redirect()->route('subscription')
+                return redirect()->route('subscriptions')
                     ->with('linkedin_error', 'Invalid LinkedIn authorization response.');
             }
     
@@ -59,7 +59,7 @@ class LinkedInController extends Controller
             ]);
     
             if ($response->failed()) {
-                return redirect()->route('subscription')
+                return redirect()->route('subscriptions')
                     ->with('linkedin_error', 'Failed to retrieve access token from LinkedIn.');
             }
     
@@ -68,17 +68,17 @@ class LinkedInController extends Controller
             $refresh_token = $data['refresh_token'] ?? null;
     
             if (!$access_token) {
-                return redirect()->route('subscription')
+                return redirect()->route('subscriptions')
                     ->with('linkedin_error', 'Failed to retrieve access token.');
             }
     
             // Fetch LinkedIn user profile
             $profileResponse = Http::withHeaders([
                 'Authorization' => "Bearer $access_token",
-            ])->get('https://api.linkedin.com/v2/me');
+            ])->get('https://api.linkedin.com/v2/me?projection=(id,localizedFirstName,localizedLastName,profilePicture(displayImage~:playableStreams))');
     
             if ($profileResponse->failed()) {
-                return redirect()->route('subscription')
+                return redirect()->route('subscriptions')
                     ->with('linkedin_error', 'Failed to fetch LinkedIn profile.');
             }
     
@@ -86,10 +86,11 @@ class LinkedInController extends Controller
             $linkedin_id = $linkedinUser['id'] ?? null;
             $linkedin_firstname = $linkedinUser['localizedFirstName'] ?? null;
             $linkedin_lastname = $linkedinUser['localizedLastName'] ?? null;
-            $linkedin_picture = $linkedinUser['profilePicture']['displayImage'] ?? null;
+            $linkedin_picture = $linkedinUser['profilePicture']['displayImage~']['elements'][0]['identifiers'][0]['identifier'] ?? null;
+            // dd($linkedinUser);
     
-            if (!$linkedin_id || !$linkedin_firstname || !$linkedin_lastname) {
-                return redirect()->route('subscription')
+            if (!$linkedin_id || !$linkedin_firstname || !$linkedin_lastname || !$linkedin_picture) {
+                return redirect()->route('subscriptions')
                     ->with('linkedin_error', 'Une erreur s\'est produite lors de la récupération des données.');
             }
     
@@ -106,6 +107,7 @@ class LinkedInController extends Controller
                     'linkedin_id' => $linkedin_id,
                     'linkedin_firstname' => $linkedin_firstname,
                     'linkedin_lastname' => $linkedin_lastname,
+                    'linkedin_picture' => $linkedin_picture,
                     'linkedin_token' => $access_token,
                     'linkedin_refresh_token' => $refresh_token,
                 ]);
@@ -115,6 +117,7 @@ class LinkedInController extends Controller
                     'linkedin_id' => $linkedin_id,
                     'linkedin_firstname' => $linkedin_firstname,
                     'linkedin_lastname' => $linkedin_lastname,
+                    'linkedin_picture' => $linkedin_picture,
                     'linkedin_token' => $access_token,
                     'linkedin_refresh_token' => $refresh_token,
                 ]);
@@ -123,7 +126,7 @@ class LinkedInController extends Controller
             return redirect()->route('home')->with('linkedin_success', 'Votre compte LinkedIn a été lié avec succès !');
     
         } catch (\Exception $e) {
-            return redirect()->route('subscription')
+            return redirect()->route('subscriptions')
                 ->with('linkedin_error', 'Une erreur s\'est produite : ' . $e->getMessage());
         }
     }
