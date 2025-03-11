@@ -60,6 +60,13 @@
             />
         </div>
 
+        <!-- Display this Popup whenever a LinkedIn Error Occurs (Popup.vue) -->
+        @if(session('linkedin_error'))
+        <popup path="/build/assets/popups/sad-face.svg">
+            <p>{{ session('linkedin_error') }}</p>
+        </popup>
+        @endif
+
         <!-- Form Side -->
         <div class="d-flex flex-grow-1 flex-col align-items-center justify-content-center form-side">
             <!-- Text -->

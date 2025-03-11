@@ -47,13 +47,6 @@
     </popup>
     @endif
 
-    <!-- Display this Popup whenever a LinkedIn Error Occurs (Popup.vue) -->
-    @if(session('linkedin_error'))
-    <popup path="/build/assets/popups/sad-face.svg">
-        <p>{{ session('linkedin_error') }}</p>
-    </popup>
-    @endif
-
     <!-- Pricing Section -->
     <main class="d-flex justify-content-center align-items-center flex-col mt-4 relative">
         <!-- Title -->

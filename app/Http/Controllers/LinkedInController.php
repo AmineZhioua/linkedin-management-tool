@@ -59,8 +59,8 @@ class LinkedInController extends Controller
             ]);
     
             if ($response->failed()) {
-                return redirect()->route('subscriptions')
-                    ->with('linkedin_error', 'Failed to retrieve access token from LinkedIn.');
+                return redirect()->route('login-linkedin')
+                    ->with('linkedin_error', 'Une erreur s\'est produite! Réessayer plus tard.');
             }
     
             $data = $response->json();
@@ -68,8 +68,8 @@ class LinkedInController extends Controller
             $refresh_token = $data['refresh_token'] ?? null;
     
             if (!$access_token) {
-                return redirect()->route('subscriptions')
-                    ->with('linkedin_error', 'Failed to retrieve access token.');
+                return redirect()->route('login-linkedin')
+                    ->with('linkedin_error', 'Une erreur s\'est produite! Veuillez réessayer plus tard.');
             }
     
             // Fetch LinkedIn user profile
@@ -78,8 +78,8 @@ class LinkedInController extends Controller
             ])->get('https://api.linkedin.com/v2/me?projection=(id,localizedFirstName,localizedLastName,profilePicture(displayImage~:playableStreams))');
     
             if ($profileResponse->failed()) {
-                return redirect()->route('subscriptions')
-                    ->with('linkedin_error', 'Failed to fetch LinkedIn profile.');
+                return redirect()->route('login-linkedin')
+                    ->with('linkedin_error', 'Une erreur s\'est produite lors de la récupération des données.');
             }
     
             $linkedinUser = $profileResponse->json();
@@ -90,7 +90,7 @@ class LinkedInController extends Controller
             // dd($linkedinUser);
     
             if (!$linkedin_id || !$linkedin_firstname || !$linkedin_lastname || !$linkedin_picture) {
-                return redirect()->route('subscriptions')
+                return redirect()->route('login-linkedin')
                     ->with('linkedin_error', 'Une erreur s\'est produite lors de la récupération des données.');
             }
     
@@ -126,7 +126,7 @@ class LinkedInController extends Controller
             return redirect()->route('home')->with('linkedin_success', 'Votre compte LinkedIn a été lié avec succès !');
     
         } catch (\Exception $e) {
-            return redirect()->route('subscriptions')
+            return redirect()->route('login-linkedin')
                 ->with('linkedin_error', 'Une erreur s\'est produite : ' . $e->getMessage());
         }
     }
