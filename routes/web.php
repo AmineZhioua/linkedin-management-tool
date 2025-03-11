@@ -26,7 +26,7 @@ Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name
 // Route for Handling Subscription page, Payment and Cancelation
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/session', [StripeController::class, 'session'])->name('session');
-    Route::get('success', [StripeController::class, 'success'])->name('success');
+    Route::get('/success', [StripeController::class, 'success'])->name('success');
     Route::get('/cancel', [StripeController::class, 'cancel'])->name('cancel');
     Route::get('/subscriptions', [SubscriptionController::class, 'index'])->name('subscriptions');
 });
@@ -44,6 +44,8 @@ Route::get('/dashboard', function () {
 
 
 // LinkedIn Auth Route
-Route::get('/login-linkedin', [App\Http\Controllers\LinkedInController::class, 'index'])->name('login-linkedin');
-Route::get('/linkedin/auth', [App\Http\Controllers\LinkedInController::class, 'redirect'])->name('linkedin.auth');
-Route::get('/linkedin/callback', [App\Http\Controllers\LinkedInController::class, 'callback'])->name('linkedin.callback');
+Route::middleware(['auth', 'verified', 'linkedin.valid'])->group(function() {
+    Route::get('/login-linkedin', [App\Http\Controllers\LinkedInController::class, 'index'])->name('login-linkedin');
+    Route::get('/linkedin/auth', [App\Http\Controllers\LinkedInController::class, 'redirect'])->name('linkedin.auth');
+    Route::get('/linkedin/callback', [App\Http\Controllers\LinkedInController::class, 'callback'])->name('linkedin.callback');
+});
