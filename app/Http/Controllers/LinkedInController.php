@@ -26,20 +26,7 @@ class LinkedInController extends Controller
             'client_id' => $client_id,
             'redirect_uri' => route('linkedin.callback'),
             'state' => 'random_string',
-            'scope' => 
-                'openid 
-                profile 
-                r_basicprofile 
-                r_ads_reporting
-                w_member_social
-                r_ads
-                rw_ads
-                r_organization_admin
-                email
-                r_1st_connections_size
-                r_organization_social 
-                w_organization_social 
-                rw_organization_admin',
+            'scope' => 'r_basicprofile r_organization_social w_organization_social rw_organization_admin',
         ]);
 
         return redirect($url . '?' . $query);
@@ -97,10 +84,13 @@ class LinkedInController extends Controller
     
             $linkedinUser = $profileResponse->json();
             $linkedin_id = $linkedinUser['id'] ?? null;
+            $linkedin_firstname = $linkedinUser['localizedFirstName'] ?? null;
+            $linkedin_lastname = $linkedinUser['localizedLastName'] ?? null;
+            $linkedin_picture = $linkedinUser['profilePicture']['displayImage'] ?? null;
     
-            if (!$linkedin_id) {
+            if (!$linkedin_id || !$linkedin_firstname || !$linkedin_lastname) {
                 return redirect()->route('subscription')
-                    ->with('linkedin_error', 'Failed to retrieve LinkedIn user ID.');
+                    ->with('linkedin_error', 'Une erreur s\'est produite lors de la récupération des données.');
             }
     
             // Link LinkedIn account to the authenticated user
@@ -114,6 +104,8 @@ class LinkedInController extends Controller
             if ($existingLinkedinUser) {
                 $existingLinkedinUser->update([
                     'linkedin_id' => $linkedin_id,
+                    'linkedin_firstname' => $linkedin_firstname,
+                    'linkedin_lastname' => $linkedin_lastname,
                     'linkedin_token' => $access_token,
                     'linkedin_refresh_token' => $refresh_token,
                 ]);
@@ -121,6 +113,8 @@ class LinkedInController extends Controller
                 LinkedinUser::create([
                     'user_id' => $userId,
                     'linkedin_id' => $linkedin_id,
+                    'linkedin_firstname' => $linkedin_firstname,
+                    'linkedin_lastname' => $linkedin_lastname,
                     'linkedin_token' => $access_token,
                     'linkedin_refresh_token' => $refresh_token,
                 ]);

@@ -39,10 +39,18 @@
             </div>
         </button>
     </header>
-
+    
+    <!-- Display this Popup whenever the User subscription expires (Popup.vue) -->
     @if(session('expired'))
     <popup path="/build/assets/popups/sad-face.svg">
         <p>{{ session('expired') }}</p>
+    </popup>
+    @endif
+
+    <!-- Display this Popup whenever a LinkedIn Error Occurs (Popup.vue) -->
+    @if(session('linkedin_error'))
+    <popup path="/build/assets/popups/sad-face.svg">
+        <p>{{ session('linkedin_error') }}</p>
     </popup>
     @endif
 

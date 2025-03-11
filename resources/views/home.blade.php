@@ -16,6 +16,15 @@
                             </p>
                         </popup>
                     @endif
+
+                    <!-- Alert When the User successfully links his LinkedIn Account (Popup.vue) Component -->
+                    @if(session('linkedin_success'))
+                        <popup path="/build/assets/popups/like-popup.svg">
+                            <p>
+                                {{ session('linkedin_success') }}
+                            </p>
+                        </popup>
+                    @endif
                     
                     @if(session('status'))
                         <div class="alert alert-success" role="alert">

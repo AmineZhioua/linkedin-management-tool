@@ -15,6 +15,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('linkedin_id')->nullable()->unique();
+            $table->string('linkedin_firstname')->nullable();
+            $table->string('linkedin_lastname')->nullable();
             $table->text('linkedin_token')->nullable();
             $table->text('linkedin_refresh_token')->nullable();
             $table->timestamps();
