@@ -19,25 +19,21 @@ class LinkedinValid
             return redirect()->route('login');
         }
 
-        // Get all user subscriptions
         $userSubscriptions = UserSubscription::where('user_id', $userId)
             ->whereDate('date_expiration', '>', Carbon::now())
             ->get();
 
-        $hasValidLinkedinSubscription = false;
-
-        foreach ($userSubscriptions as $userSubscription) {
-            $subscription = Subscription::find($userSubscription->subscription_id);
-
-            if ($subscription && $subscription->linkedin) {
-                $hasValidLinkedinSubscription = true;
-                break;
-            }
-        }
+        // THIS CODE BELOW WAS CHANGED FOR REASONS OF PERFORMANCE
+        // Check if the user has at least one valid LinkedIn subscription
+        $hasValidLinkedinSubscription = UserSubscription::join('subscriptions', 'user_subscriptions.subscription_id', '=', 'subscriptions.id')
+            ->where('user_subscriptions.user_id', $userId)
+            ->whereDate('user_subscriptions.date_expiration', '>', Carbon::now())
+            ->where('subscriptions.linkedin', true)
+            ->exists();
 
         if (!$hasValidLinkedinSubscription) {
             return redirect()->route('subscriptions')
-                ->with('linkedin_error', 'Vous devez souscrire à un abonnement LinkedIn pour continuer.');
+                ->with('linkedin_error', 'Vous devez souscrire à un nouveau abonnement LinkedIn pour continuer.');
         }
 
         return $next($request);
