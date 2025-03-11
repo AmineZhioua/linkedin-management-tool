@@ -18,11 +18,7 @@ class LinkedinValid
         if (!$userId) {
             return redirect()->route('login');
         }
-
-        $userSubscriptions = UserSubscription::where('user_id', $userId)
-            ->whereDate('date_expiration', '>', Carbon::now())
-            ->get();
-
+        
         // THIS CODE BELOW WAS CHANGED FOR REASONS OF PERFORMANCE
         // Check if the user has at least one valid LinkedIn subscription
         $hasValidLinkedinSubscription = UserSubscription::join('subscriptions', 'user_subscriptions.subscription_id', '=', 'subscriptions.id')
