@@ -83,7 +83,7 @@
                 </button>
             </div>
 
-            <p class="text-black mt-2">
+            <p class="text-black mt-2 text-center">
                 <u>Cette étape est obligatoire pour la création de ton dashboard</u>
             </p>
         </div>
