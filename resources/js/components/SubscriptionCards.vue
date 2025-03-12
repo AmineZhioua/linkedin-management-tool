@@ -2,9 +2,7 @@
     <div class="cards-container">
         <!-- Subscription Type Buttons Section -->
         <div class="pricing-toggle-container text-center mt-4 mb-0">
-            <div
-                class="d-inline-flex bg-light p-1 rounded-pill shadow-sm gap-3"
-            >
+            <div class="d-inline-flex bg-light p-1 rounded-pill shadow-sm gap-3">
                 <button
                     class="btn rounded-pill px-4 py-2 position-relative"
                     :class="
@@ -141,11 +139,13 @@
                                         :value="subscription.discount"
                                     />
 
+                                    <!-- Conditionally Render Button -->
                                     <button
                                         type="submit"
                                         class="btn text-white bg-black w-100 rounded-pill py-2 fw-medium"
+                                        :disabled="isSubscribed(subscription.id, pricingMode)"
                                     >
-                                        Démarrer
+                                        {{ isSubscribed(subscription.id, pricingMode) ? "Déja Activé" : "Démarrer" }}
                                     </button>
                                 </form>
 
@@ -154,12 +154,7 @@
 
                                 <!-- Features List -->
                                 <p class="fw-medium mb-3">
-                                    {{
-                                        subscription.name ===
-                                        "Création Dashboard"
-                                            ? "Création d'un dashboard 100% en ligne"
-                                            : "Fonctionnalités incluses"
-                                    }}
+                                    Fonctionnalités incluses
                                 </p>
 
                                 <ul class="list-unstyled">
@@ -203,9 +198,13 @@ export default {
             type: Array,
             required: true,
         },
+        userSubscriptions: {
+            type: Array,
+            required: false,
+        },
     },
 
-    setup() {
+    setup(props) {
         const pricingMode = ref("mensuel");
         const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute("content");
 
@@ -214,6 +213,15 @@ export default {
             amount: 0,
             type: "percentage",
         });
+
+        // Check if the user is already subscribed to a specific subscription
+        const isSubscribed = (subscriptionId, pricingMode) => {
+            return Array.isArray(props.userSubscriptions) && 
+                props.userSubscriptions.some(sub => 
+                    sub.subscription_id === subscriptionId && 
+                    sub.pricing_mode === pricingMode
+                );
+        };
 
         const setSubscriptionType = (type) => {
             pricingMode.value = type;
@@ -324,6 +332,7 @@ export default {
             csrfToken,
             calculateDiscountedPrice,
             appliedDiscount,
+            isSubscribed, // Add the new method
         };
     },
 };

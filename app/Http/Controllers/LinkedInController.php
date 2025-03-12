@@ -1,7 +1,6 @@
 <?php
 
 namespace App\Http\Controllers;
-use Laravel\Socialite\Facades\Socialite;
 use Illuminate\Http\Request;
 use App\Models\LinkedinUser;
 use Illuminate\Support\Facades\Auth;

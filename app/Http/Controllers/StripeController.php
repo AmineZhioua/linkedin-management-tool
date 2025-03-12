@@ -96,7 +96,8 @@ public function applyCoupon(Request $request) {
         UserSubscription::updateOrCreate(
             [
                 'user_id' => $userId, 
-                'subscription_id' => $subscription->id
+                'subscription_id' => $subscription->id,
+                'pricing_mode' => $pricingMode
             ],
             ['date_expiration' => $expirationDate]
         );

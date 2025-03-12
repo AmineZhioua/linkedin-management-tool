@@ -70,9 +70,11 @@
         </div>
 
         <!-- Pricing Cards & Buttons Vue Component (SubscriptionCards.vue) -->
-        <subscription-cards :subscriptions="{{ json_encode($subscriptions) }}" />
+        <subscription-cards 
+            :user-subscriptions="{{ json_encode($userSubscriptions) }}" 
+            :subscriptions="{{ json_encode($subscriptions) }}" 
+        />
     </main>
 
-    <!-- NO INLINE SCRIPT HERE - It's moved to the component -->
 </body>
 </html>
