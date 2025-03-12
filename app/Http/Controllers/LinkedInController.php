@@ -105,7 +105,15 @@ class LinkedInController extends Controller
             if (!$userId) {
                 return redirect()->route('login')->with('linkedin_error', "Vous devez vous authentifier !");
             }
-    
+
+            // Check if the LinkedIn ID is already linked to another user
+            $existingAccount = LinkedinUser::where('linkedin_id', $linkedin_id)->first();
+
+            if ($existingAccount && $existingAccount->user_id !== $userId) {
+                return redirect()->route('login-linkedin')
+                    ->with('linkedin_error', 'Ce compte LinkedIn est déjà lié à un autre utilisateur.');
+            }
+                
             $existingLinkedinUser = LinkedinUser::where('user_id', $userId)->first();
     
             if ($existingLinkedinUser) {

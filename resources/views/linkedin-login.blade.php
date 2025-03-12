@@ -9,9 +9,15 @@
     
     @vite(['resources/js/app.js', 'resources/css/app.css'])
     <title>Lemonade - Connexion au LinkedIn</title>
+    <style>
+        .ajout-btn:hover,
+        .linkedin-account:hover {
+            background-color: #f0f0f0;
+        }
+    </style>
 </head>
 <body>
-    <div class="vh-100 overflow-hidden d-flex login">
+    <div class="vh-100 overflow-hidden d-flex login" id="app">
         <!-- "Déja un compte" Section -->
         <div class="absolute top-4 right-4 text-black text-sm fw-semibold" style="z-index: 1000;">
             <button class="nav-item dropdown bg-pink-200 px-3 py-1 rounded-2xl">
@@ -60,13 +66,6 @@
             />
         </div>
 
-        <!-- Display this Popup whenever a LinkedIn Error Occurs (Popup.vue) -->
-        @if(session('linkedin_error'))
-        <popup path="/build/assets/popups/sad-face.svg">
-            <p>{{ session('linkedin_error') }}</p>
-        </popup>
-        @endif
-
         <!-- Form Side -->
         <div class="d-flex flex-grow-1 flex-col align-items-center justify-content-center">
             <!-- Text -->
@@ -81,7 +80,7 @@
                     <button class="social-btn">
                         <img 
                             src="/build/assets/icons/linkedin-blue.svg" 
-                            alt="Google Icon" 
+                            alt="linkedin-icon" 
                             height="30" 
                             width="30"
                         />
@@ -95,38 +94,68 @@
                     <u>Cette étape est obligatoire pour la création de ton dashboard</u>
                 </p>
             @else
-                @foreach($linkedinUserList as $linkedinUser)
                 <div class="d-flex flex-col align-items-start mx-auto">
-                    <div class="text-center text-black">
-                        <h3 class="fw-semibold text-xl">
-                            Vos comptes LinkedIn :
-                        </h3>
-                        <div class="flex px-3 py-2 rounded-full border cursor-pointer mt-4">
-                            <div class="flex align-items-center justify-content-center gap-3">
-                                <img 
-                                    src="{{ $linkedinUser->linkedin_picture  ?? '/build/assets/images/default-profile.png' }}"
-                                    alt="profile-picture"
-                                    height="60"
-                                    width="60"
-                                    class="rounded-full"
-                                />
-                                <p class="mb-0 text-lg fw-semibold">
-                                    {{ $linkedinUser->linkedin_firstname }} {{ $linkedinUser->linkedin_lastname }}
-                                </p>
+                        <div class="text-center text-black">
+                            <h3 class="fw-semibold text-xl">
+                                Vos comptes LinkedIn :
+                            </h3>
+                            @foreach($linkedinUserList as $linkedinUser)
+                            <div class="flex px-3 py-2 rounded-full border cursor-pointer mt-4 linkedin-account">
+                                <div class="flex align-items-center justify-content-center gap-3">
+                                    <img 
+                                        src="{{ $linkedinUser->linkedin_picture  ?? '/build/assets/images/default-profile.png' }}"
+                                        alt="profile-picture"
+                                        height="50"
+                                        width="50"
+                                        class="rounded-full"
+                                    />
+                                    <p class="mb-0 text-lg fw-semibold">
+                                        {{ $linkedinUser->linkedin_firstname }} {{ $linkedinUser->linkedin_lastname }}
+                                    </p>
 
-                                <img 
-                                    src="/build/assets/icons/linkedin-blue.svg" 
-                                    alt="Google Icon" 
-                                    height="30" 
-                                    width="30"
-                                />
+                                    <img 
+                                        src="/build/assets/icons/linkedin-blue.svg" 
+                                        alt="Google Icon" 
+                                        height="30" 
+                                        width="30"
+                                    />
+                                </div>
                             </div>
                         </div>
-                    </div>
                 </div>
                 @endforeach
+
+                <!-- ""Ajouter un compte"" Button -->
+                <button 
+                    class="flex align-items-center px-3 py-2 rounded-full border cursor-pointer gap-2 mt-2 ajout-btn"
+                >
+                    <a 
+                        href="{{ route('linkedin.auth') }}" 
+                        class="text-decoration-none text-black flex align-items-center gap-1"
+                    >
+                        <img 
+                            src="/build/assets/icons/add.svg"
+                            alt="add-icon" 
+                            height="25" 
+                            width="25" 
+                        />
+                        Ajouter un compte LinkedIn
+                    </a>
+                    <img 
+                        src="/build/assets/icons/linkedin-blue.svg" 
+                        alt="Google Icon" 
+                        height="30" 
+                        width="30"
+                    />
+                </button>
             @endif
         </div>
+        <!-- Display this Popup whenever a LinkedIn Error Occurs (Popup.vue) -->
+        @if(session('linkedin_error'))
+        <popup path="/build/assets/popups/sad-face.svg">
+            <p>{{ session('linkedin_error') }}</p>
+        </popup>
+        @endif
     </div>
 </body>
 </html>
