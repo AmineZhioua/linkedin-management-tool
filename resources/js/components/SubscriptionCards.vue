@@ -145,7 +145,7 @@
                                         class="btn text-white bg-black w-100 rounded-pill py-2 fw-medium"
                                         :disabled="isSubscribed(subscription.id, pricingMode)"
                                     >
-                                        {{ isSubscribed(subscription.id, pricingMode) ? "Déja Activé" : "Démarrer" }}
+                                        {{ isSubscribed(subscription.id, pricingMode) ? "Déja activé" : "Démarrer" }}
                                     </button>
                                 </form>
 

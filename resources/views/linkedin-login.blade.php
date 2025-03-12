@@ -68,31 +68,64 @@
         @endif
 
         <!-- Form Side -->
-        <div class="d-flex flex-grow-1 flex-col align-items-center justify-content-center form-side">
+        <div class="d-flex flex-grow-1 flex-col align-items-center justify-content-center">
             <!-- Text -->
             <div class="text-center text-black gap-4">
                 <h1 class="fw-bold text-4xl">Tu es maintenant connecté en tant <br>que {{ Auth::user()->name }}</h1>
                 <p class="text-muted">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
             </div>
 
-            <!-- Google & Apple Buttons -->
-            <div class="d-flex align-items-center flex-sm-column gap-2 w-100" style="max-width: 400px;">
-                <button class="social-btn">
-                    <img 
-                        src="/build/assets/icons/linkedin-blue.svg" 
-                        alt="Google Icon" 
-                        height="30" 
-                        width="30"
-                    />
-                    <a href="{{ route('linkedin.auth') }}" class="text-decoration-none text-black">
-                        Se Connecter avec LinkedIn
-                    </a>
-                </button>
-            </div>
+            @if($linkedinUserList->isEmpty())
+                <!-- LinkedIn Auth Button -->
+                <div class="d-flex align-items-center flex-sm-column gap-2 w-100" style="max-width: 400px;">
+                    <button class="social-btn">
+                        <img 
+                            src="/build/assets/icons/linkedin-blue.svg" 
+                            alt="Google Icon" 
+                            height="30" 
+                            width="30"
+                        />
+                        <a href="{{ route('linkedin.auth') }}" class="text-decoration-none text-black">
+                            Se Connecter avec LinkedIn
+                        </a>
+                    </button>
+                </div>
 
-            <p class="text-black mt-2 text-center">
-                <u>Cette étape est obligatoire pour la création de ton dashboard</u>
-            </p>
+                <p class="text-black mt-2 text-center">
+                    <u>Cette étape est obligatoire pour la création de ton dashboard</u>
+                </p>
+            @else
+                @foreach($linkedinUserList as $linkedinUser)
+                <div class="d-flex flex-col align-items-start mx-auto">
+                    <div class="text-center text-black">
+                        <h3 class="fw-semibold text-xl">
+                            Vos comptes LinkedIn :
+                        </h3>
+                        <div class="flex px-3 py-2 rounded-full border cursor-pointer mt-4">
+                            <div class="flex align-items-center justify-content-center gap-3">
+                                <img 
+                                    src="{{ $linkedinUser->linkedin_picture  ?? '/build/assets/images/default-profile.png' }}"
+                                    alt="profile-picture"
+                                    height="60"
+                                    width="60"
+                                    class="rounded-full"
+                                />
+                                <p class="mb-0 text-lg fw-semibold">
+                                    {{ $linkedinUser->linkedin_firstname }} {{ $linkedinUser->linkedin_lastname }}
+                                </p>
+
+                                <img 
+                                    src="/build/assets/icons/linkedin-blue.svg" 
+                                    alt="Google Icon" 
+                                    height="30" 
+                                    width="30"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @endforeach
+            @endif
         </div>
     </div>
 </body>

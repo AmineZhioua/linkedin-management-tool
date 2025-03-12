@@ -11,7 +11,15 @@ class LinkedInController extends Controller
 {
     public function index()
     {
-        return view('linkedin-login');
+        $user = Auth::user();
+        if (!$user) {
+            return redirect()->route('login');
+        }
+        $linkedinUserList = LinkedinUser::where('user_id', $user->id)->get();
+        return view('linkedin-login', [
+            'user' => $user,
+            'linkedinUserList' => $linkedinUserList,
+        ]);
     }
 
 
