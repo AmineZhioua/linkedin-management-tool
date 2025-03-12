@@ -33,7 +33,7 @@ class LinkedInController extends Controller
             'client_id' => $client_id,
             'redirect_uri' => route('linkedin.callback'),
             'state' => 'random_string',
-            'scope' => 'r_basicprofile r_organization_social w_organization_social rw_organization_admin',
+            'scope' => 'email w_member_social profile openid r_basicprofile',
         ]);
 
         return redirect($url . '?' . $query);
@@ -94,7 +94,6 @@ class LinkedInController extends Controller
             $linkedin_firstname = $linkedinUser['localizedFirstName'] ?? null;
             $linkedin_lastname = $linkedinUser['localizedLastName'] ?? null;
             $linkedin_picture = $linkedinUser['profilePicture']['displayImage~']['elements'][0]['identifiers'][0]['identifier'] ?? null;
-            // dd($linkedinUser);
     
             if (!$linkedin_id || !$linkedin_firstname || !$linkedin_lastname || !$linkedin_picture) {
                 return redirect()->route('login-linkedin')
