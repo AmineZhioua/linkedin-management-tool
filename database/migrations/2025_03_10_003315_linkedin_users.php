@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('linkedin_users', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->string('linkedin_id')->nullable()->unique();
+            $table->string('linkedin_id')->nullable();
             $table->string('linkedin_firstname')->nullable();
             $table->string('linkedin_lastname')->nullable();
             $table->text('linkedin_picture')->nullable();

@@ -150,6 +150,8 @@
                 </button>
             @endif
         </div>
+
+        
         <!-- Display this Popup whenever a LinkedIn Error Occurs (Popup.vue) -->
         @if(session('linkedin_error'))
         <popup path="/build/assets/popups/sad-face.svg">

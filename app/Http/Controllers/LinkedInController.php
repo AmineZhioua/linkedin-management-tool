@@ -26,7 +26,6 @@ class LinkedInController extends Controller
     // Redirect function to redirect the user to LinkedIn
     public function redirect() {
         $client_id=config('services.linkedin.client_id');
-        $client_secret=config('services.linkedin.client_secret');
         $url = 'https://www.linkedin.com/oauth/v2/authorization';
         $query = http_build_query([
             'response_type' => 'code',
@@ -48,7 +47,7 @@ class LinkedInController extends Controller
             $state = $request->query('state');
     
             if (!$code || !$state) {
-                return redirect()->route('subscriptions')
+                return redirect()->route('login-linkedin')
                     ->with('linkedin_error', 'Invalid LinkedIn authorization response.');
             }
     
@@ -95,7 +94,7 @@ class LinkedInController extends Controller
             $linkedin_lastname = $linkedinUser['localizedLastName'] ?? null;
             $linkedin_picture = $linkedinUser['profilePicture']['displayImage~']['elements'][0]['identifiers'][0]['identifier'] ?? null;
     
-            if (!$linkedin_id || !$linkedin_firstname || !$linkedin_lastname || !$linkedin_picture) {
+            if (!$linkedin_id || !$linkedin_firstname || !$linkedin_lastname) {
                 return redirect()->route('login-linkedin')
                     ->with('linkedin_error', 'Une erreur s\'est produite lors de la récupération des données.');
             }
@@ -103,22 +102,20 @@ class LinkedInController extends Controller
             // Link LinkedIn account to the authenticated user
             $userId = Auth::id();
             if (!$userId) {
-                return redirect()->route('login')->with('linkedin_error', "Vous devez vous authentifier !");
+                return redirect()->route('login');
             }
 
             // Check if the LinkedIn ID is already linked to another user
-            $existingAccount = LinkedinUser::where('linkedin_id', $linkedin_id)->first();
+            $existingLinkedinUser = LinkedinUser::where('linkedin_id', $linkedin_id)->first();
 
-            if ($existingAccount && $existingAccount->user_id !== $userId) {
+            if ($existingLinkedinUser && $existingLinkedinUser->user_id !== $userId) {
                 return redirect()->route('login-linkedin')
                     ->with('linkedin_error', 'Ce compte LinkedIn est déjà lié à un autre utilisateur.');
             }
-                
-            $existingLinkedinUser = LinkedinUser::where('user_id', $userId)->first();
-    
+
             if ($existingLinkedinUser) {
+                // Update the existing LinkedIn record for this user
                 $existingLinkedinUser->update([
-                    'linkedin_id' => $linkedin_id,
                     'linkedin_firstname' => $linkedin_firstname,
                     'linkedin_lastname' => $linkedin_lastname,
                     'linkedin_picture' => $linkedin_picture,
@@ -126,6 +123,7 @@ class LinkedInController extends Controller
                     'linkedin_refresh_token' => $refresh_token,
                 ]);
             } else {
+                // Create a new LinkedIn account entry for the user
                 LinkedinUser::create([
                     'user_id' => $userId,
                     'linkedin_id' => $linkedin_id,
@@ -141,7 +139,7 @@ class LinkedInController extends Controller
     
         } catch (\Exception $e) {
             return redirect()->route('login-linkedin')
-                ->with('linkedin_error', 'Une erreur s\'est produite : ' . $e->getMessage());
+                ->with('linkedin_error', 'Une erreur s\'est produite!');
         }
     }
     
