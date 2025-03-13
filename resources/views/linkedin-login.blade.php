@@ -94,68 +94,75 @@
                     <u>Cette étape est obligatoire pour la création de ton dashboard</u>
                 </p>
             @else
-                <div class="d-flex flex-col align-items-start mx-auto">
-                        <div class="text-center text-black">
-                            <h3 class="fw-semibold text-xl">
-                                Vos comptes LinkedIn :
-                            </h3>
-                            @foreach($linkedinUserList as $linkedinUser)
-                            <div class="flex px-3 py-2 rounded-full border cursor-pointer mt-4 linkedin-account">
-                                <div class="flex align-items-center justify-content-center gap-3">
-                                    <img 
-                                        src="{{ $linkedinUser->linkedin_picture  ?? '/build/assets/images/default-profile.png' }}"
-                                        alt="profile-picture"
-                                        height="50"
-                                        width="50"
-                                        class="rounded-full"
-                                    />
-                                    <p class="mb-0 text-lg fw-semibold">
-                                        {{ $linkedinUser->linkedin_firstname }} {{ $linkedinUser->linkedin_lastname }}
-                                    </p>
+            <div class="d-flex flex-col align-items-start mx-auto">
+                <div class="text-center text-black">
+                    <h3 class="fw-semibold text-xl">
+                        Vos comptes LinkedIn :
+                    </h3>
+                    @foreach($linkedinUserList as $linkedinUser)
+                    <div class="flex px-2 py-2 rounded-full border justify-content-between cursor-pointer mt-2 linkedin-account">
+                        <div class="flex align-items-center justify-content-center gap-3">
+                            <img 
+                                src="{{ $linkedinUser->linkedin_picture  ?? '/build/assets/images/default-profile.png' }}"
+                                alt="profile-picture"
+                                height="50"
+                                width="50"
+                                class="rounded-full"
+                            />
+                            <p class="mb-0 text-lg fw-semibold flex-grow-1">
+                                {{ $linkedinUser->linkedin_firstname }} {{ $linkedinUser->linkedin_lastname }}
+                            </p>
 
-                                    <img 
-                                        src="/build/assets/icons/linkedin-blue.svg" 
-                                        alt="Google Icon" 
-                                        height="30" 
-                                        width="30"
-                                    />
-                                </div>
-                            </div>
+                            <img 
+                                src="/build/assets/icons/linkedin-blue.svg" 
+                                alt="Google Icon" 
+                                height="30" 
+                                width="30"
+                            />
                         </div>
-                </div>
-                @endforeach
-
-                <!-- ""Ajouter un compte"" Button -->
-                <button 
-                    class="flex align-items-center px-3 py-2 rounded-full border cursor-pointer gap-2 mt-2 ajout-btn"
-                >
-                    <a 
-                        href="{{ route('linkedin.auth') }}" 
-                        class="text-decoration-none text-black flex align-items-center gap-1"
+                    </div>
+                    @endforeach
+                    <!-- ""Ajouter un compte"" Button -->
+                    <button 
+                        class="flex align-items-center px-3 py-2 rounded-full border cursor-pointer gap-2 mt-2 ajout-btn"
                     >
-                        <img 
-                            src="/build/assets/icons/add.svg"
-                            alt="add-icon" 
-                            height="25" 
-                            width="25" 
-                        />
-                        Ajouter un compte LinkedIn
-                    </a>
-                    <img 
-                        src="/build/assets/icons/linkedin-blue.svg" 
-                        alt="Google Icon" 
-                        height="30" 
-                        width="30"
-                    />
-                </button>
+                        <a 
+                            href="{{ route('linkedin.auth') }}" 
+                            class="text-decoration-none text-black flex align-items-center gap-1"
+                        >
+                            <img 
+                                src="/build/assets/icons/add.svg"
+                                alt="add-icon" 
+                                height="25" 
+                                width="25" 
+                            />
+                            Ajouter un compte LinkedIn
+                        </a>
+                        <!-- <img 
+                            src="/build/assets/icons/linkedin-blue.svg" 
+                            alt="Google Icon" 
+                            height="30" 
+                            width="30"
+                        /> -->
+                    </button>
+                </div>
+            </div>
             @endif
         </div>
 
-        
+
         <!-- Display this Popup whenever a LinkedIn Error Occurs (Popup.vue) -->
         @if(session('linkedin_error'))
         <popup path="/build/assets/popups/sad-face.svg">
             <p>{{ session('linkedin_error') }}</p>
+        </popup>
+        @endif
+
+
+        <!-- Display this Popup whenever a LinkedIn account is Successfully Linked (Popup.vue) -->
+        @if(session('linkedin_success'))
+        <popup path="/build/assets/popups/like-popup.svg">
+            <p>{{ session('linkedin_success') }}</p>
         </popup>
         @endif
     </div>

@@ -33,6 +33,7 @@ class LinkedInController extends Controller
             'redirect_uri' => route('linkedin.callback'),
             'state' => 'random_string',
             'scope' => 'email w_member_social profile openid r_basicprofile',
+            'prompt' => 'login',
         ]);
 
         return redirect($url . '?' . $query);
@@ -135,7 +136,8 @@ class LinkedInController extends Controller
                 ]);
             }
     
-            return redirect()->route('home')->with('linkedin_success', 'Votre compte LinkedIn a été lié avec succès !');
+            return redirect()->route('login-linkedin')
+                ->with('linkedin_success', 'Votre compte LinkedIn a été lié avec succès !');
     
         } catch (\Exception $e) {
             return redirect()->route('login-linkedin')
