@@ -49,4 +49,5 @@ Route::middleware(['auth', 'verified', 'linkedin.valid'])->group(function() {
     Route::get('/login-linkedin', [App\Http\Controllers\LinkedInController::class, 'index'])->name('login-linkedin');
     Route::get('/linkedin/auth', [App\Http\Controllers\LinkedInController::class, 'redirect'])->name('linkedin.auth');
     Route::get('/linkedin/callback', [App\Http\Controllers\LinkedInController::class, 'callback'])->name('linkedin.callback');
+    Route::get('/linkedin/logout', [App\Http\Controllers\LinkedInController::class, 'logout'])->name('linkedin.logout');
 });

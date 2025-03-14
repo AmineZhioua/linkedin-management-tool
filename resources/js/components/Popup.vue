@@ -93,7 +93,6 @@ export default {
 
     .popup h2 {
         font-size: 24px;
-        color: #333;
         margin-top: 10px;
         line-height: 1.5;
     }

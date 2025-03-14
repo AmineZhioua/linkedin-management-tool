@@ -49,7 +49,7 @@ class LinkedInController extends Controller
     
             if (!$code || !$state) {
                 return redirect()->route('login-linkedin')
-                    ->with('linkedin_error', 'Invalid LinkedIn authorization response.');
+                    ->with('linkedin_error', "Réponse d'autorisation LinkedIn non valide");
             }
     
             // Exchange authorization code for an access token
@@ -145,4 +145,11 @@ class LinkedInController extends Controller
         }
     }
     
+
+    // Function to unlink the LinkedIn account from the user
+    public function logout()
+    {
+        return redirect('https://www.linkedin.com/m/logout');
+    }
+
 }
