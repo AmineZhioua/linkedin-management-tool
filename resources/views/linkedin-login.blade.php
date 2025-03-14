@@ -192,6 +192,12 @@
                 <p>{{ session('linkedin_success') }}</p>
             </popup>
         @endif
+
+        @if(session('success_payment'))
+            <popup path="/build/assets/popups/like-popup.svg">
+                <p>{{ session('success_payment') }}</p>
+            </popup>
+        @endif
     </div>
 
     <script>
