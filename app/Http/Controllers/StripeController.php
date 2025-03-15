@@ -108,7 +108,7 @@ public function applyCoupon(Request $request) {
             return redirect()->route('dashboard')->with('success_payment', 'Votre Abonnement  est maintenant Activé!');
         } else if($subscription->whatsapp == 0 && $subscription->linkedin == 1) {
             return redirect()->route('login-linkedin')->with('success_payment', 'Votre Abonnement  est maintenant Activé!');
-        } else { // Both are enabled
+        } else {
             // Will be changed later
             return redirect()->route('home')->with('success_payment', 'Votre Abonnement  est maintenant Activé!'); 
         }

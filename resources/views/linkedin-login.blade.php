@@ -19,15 +19,7 @@
                     data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
                     {{ Auth::user()->name }}
                 </a>
-                <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                    <a class="dropdown-item bg-pink-200" href="{{ route('logout') }}"
-                        onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                        {{ __('Logout') }}
-                    </a>
-                    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
-                        @csrf
-                    </form>
-                </div>
+                <x-login-dropdown />
             </button>
         </div>
 
@@ -100,7 +92,7 @@
                             >
                                 <span class="text-decoration-none text-black flex align-items-center gap-1">
                                     <img src="/build/assets/icons/logout.svg" alt="logout-icon" height="25" width="25"/>
-                                    Se déconnecter
+                                    Se déconnecter d'un compte
                                 </span>
                             </button>
                         </div>
@@ -164,7 +156,8 @@
                     width="120"
                 />
                 <p class="mt-2 fw-semibold text-lg">
-                    Si vous êtes connecté à un compte LinkedIn, Cliquez "Se déconnecter" avant d'ajouter un nouveau compte.<br>
+                    Si vous êtes connecté à un compte LinkedIn, Cliquez sur <br><u>Se déconnecter d'un compte</u><br>
+                    avant d'ajouter un nouveau compte.<br>
                     Sinon, cette action se poursuivra dans 
                     <span id="countdown">10</span> secondes.
                 </p>
