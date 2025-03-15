@@ -152,7 +152,7 @@ class LinkedInController extends Controller
         return redirect('https://www.linkedin.com/m/logout');
     }
 
-
+    // Function to delete the LinkedIn account from the user
     public function delete(Request $request) {
         $linkedinId = $request->query('linkedin_id');
         $userId = Auth::id();

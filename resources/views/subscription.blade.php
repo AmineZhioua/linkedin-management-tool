@@ -39,6 +39,27 @@
     </popup>
     @endif
 
+    <!-- Display this Popup whenever the User subscription is not found (Popup.vue) -->
+    @if(session('subscription_notfound'))
+    <popup path="/build/assets/popups/sad-face.svg">
+        <p>{{ session('subscription_notfound') }}</p>
+    </popup>
+    @endif
+
+    <!-- Display this Popup whenever the User cancel his subscription (Popup.vue) -->
+    @if(session('cancel_payment'))
+    <popup path="/build/assets/popups/sad-face.svg">
+        <p>{{ session('cancel_payment') }}</p>
+    </popup>
+    @endif
+
+    <!-- Display this Popup whenever the User's LinkedIn Subscription Ends (Popup.vue) -->
+    @if(session('linkedin_error'))
+    <popup path="/build/assets/popups/sad-face.svg">
+        <p>{{ session('linkedin_error') }}</p>
+    </popup>
+    @endif
+
     <!-- Pricing Section -->
     <main class="d-flex justify-content-center align-items-center flex-col mt-4 relative">
         <!-- Title -->
