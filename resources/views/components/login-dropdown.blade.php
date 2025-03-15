@@ -9,7 +9,7 @@
         />
         <p class="pr-4 mt-2">LinkedIn Dashboard</p>
     </a>
-    <a class="dropdown-item bg-pink-200 d-flex align-items-center gap-1" href="{{ route('dashboard') }}">
+    <a class="dropdown-item bg-pink-200 d-flex align-items-center gap-1" href="{{ route('home') }}">
         <img 
             src="/build/assets/icons/whatsapp-green.svg" 
             alt="WhatsApp Icon" 

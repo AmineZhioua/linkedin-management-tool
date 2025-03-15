@@ -38,11 +38,6 @@ Route::get('auth/google/redirect', [GoogleController::class, 'redirect'])->name(
 Route::get('auth/google/callback', [GoogleController::class, 'callback']);
 
 
-// Dashboard Route
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->name('dashboard');
-
 
 // LinkedIn Auth Route
 Route::middleware(['auth', 'verified', 'linkedin.valid'])->group(function() {
@@ -50,4 +45,7 @@ Route::middleware(['auth', 'verified', 'linkedin.valid'])->group(function() {
     Route::get('/linkedin/auth', [App\Http\Controllers\LinkedInController::class, 'redirect'])->name('linkedin.auth');
     Route::get('/linkedin/callback', [App\Http\Controllers\LinkedInController::class, 'callback'])->name('linkedin.callback');
     Route::get('/linkedin/logout', [App\Http\Controllers\LinkedInController::class, 'logout'])->name('linkedin.logout');
+
+    Route::get('/dashboard/linkedin', [App\Http\Controllers\DashboardController::class, 'index'])
+        ->middleware('linkedin.account.exist')->name('dashboard');
 });

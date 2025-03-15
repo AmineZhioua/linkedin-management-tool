@@ -14,6 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'check.subscriptions' => \App\Http\Middleware\CheckValidSubscription::class,
             'linkedin.valid' => \App\Http\Middleware\LinkedinValid::class,
+            'linkedin.account.exist' => \App\Http\Middleware\LinkedinAccountExist::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

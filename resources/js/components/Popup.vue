@@ -58,7 +58,7 @@ export default {
         flex-direction: column;
         align-items: center;
         background-color: white;
-        padding: 80px;
+        padding: 80px 30px;
         border-radius: 12px;
         text-align: center;
         position: relative;
