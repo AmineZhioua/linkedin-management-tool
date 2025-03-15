@@ -9,6 +9,9 @@
     
     @vite(['resources/js/app.js', 'resources/css/app.css'])
     <title>Lemonade - Connexion au LinkedIn</title>
+
+    <!-- FontAwesome Kit -->
+    <script src="https://kit.fontawesome.com/33f8496b80.js" crossorigin="anonymous"></script>
 </head>
 <body>
     <div class="vh-100 overflow-hidden d-flex login linkedin-login" id="app">
@@ -60,6 +63,7 @@
                     <div class="text-center text-black">
                         <h3 class="fw-semibold text-xl">Vos comptes LinkedIn :</h3>
 
+                        <!-- ALL USER LINKEDIN ACCOUNTS -->
                         @foreach($linkedinUserList as $linkedinUser)
                             <div class="flex px-2 py-2 rounded-full border justify-content-between cursor-pointer mt-2 linkedin-account">
                                 <div class="flex align-items-center justify-content-center gap-3">
@@ -68,7 +72,14 @@
                                     <p class="mb-0 text-lg fw-semibold flex-grow-1">
                                         {{ $linkedinUser->linkedin_firstname }} {{ $linkedinUser->linkedin_lastname }}
                                     </p>
-                                    <img src="/build/assets/icons/linkedin-blue.svg" alt="Google Icon" height="30" width="30"/>
+
+                                    <!-- Delete Button -->
+                                    <button 
+                                        onclick="showDeletePopup('{{ $linkedinUser->linkedin_id }}')"
+                                        class="bg-transparent border-0 p-0"
+                                    >
+                                        <i class="fa-solid fa-trash ml-2 text-xl"></i>
+                                    </button>
                                 </div>
                             </div>
                         @endforeach
@@ -170,6 +181,39 @@
             </div>
         </div>
 
+        <!-- Popup for Deleting Account -->
+        <div id="linkedin-delete-popup" class="hidden">
+            <div class="popup-overlay" onclick="document.getElementById('linkedin-delete-popup').classList.add('hidden')"></div>
+            <div class="custom-popup">
+                <button 
+                    class="absolute top-4 right-4"
+                    onclick="document.getElementById('linkedin-delete-popup').classList.add('hidden')"
+                >
+                    <img src="/build/assets/icons/close.svg" alt="close-icon" />
+                </button>
+                <img src="/build/assets/popups/sad-face.svg" alt="Sad Face" height="120" width="120"/>
+                <p class="mt-2 fw-semibold text-xl">
+                    Êtes-vous sûr de vouloir supprimer ce compte LinkedIn ?
+                </p>
+                <div class="flex align-items-center gap-2">
+                    <button 
+                        id="confirm-delete-btn"
+                        class="bg-red-600 rounded-full text-white decoration-none px-4 py-2"
+                        style="text-decoration: none;"
+                    >
+                        Confirmer
+                    </button>
+                    <button 
+                        class="bg-transparent rounded-full text-black decoration-none px-4 py-2" 
+                        onclick="document.getElementById('linkedin-delete-popup').classList.add('hidden')"
+                        style="border: 1px solid black;"
+                    >
+                        Annuler
+                    </button>
+                </div>
+            </div>
+        </div>
+
 
 
         <!-- Display this Popup whenever a LinkedIn Error Occurs (Popup.vue) -->
@@ -221,6 +265,17 @@
             popup.querySelector('.close').addEventListener('click', () => {
                 clearInterval(countdown);
             });
+        }
+
+        function showDeletePopup(linkedinId) {
+            const popup = document.getElementById('linkedin-delete-popup');
+            popup.classList.remove('hidden');
+
+            // Set the confirm button action
+            const confirmBtn = document.getElementById('confirm-delete-btn');
+            confirmBtn.onclick = function() {
+                window.location.href = "{{ route('linkedin.delete') }}?linkedin_id=" + linkedinId;
+            };
         }
     </script>
 </body>

@@ -152,4 +152,22 @@ class LinkedInController extends Controller
         return redirect('https://www.linkedin.com/m/logout');
     }
 
+
+    public function delete(Request $request) {
+        $linkedinId = $request->query('linkedin_id');
+        $userId = Auth::id();
+
+        if (!$linkedinId || !$userId) {
+            return redirect()->route('login-linkedin')->with('linkedin_error', 'Invalid request.');
+        }
+
+        $linkedinUser = LinkedinUser::where('user_id', $userId)->where('linkedin_id', $linkedinId)->first();
+
+        if ($linkedinUser) {
+            $linkedinUser->delete();
+            return redirect()->route('login-linkedin')->with('linkedin_success', 'Compte LinkedIn supprimé avec succès.');
+        }
+
+        return redirect()->route('login-linkedin')->with('linkedin_error', 'Compte LinkedIn introuvable.');
+    }
 }

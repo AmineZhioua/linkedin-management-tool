@@ -45,6 +45,7 @@ Route::middleware(['auth', 'verified', 'linkedin.valid'])->group(function() {
     Route::get('/linkedin/auth', [App\Http\Controllers\LinkedInController::class, 'redirect'])->name('linkedin.auth');
     Route::get('/linkedin/callback', [App\Http\Controllers\LinkedInController::class, 'callback'])->name('linkedin.callback');
     Route::get('/linkedin/logout', [App\Http\Controllers\LinkedInController::class, 'logout'])->name('linkedin.logout');
+    Route::get('/linkedin/delete', [App\Http\Controllers\LinkedInController::class, 'delete'])->name('linkedin.delete');
 
     Route::get('/dashboard/linkedin', [App\Http\Controllers\DashboardController::class, 'index'])
         ->middleware('linkedin.account.exist')->name('dashboard');

@@ -436,3 +436,11 @@ footer .copyright {
 .linkedin-login .linkedin-account:hover {
     background-color: #f0f0f0;
 }
+
+.linkedin-login .fa-trash {
+    transition: 0.3s ease;
+}
+
+.linkedin-login .fa-trash:hover {
+    color: red;
+}
