@@ -50,3 +50,9 @@ Route::middleware(['auth', 'verified', 'linkedin.valid'])->group(function() {
     Route::get('/dashboard/linkedin', [App\Http\Controllers\DashboardController::class, 'index'])
         ->middleware('linkedin.account.exist')->name('dashboard');
 });
+
+
+// Route for "Plateforme de Marque"
+Route::get('/plateforme-marque', function () {
+    return view('plateforme-marque');
+})->name('plateforme-marque');

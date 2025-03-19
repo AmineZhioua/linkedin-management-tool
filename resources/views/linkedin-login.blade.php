@@ -9,13 +9,14 @@
     
     @vite(['resources/js/app.js', 'resources/css/app.css'])
     <title>Lemonade - Connexion au LinkedIn</title>
+    <link rel="icon" type="image/x-icon" href="/build/assets/lemonade-logo.svg">
 
     <!-- FontAwesome Kit -->
     <script src="https://kit.fontawesome.com/33f8496b80.js" crossorigin="anonymous"></script>
 </head>
 <body>
     <div class="vh-100 overflow-hidden d-flex login linkedin-login" id="app">
-        <!-- "Déja un compte" Section -->
+        <!-- Auth Dropdown Menu -->
         <div class="absolute top-4 right-4 text-black text-sm fw-semibold" style="z-index: 1000;">
             <button class="nav-item dropdown bg-pink-200 px-3 py-1 rounded-2xl">
                 <a id="navbarDropdown" class="nav-link dropdown-toggle text-black" href="#" role="button"

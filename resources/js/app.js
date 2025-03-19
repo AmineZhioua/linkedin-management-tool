@@ -3,10 +3,14 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap";
 import SubscriptionCards from "./components/SubscriptionCards.vue";
 import Popup from "./components/Popup.vue";
+import PlateformeCard from "./components/PlateformeCard.vue";
+import Questionnaire from "./components/Questionnaire.vue";
 
 const app = createApp();
 
 app.component("subscription-cards", SubscriptionCards);
 app.component("popup", Popup);
+app.component("plateforme-card", PlateformeCard);
+app.component("questionnaire", Questionnaire);
 
 app.mount("#app");
