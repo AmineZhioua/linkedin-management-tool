@@ -1,13 +1,22 @@
 <template>
     <div class="bg-white wh-100 vh-100 relative mt-8 plateforme-card">
         <!-- Heart Sticker -->
-        <img 
-            src="/build/assets/icons/heart-sticker.svg" 
-            alt="Heart Sticker" 
-            class="absolute top-[-40px] left-[40px]" 
-            height="90"
-            width="90"
-        />
+        <div class="absolute top-[-40px] left-[40px] flex align-items-center" >
+            <img 
+                src="/build/assets/icons/heart-sticker.svg" 
+                alt="Heart Sticker" 
+                class="z-10"
+                height="90"
+                width="90"
+            />
+            <img 
+                src="/build/assets/icons/plateforme-text.svg" 
+                alt="Heart Sticker" 
+                style="margin-left: -25px;"
+                class="d-none d-lg-block"
+                width="300"
+            />
+        </div>
 
         <!-- Wave Image -->
         <img 
@@ -72,7 +81,6 @@
     .plateforme-card {
         border-top-left-radius: 20px;
         border-top-right-radius: 20px;
-        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
     }
 
     .card-main {

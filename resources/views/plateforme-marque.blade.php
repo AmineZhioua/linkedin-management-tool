@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=League+Spartan:wght@100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=League+Spartan:wght@100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
     
@@ -16,20 +16,40 @@
 
     <!-- FontAwesome Kit -->
     <script src="https://kit.fontawesome.com/33f8496b80.js" crossorigin="anonymous"></script>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #FEF4E5;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .socials img {
+            cursor: pointer;
+        }
+    </style>
 </head>
-<body class="vh-100" style="background-color: #FEF4E5;">
+<body style="background-color: #FEF4E5;">
     <!-- Header Section -->
     <header class="d-flex align-items-center justify-content-between container">
         <!-- Lemonade Logo & Text -->
-        <div class="d-flex align-items-center gap-2 flex-grow-1">
+        <a href="{{ route('welcome') }}" class="d-flex align-items-center gap-2 flex-grow-1">
             <img 
                 src="/build/assets/lemonade-logo.svg" 
                 alt="Lemonade Logo"
-                height="30"
-                width="30"
+                height="50"
+                width="50"
             />
-            <span class="text-black text-lg fw-bold">Lemonade.</span>
-        </div>
+            <img 
+                src="/build/assets/icons/lemonade-black.svg" 
+                alt="Lemonade Text"
+                class="lemonade-text"
+                height="50"
+                width="120"
+            />
+        </a>
 
         <!-- Auth Dropdown Menu -->
         <div class="text-black text-sm fw-semibold">
@@ -44,14 +64,53 @@
     </header>
 
     <!-- Main Section -->
-    <main id="app" class="vh-100 pt-8" style="border-top: 1px solid grey;">
+    <main id="app" class="vh-100 pt-8 flex-1" style="border-top: 1px solid #BBBBBB;">
         <questionnaire />
     </main>
 
     <!-- Footer Setion -->
-    <footer class="container d-flex justify-content-center align-items-center gap-2 py-3">
-        <span class="text-black text-sm fw-semibold">© 2021 Lemonade. All rights reserved.</span>
-        <a href="#" class="text-black text-sm fw-semibold">Privacy Policy</a>
+    <footer class="d-flex align-items-center justify-content-between container py-7">
+        <!-- Copyright & Date -->
+        <div class="d-flex copyright flex-col text-black fw-semibold">
+            <span>Copyright ©
+                <script>
+                    document.write(new Date().getFullYear());
+                </script>
+                Lemonade.
+            </span>
+            <span>Tous droits réservés</span>
+        </div>
+
+        <!-- Lemonade Logo -->
+        <img 
+            src="/build/assets/lemonade-logo.svg" 
+            alt="Lemonade Logo"
+            height="40"
+            width="40"
+        />
+        <div class="flex gap-3 socials">
+            <!-- LinkedIn Icon -->
+            <img 
+                src="/build/assets/icons/linkedin-black.svg" 
+                alt="LinkedIn Logo" 
+                height="25"
+                width="25" 
+            />
+            <!-- Instagram Icon -->
+            <img 
+                src="/build/assets/icons/instagram-black.svg" 
+                alt="LinkedIn Logo" 
+                height="25"
+                width="25" 
+            />
+            <!-- TikTok Icon -->
+            <img 
+                src="/build/assets/icons/tiktok-black.svg" 
+                alt="LinkedIn Logo" 
+                height="25"
+                width="25" 
+            />
+        </div>
     </footer>
 </body>
 </html>
