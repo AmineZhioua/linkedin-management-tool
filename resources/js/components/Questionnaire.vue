@@ -33,20 +33,22 @@
                     </div>
                 </div>
             </div>
-            <!-- Questions with Choice Buttons -->
+
+            <!-- Other Questions -->
             <div v-else>
                 <div class="flex flex-col align-items-start">
                     <h2>{{ questions[currentQuestionIndex].title }}</h2>
                     <p>{{ questions[currentQuestionIndex].paragraph }}</p>
                 </div>
             
-                <div class="choices">
+                <!-- Display choices only when 'multiChoices' is true -->
+                <div v-if="questions[currentQuestionIndex].multiChoices" class="choices">
                     <button 
                         v-for="(choice, index) in questions[currentQuestionIndex].choices" 
                         :key="index" 
                         @click="selectChoice(choice)"
                         class="flex flex-col align-items-center text-2xl gap-2 fw-bold px-5 py-5 rounded-lg"
-                        :class="{ 'selected': choice === selectedChoice }"
+                        :class="{ 'selected': selectedChoice && selectedChoice.includes(choice) }"
                     >
                         {{ choice }}
                         <img 
@@ -59,13 +61,36 @@
                     </button>
                 </div>
 
+                <!-- Text input -->
                 <input 
+                    v-if="questions[currentQuestionIndex].textInput"
                     type="text" 
-                    v-if="currentQuestionIndex == 3" 
+                    id="textInput"
                     class="w-full px-4 py-2 mt-4 rounded-lg"
                     style="border: 3px solid #B4EAED;"
-                    placeholder="Ecrire ici..."
+                    placeholder="Écrire ici..."
                 />
+
+                <!-- Image Upload Input -->
+                <input 
+                    v-if="questions[currentQuestionIndex].imgInput"
+                    type="file"
+                    accept="image/*"
+                    class="w-full px-4 py-2 mt-4 rounded-lg"
+                    style="border: 3px solid #B4EAED;"
+                />
+
+                <!-- Select Input -->
+                <select 
+                    v-if="questions[currentQuestionIndex].selectInput"
+                    class="w-full px-4 py-2 mt-4 rounded-lg"
+                    style="border: 3px solid #B4EAED;"
+                >
+                    <option value="disabled" class="text-black" disabled selected>--- Choisir une option ---</option>
+                    <option v-for="(option, index) in questions[currentQuestionIndex].selectOptions" :key="index">
+                        {{ option }}
+                    </option>
+                </select>
 
                 <div class="flex align-items-center flex-wrap justify-content-center gap-2 mt-4">
                     <button 
@@ -78,7 +103,7 @@
                     <button 
                         class="py-2 px-5 rounded-full bg-black text-white fw-semibold" 
                         v-if="currentQuestionIndex < questions.length - 1" 
-                        @click="nextQuestion"
+                        @click="validateAndProceed"
                     >
                         Suivant
                     </button>
@@ -89,68 +114,151 @@
 </template>
 
 <script>
-    import PlateformeCard from './PlateformeCard.vue';
+import PlateformeCard from './PlateformeCard.vue';
 
-    export default {
-        name: "Questionnaire",
-        components: {
-            PlateformeCard,
-        },
+export default {
+    name: "Questionnaire",
+    components: {
+        PlateformeCard,
+    },
 
-        data() {
-            return {
-                currentQuestionIndex: 0,
-                selectedChoice: null,
-                questions: [
-                    {
-                        title: "Plateforme de Marque",
-                        paragraph: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-                        choices: ["Réaliser ma plateforme de marque", "Continuer ma plateforme de marque"],
-                        choicesTitle: ["Commencer", "Continuer"]
-                    },
-                    {
-                        title: "Question 1",
-                        paragraph: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-                        choices: ["Choix 1", "Choix 2", "Choix 3"],
-                        icons: ["choice-1", "choice-2", "choice-3"]
-                    },
-                    {
-                        title: "Question 2",
-                        paragraph: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-                        choices: ["Choix 1", "Choix 2", "Choix 3", "Choix 4", "Choix 5", "Choix 6"],
-                        icons: ["choice-1", "choice-2", "choice-3", "choice-1", "choice-2", "choice-3"]
-                    },
-                    {
-                        title: "Question 3",
-                        paragraph: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-                        choices: ["Choix 1", "Choix 2", "Choix 3"],
-                        icons: ["choice-1", "choice-2", "choice-3"]
-                    }
-                ]
-            };
-        },
-        methods: {
-            selectChoice(choice) {
-                this.selectedChoice = choice;
-            },
-            nextQuestion() {
-                if (this.selectedChoice !== null) {
-                    this.selectedChoice = null;
-                    this.currentQuestionIndex++;
-                } else {
-                    alert("Veuillez sélectionner une réponse.");
+    data() {
+        return {
+            currentQuestionIndex: 0,
+            selectedChoice: null,
+            // Questions data (UPDATE THE QUESTIONS AS YOUR REQUIREMENTS)
+            questions: [
+                {
+                    // DO NOT CHANGE THIS QUESTION AT ALL ONLY IF NECESSARY
+                    title: "Plateforme de Marque",
+                    paragraph: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+                    choices: ["Réaliser ma plateforme de marque", "Continuer ma plateforme de marque"],
+                    choicesTitle: ["Commencer", "Continuer"],
+                },
+                {
+                    title: "Question 1",
+                    paragraph: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+                    choices: ["Choix 1", "Choix 2", "Choix 3"],
+                    icons: ["choice-1", "choice-2", "choice-3"],
+                    multiChoices: true,
+                    textInput: false,
+                    imgInput: false,
+                    selectInput: false,
+                },
+                {
+                    title: "Question 2",
+                    paragraph: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+                    choices: ["Choix 1", "Choix 2", "Choix 3", "Choix 4", "Choix 5", "Choix 6"],
+                    icons: ["choice-1", "choice-2", "choice-3", "choice-1", "choice-2", "choice-3"],
+                    multiChoices: true,
+                    textInput: false,
+                    imgInput: false,
+                    selectInput: false,
+                },
+                {
+                    title: "Question 3",
+                    paragraph: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+                    choices: ["Choix 1", "Choix 2", "Choix 3"],
+                    icons: ["choice-1", "choice-2", "choice-3"],
+                    multiChoices: true,
+                    textInput: true,
+                    imgInput: false,
+                    selectInput: false,
+                },
+                {
+                    title: "Question 4",
+                    paragraph: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+                    choices: ["Choix 1", "Choix 2", "Choix 3"],
+                    icons: ["choice-1", "choice-2", "choice-3"],
+                    multiChoices: false,
+                    textInput: true,
+                    imgInput: false,
+                    selectInput: false,
+                },
+                {
+                    title: "Question 5",
+                    paragraph: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+                    choices: ["Choix 1", "Choix 2", "Choix 3"],
+                    icons: ["choice-1", "choice-2", "choice-3"],
+                    selectOptions: ["Option 1", "Option 2", "Option 3"],
+                    multiChoices: false,
+                    textInput: true,
+                    imgInput: false,
+                    selectInput: true,
                 }
-            },
-            selectAndNext(choice) {
-                this.selectChoice(choice);
-                this.nextQuestion();
-            },
-            submitAnswers() {
-                alert("Questionnaire terminé !");
+            ]
+        };
+    },
+
+    methods: {
+        selectChoice(choice) {
+            this.selectedChoice = choice;
+        },
+
+        getInputValue() {
+            const inputField = document.getElementById("textInput");
+            return inputField ? inputField.value.trim() : "";
+        },
+
+        getSelectedFile() {
+            const fileInput = document.querySelector("input[type='file']");
+            return fileInput ? fileInput.files[0] : null;
+        },
+
+        getSelectedOption() {
+            const selectField = document.querySelector("select");
+            return selectField ? selectField.value : "";
+        },
+
+        validateAndProceed() {
+            const currentQuestion = this.questions[this.currentQuestionIndex];
+            let isValid = false;
+
+            if (currentQuestion.multiChoices) {
+                isValid = this.selectedChoice && this.selectedChoice.length > 0;
+            } else if (currentQuestion.choices) {
+                isValid = this.selectedChoice !== null;
             }
+            if (currentQuestion.textInput) {
+                isValid = this.getInputValue() !== "";
+            }
+            if (currentQuestion.imgInput) {
+                isValid = this.getSelectedFile() !== null;
+            }
+            if (currentQuestion.selectInput) {
+                isValid = this.getSelectedOption() !== "disabled";
+            }
+
+            if (isValid) {
+                this.nextQuestion();
+                document.getElementById("textInput").value = "";
+            } else {
+                alert("Veuillez répondre à la question avant de passer à la suivante.");
+            }
+        },
+
+        nextQuestion() {
+            if (this.currentQuestionIndex < this.questions.length - 1) {
+                this.selectedChoice = null;
+                this.currentQuestionIndex++;
+            } else {
+                this.submitAnswers();
+            }
+        },
+
+        selectAndNext(choice) {
+            this.selectChoice(choice);
+            this.validateAndProceed();
+        },
+
+        submitAnswers() {
+            alert("Questionnaire terminé !");
         }
-    };
+    }
+};
 </script>
+
+
 
 <style scoped>
     .choices {
