@@ -126,7 +126,7 @@ export default {
         return {
             currentQuestionIndex: 0,
             selectedChoice: null,
-            // Questions data (UPDATE THE QUESTIONS AS YOUR REQUIREMENTS)
+            // Questions data (UPDATE THE QUESTIONS AS YOU NEED)
             questions: [
                 {
                     // DO NOT CHANGE THIS QUESTION AT ALL ONLY IF NECESSARY

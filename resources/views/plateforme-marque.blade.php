@@ -65,8 +65,10 @@
 
     <!-- Main Section -->
     <main id="app" class="vh-100 pt-8 flex-1" style="border-top: 1px solid #BBBBBB;">
-        <questionnaire />
+        <plateforme-card />
     </main>
+
+
 
     <!-- Footer Setion -->
     <footer class="d-flex align-items-center justify-content-between container py-7">
