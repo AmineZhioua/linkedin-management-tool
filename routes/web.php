@@ -53,6 +53,4 @@ Route::middleware(['auth', 'verified', 'linkedin.valid'])->group(function() {
 
 
 // Route for "Plateforme de Marque"
-Route::get('/plateforme-marque', function () {
-    return view('plateforme-marque');
-})->name('plateforme-marque');
+Route::get('/plateforme-marque', [App\Http\Controllers\PlateformeMarqueController::class, 'index'])->name('plateforme-marque');

@@ -52,14 +52,59 @@
         </a>
 
         <!-- Auth Dropdown Menu -->
-        <div class="text-black text-sm fw-semibold">
-            <button class="nav-item dropdown bg-pink-200 px-3 py-1 rounded-2xl">
-                <a id="navbarDropdown" class="nav-link dropdown-toggle text-black" href="#" role="button"
-                    data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
-                    {{ Auth::user()->name }}
-                </a>
-                <x-login-dropdown />
-            </button>
+        <div class="flex align-items-center gap-3">
+            <div class="text-black text-sm fw-semibold">
+                <button class="nav-item dropdown bg-transparent px-5 py-2 rounded-full" style="border: 1px solid black;">
+                    <a id="navbarDropdown" class="nav-link dropdown-toggle text-black" href="#" role="button"
+                        data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
+                        {{ Auth::user()->name }}
+                    </a>
+                    <x-login-dropdown />
+                </button>
+            </div>
+
+            <!-- LinkedIn Accounts -->
+            <div class="text-black text-sm fw-semibold">
+                <button class="nav-item dropdown bg-transparent rounded-full">
+                    <!-- Display the first account picture -->
+                    <a id="navbarDropdown" class="nav-link dropdown-toggle text-black d-flex align-items-center gap-2 relative" 
+                        href="#" role="button"
+                        data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre
+                    >
+                        <img 
+                            src="{{ $linkedinUserList[0]->linkedin_picture ?? '/build/assets/images/default-profile.png' }}"
+                            alt="profile-picture" 
+                            height="50" 
+                            width="50" 
+                            class="rounded-full"
+                        />
+                        <!-- LinkedIn Logo -->
+                        <img 
+                            src="/build/assets/icons/linkedin-blue.svg" 
+                            alt="LinkedIn Logo" 
+                            height="25"
+                            width="25" 
+                            class="absolute bottom-[-3px] right-[10px]"
+                        />
+                    </a>
+
+                    <!-- Dropdown menu with the rest of the accounts -->
+                    <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                        @foreach($linkedinUserList as $index => $linkedinUser)
+                            <a class="dropdown-item bg-pink-200 d-flex align-items-center gap-2" href="#">
+                                <img 
+                                    src="{{ $linkedinUser->linkedin_picture ?? '/build/assets/images/default-profile.png' }}"
+                                    alt="profile-picture" 
+                                    height="35" 
+                                    width="35" 
+                                    class="rounded-full"
+                                />
+                                <p>{{ $linkedinUser->linkedin_firstname }} {{ $linkedinUser->linkedin_lastname }}</p>
+                            </a>
+                        @endforeach
+                    </div>
+                </button>
+            </div>
         </div>
     </header>
 
