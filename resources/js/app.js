@@ -4,6 +4,7 @@ import "bootstrap";
 import SubscriptionCards from "./components/SubscriptionCards.vue";
 import Popup from "./components/Popup.vue";
 import PlateformeCard from "./components/PlateformeCard.vue";
+import axios from "axios";
 
 const app = createApp();
 
@@ -12,3 +13,4 @@ app.component("popup", Popup);
 app.component("plateforme-card", PlateformeCard);
 
 app.mount("#app");
+window.axios = axios;
