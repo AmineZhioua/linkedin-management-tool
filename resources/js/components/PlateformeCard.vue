@@ -50,6 +50,7 @@
         <!-- Card Main Content -->
         <div class="flex flex-col align-items-center justify-center card-main">
             <!-- Start Screen - Shows different button text based on existingData -->
+            <!-- Start Screen - Shows different button text based on existingData -->
             <div
                 v-if="!startedQuestionnaire"
                 class="w-full h-[80%] flex align-items-center justify-content-center"
@@ -58,20 +59,38 @@
                     <h2 class="text-black">Plateforme de Marque</h2>
                     <p class="text-muted">
                         {{
-                            existingData
+                            hasCompletedData
                                 ? "Modifiez les informations de votre marque."
+                                : hasPartialData
+                                ? "Continuez à compléter les informations de votre marque."
                                 : "Complétez les informations de votre marque."
                         }}
                     </p>
+                    <!-- If fully completed, show "Recommencer" -->
                     <button
+                        v-if="hasCompletedData"
                         class="py-2 px-4 rounded-full bg-black text-white fw-semibold"
                         @click="startQuestionnaire"
                     >
-                        {{
-                            existingData
-                                ? "Recommencer la plateforme de marque"
-                                : "Commencer"
-                        }}
+                        Recommencer la plateforme de marque
+                    </button>
+
+                    <!-- If partially completed, show "Continuer" -->
+                    <button
+                        v-if="hasPartialData && !hasCompletedData"
+                        class="py-2 px-4 rounded-full bg-black text-white fw-semibold"
+                        @click="startQuestionnaire"
+                    >
+                        Continuer le questionnaire
+                    </button>
+
+                    <!-- If never started, show "Commencer" -->
+                    <button
+                        v-if="!hasPartialData && !hasCompletedData"
+                        class="py-2 px-4 rounded-full bg-black text-white fw-semibold"
+                        @click="startQuestionnaire"
+                    >
+                        Commencer
                     </button>
                 </div>
             </div>
@@ -191,6 +210,17 @@
                 >
                     Précédent
                 </button>
+
+                <!-- Save and return later button -->
+                <button
+                    v-if="startedQuestionnaire && currentQuestionIndex >= 0"
+                    class="py-2 px-5 rounded-full bg-blue-500 text-white fw-semibold"
+                    @click="saveAndReturnLater"
+                    :disabled="isLoading"
+                >
+                    Enregistrer et revenir plus tard
+                </button>
+
                 <button
                     v-if="
                         currentQuestionIndex < questions.length - 1 &&
@@ -268,6 +298,8 @@ export default {
             selectedFile: null,
             newLogoSelected: false,
             existingData: false,
+            hasPartialData: false,
+            hasCompletedData: false,
             existingLogo: null,
             showSuccess: false,
             successMessage: "",
@@ -323,6 +355,24 @@ export default {
                 this.existingData = true;
                 this.existingLogo = this.existingPlateforme.logo_marque || null;
 
+                // Check if it's partial data or complete data
+                const hasNom = !!this.existingPlateforme.nom_marque;
+                const hasDomaine = !!this.existingPlateforme.domaine_marque;
+                const hasLogo = !!this.existingPlateforme.logo_marque;
+                const hasDescription =
+                    !!this.existingPlateforme.description_marque;
+
+                // If all fields are filled, it's complete data
+                if (hasNom && hasDomaine && hasLogo && hasDescription) {
+                    this.hasCompletedData = true;
+                    this.hasPartialData = false; // Make sure these are mutually exclusive
+                }
+                // If at least one field is filled but not all, it's partial data
+                else if (hasNom || hasDomaine || hasLogo || hasDescription) {
+                    this.hasPartialData = true;
+                    this.hasCompletedData = false; // Make sure these are mutually exclusive
+                }
+
                 // Pre-populate answers for fields that exist
                 if (this.existingPlateforme.nom_marque) {
                     this.answers["Le nom de ta marque"] =
@@ -344,10 +394,27 @@ export default {
         },
         startQuestionnaire() {
             this.startedQuestionnaire = true;
-            this.currentQuestionIndex = 0; // Reset to first question
+
+            // If there's partial data, find the first unanswered question
+            if (this.hasPartialData && !this.hasCompletedData) {
+                if (!this.answers["Le nom de ta marque"]) {
+                    this.currentQuestionIndex = 0;
+                } else if (!this.answers["Domaine de la marque"]) {
+                    this.currentQuestionIndex = 1;
+                } else if (!this.answers["Logo de ta marque"]) {
+                    this.currentQuestionIndex = 2;
+                } else if (!this.answers["Description de ta marque"]) {
+                    this.currentQuestionIndex = 3;
+                } else {
+                    this.currentQuestionIndex = 0;
+                }
+            } else {
+                this.currentQuestionIndex = 0; // Reset to first question
+            }
+
             this.newLogoSelected = false; // Reset logo selection flag
 
-            // Pre-fill the first question's input if existing data is available
+            // Pre-fill the current question's input if existing data is available
             this.updateInputsForCurrentQuestion();
         },
         getInputValue() {
@@ -395,6 +462,12 @@ export default {
                     "Veuillez répondre à la question avant de passer à la suivante."
                 );
             }
+        },
+        selectAndNext(choice) {
+            // Store the selected choice and move to next question
+            const currentQuestion = this.questions[this.currentQuestionIndex];
+            this.answers[currentQuestion.title] = choice;
+            this.nextQuestion();
         },
         storeAnswer() {
             const currentQuestion = this.questions[this.currentQuestionIndex];
@@ -447,6 +520,104 @@ export default {
                     this.newLogoSelected = false;
                 }
             }
+        },
+        saveAndReturnLater() {
+            if (this.isLoading) return; // Prevent multiple submissions
+
+            // Store the current answer
+            this.storeAnswer();
+
+            // Check if at least one answer is provided
+            const hasAtLeastOneAnswer = Object.keys(this.answers).length > 0;
+
+            if (!hasAtLeastOneAnswer) {
+                alert(
+                    "Veuillez remplir au moins un champ avant d'enregistrer."
+                );
+                return;
+            }
+
+            this.isLoading = true; // Activate loading state
+
+            const formData = new FormData();
+
+            // Only append fields that have answers
+            if (this.answers["Le nom de ta marque"]) {
+                formData.append(
+                    "nom_marque",
+                    this.answers["Le nom de ta marque"]
+                );
+            }
+
+            if (this.answers["Domaine de la marque"]) {
+                formData.append(
+                    "domaine_marque",
+                    this.answers["Domaine de la marque"]
+                );
+            }
+
+            if (this.answers["Description de ta marque"]) {
+                formData.append(
+                    "description_marque",
+                    this.answers["Description de ta marque"]
+                );
+            }
+
+            // Set mode to partial for save and return later
+            formData.append("mode", "partial");
+
+            // Add ID if updating
+            if (this.existingData && this.existingPlateforme.id) {
+                formData.append("id", this.existingPlateforme.id);
+            }
+
+            // File handling - only if we have a logo answer
+            if (this.selectedFile) {
+                formData.append("logo_marque", this.selectedFile);
+                formData.append("logo_changed", "true");
+            } else if (this.existingLogo && !this.newLogoSelected) {
+                // Keep existing logo
+                formData.append("logo_changed", "false");
+            }
+
+            fetch("/save-platform-info", {
+                method: "POST",
+                headers: {
+                    "X-CSRF-TOKEN": document
+                        .querySelector('meta[name="csrf-token"]')
+                        .getAttribute("content"),
+                },
+                body: formData,
+            })
+                .then((response) => {
+                    if (!response.ok) {
+                        return response.text().then((text) => {
+                            throw new Error(text);
+                        });
+                    }
+                    return response.json();
+                })
+                .then((data) => {
+                    console.log("Form saved:", data);
+                    this.isLoading = false; // Deactivate loading state
+                    this.successMessage =
+                        "Informations enregistrées. Vous pouvez revenir compléter plus tard.";
+                    this.showSuccess = true;
+
+                    // Return to start screen after saving
+                    setTimeout(() => {
+                        this.showSuccess = false;
+                        this.startedQuestionnaire = false;
+                        window.location.reload(); // Refresh to update existing data status
+                    }, 2000);
+                })
+                .catch((error) => {
+                    console.error("Error saving form:", error);
+                    this.isLoading = false; // Deactivate loading state even on error
+                    alert(
+                        "Une erreur s'est produite lors de l'enregistrement du formulaire."
+                    );
+                });
         },
         submitAnswers() {
             if (this.isLoading) return; // Prevent multiple submissions

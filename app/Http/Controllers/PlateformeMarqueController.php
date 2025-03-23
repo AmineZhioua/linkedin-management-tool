@@ -37,18 +37,19 @@ class PlateformeMarqueController extends Controller
 
             // Validate the incoming request
             $request->validate([
-                'nom_marque' => 'required|string|max:255',
-                'domaine_marque' => 'required|string|max:255',
+                'nom_marque' => 'nullable|string|max:255',
+                'domaine_marque' => 'nullable|string|max:255',
                 'logo_marque' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg',
                 'description_marque' => 'nullable|string|max:500',
-                'mode' => 'required|string|in:create,update',
+                'mode' => 'required|string|in:create,update,partial',
                 'logo_changed' => 'nullable|string|in:true,false',
             ]);
 
-            // Determine if we're creating or updating
+            // Determine if we're creating, updating, or saving partial data
             $isUpdate = $request->mode === 'update';
+            $isPartial = $request->mode === 'partial';
             
-            if ($isUpdate) {
+            if ($isUpdate || $isPartial) {
                 // Find existing record
                 $platformInfo = PlateformeMarque::where('user_id', $user->id)->first();
                 
@@ -63,15 +64,23 @@ class PlateformeMarqueController extends Controller
                 $platformInfo->user_id = $user->id;
             }
             
-            // Update fields
-            $platformInfo->nom_marque = $request->nom_marque;
-            $platformInfo->domaine_marque = $request->domaine_marque;
-            $platformInfo->description_marque = $request->description_marque;
+            // Update fields - only update fields that are provided in partial mode
+            if ($request->has('nom_marque')) {
+                $platformInfo->nom_marque = $request->nom_marque;
+            }
+            
+            if ($request->has('domaine_marque')) {
+                $platformInfo->domaine_marque = $request->domaine_marque;
+            }
+            
+            if ($request->has('description_marque')) {
+                $platformInfo->description_marque = $request->description_marque;
+            }
 
             // Handle logo upload if provided
             if ($request->hasFile('logo_marque') && $request->logo_changed === 'true') {
                 // Delete old logo if exists
-                if ($isUpdate && $platformInfo->logo_marque) {
+                if (($isUpdate || $isPartial) && $platformInfo->logo_marque) {
                     Storage::disk('public')->delete($platformInfo->logo_marque);
                 }
                 
@@ -82,8 +91,11 @@ class PlateformeMarqueController extends Controller
 
             $platformInfo->save();
 
+            $message = $isPartial ? 'Informations enregistrées, vous pouvez revenir plus tard' : 
+                      ($isUpdate ? 'Informations mises à jour avec succès' : 'Informations soumises avec succès');
+
             return response()->json([
-                'message' => $isUpdate ? 'Informations mises à jour avec succès' : 'Informations soumises avec succès',
+                'message' => $message,
                 'plateforme' => $platformInfo
             ], 200);
         } catch (\Exception $e) {
