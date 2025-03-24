@@ -4,12 +4,15 @@ import "bootstrap";
 import SubscriptionCards from "./components/SubscriptionCards.vue";
 import Popup from "./components/Popup.vue";
 import PlateformeCard from "./components/PlateformeCard.vue";
-import axios from "axios";
+import LoadingOverlay from "./components/LoadingOverlay.vue";
+import ProgressIndicator from "./components/ProgressIndicator.vue";
 
 const app = createApp();
 
 app.component("subscription-cards", SubscriptionCards);
 app.component("popup", Popup);
 app.component("plateforme-card", PlateformeCard);
+app.component("loading-overlay", LoadingOverlay);
+app.component("progress-indicator", ProgressIndicator);
 
 app.mount("#app");

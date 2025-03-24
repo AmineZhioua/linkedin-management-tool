@@ -41,12 +41,7 @@
         </div>
 
         <!-- Loading Overlay -->
-        <div v-if="isLoading" class="loading-overlay">
-            <div class="loader-container">
-                <div class="loader"></div>
-                <p class="mt-3 text-white">Traitement en cours...</p>
-            </div>
-        </div>
+        <loading-overlay :isLoading="isLoading" message="Traitement en cours..." />
 
         <!-- Card Main Content -->
         <div class="flex flex-col align-items-center justify-center card-main">
@@ -101,6 +96,14 @@
                 class="w-full h-[80%] flex align-items-center justify-content-center"
             >
                 <div v-if="currentQuestionIndex < questions.length">
+                    <!-- Progress Indicator -->
+                    <div class="mb-4 w-full flex justify-center">
+                        <progress-indicator 
+                            :total-steps="questions.length" 
+                            :current-step="currentQuestionIndex + 1" 
+                        />
+                    </div>
+                    <!-- Questions Header -->
                     <div class="flex flex-col gap-4 text-center align-items-center">
                         <h2 class="text-black">
                             {{ questions[currentQuestionIndex].title }}
@@ -271,6 +274,7 @@
 
 <script>
 import axios from 'axios';
+import LoadingOverlay from './LoadingOverlay.vue';
 
 export default {
     name: "PlateformeCard",
@@ -677,34 +681,6 @@ export default {
     margin-bottom: 15px;
 }
 
-/* Loading overlay and spinner styles */
-.loading-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.7);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-}
-
-.loader-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.loader {
-    border: 5px solid rgba(255, 255, 255, 0.3);
-    border-radius: 50%;
-    border-top: 5px solid white;
-    width: 50px;
-    height: 50px;
-    animation: spin 1s linear infinite;
-}
 
 .btn-loader {
     display: inline-block;
@@ -714,15 +690,6 @@ export default {
     border-radius: 50%;
     border-top: 3px solid white;
     animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    0% {
-        transform: rotate(0deg);
-    }
-    100% {
-        transform: rotate(360deg);
-    }
 }
 
 /* Disable pointer events when loading */
