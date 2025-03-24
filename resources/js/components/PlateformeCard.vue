@@ -46,8 +46,7 @@
         <!-- Card Main Content -->
         <div class="flex flex-col align-items-center justify-center card-main">
             <!-- Start Screen - Shows different button text based on existingData -->
-            <div
-                v-if="!startedQuestionnaire"
+            <div v-if="!startedQuestionnaire"
                 class="w-full h-[80%] flex align-items-center justify-content-center"
             >
                 <div class="flex flex-col gap-4 text-center align-items-center">
@@ -91,10 +90,7 @@
             </div>
 
             <!-- Questionnaire -->
-            <div
-                v-else
-                class="w-full h-[80%] flex align-items-center justify-content-center"
-            >
+            <div v-else class="w-full h-[80%] flex align-items-center justify-content-center">
                 <div v-if="currentQuestionIndex < questions.length">
                     <!-- Progress Indicator -->
                     <div class="mb-4 w-full flex justify-center">
@@ -191,9 +187,7 @@
                 </div>
             </div>
 
-            <div
-                class="flex align-items-center flex-wrap justify-content-center gap-2 mt-4"
-            >
+            <div class="flex align-items-center flex-wrap justify-content-center gap-2 mt-4">
                 <!-- Navigation buttons -->
                 <button
                     v-if="currentQuestionIndex > 0 && startedQuestionnaire"
