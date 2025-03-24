@@ -32,7 +32,7 @@ class PlateformeMarqueController extends Controller
         try {
             $user = Auth::user();
             if (!$user) {
-                return response()->json(['error' => 'User not authenticated'], 401);
+                return redirect()->route('login');
             }
 
             // Validate the incoming request
@@ -50,16 +50,13 @@ class PlateformeMarqueController extends Controller
             $isPartial = $request->mode === 'partial';
             
             if ($isUpdate || $isPartial) {
-                // Find existing record
                 $platformInfo = PlateformeMarque::where('user_id', $user->id)->first();
                 
                 if (!$platformInfo) {
-                    // If not found, create new one
                     $platformInfo = new PlateformeMarque();
                     $platformInfo->user_id = $user->id;
                 }
             } else {
-                // Create new record
                 $platformInfo = new PlateformeMarque();
                 $platformInfo->user_id = $user->id;
             }

@@ -13,4 +13,3 @@ app.component("popup", Popup);
 app.component("plateforme-card", PlateformeCard);
 
 app.mount("#app");
-window.axios = axios;

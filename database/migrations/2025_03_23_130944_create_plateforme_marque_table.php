@@ -8,11 +8,11 @@ return new class extends Migration {
     {
         Schema::create('plateforme_marque', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade'); // User ID
-            $table->string('nom_marque')->nullable(); // Brand Name
-            $table->string('domaine_marque')->nullable(); // Brand Domain
-            $table->string('logo_marque')->nullable(); // Brand Logo (File Path)
-            $table->text('description_marque')->nullable(); // Brand Description
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->string('nom_marque')->nullable();
+            $table->string('domaine_marque')->nullable();
+            $table->string('logo_marque')->nullable();
+            $table->text('description_marque')->nullable();
             $table->timestamps();
         });
     }
