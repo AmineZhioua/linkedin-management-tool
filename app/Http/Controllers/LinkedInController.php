@@ -170,4 +170,61 @@ class LinkedInController extends Controller
 
         return redirect()->route('login-linkedin')->with('linkedin_error', 'Compte LinkedIn introuvable.');
     }
+
+
+
+    // Function to post only text in LinkedIn
+    public function postTextOnly(Request $request) {
+        $postUrl = "https://api.linkedin.com/v2/ugcPosts";
+
+        $validated = $request->validate([
+            'token' => 'required|string',
+            'linkedin_id' => 'required|string',
+            'caption' => 'required|string|max:3000'
+        ]);
+
+        $authorUrn = 'urn:li:person:' . $validated['linkedin_id'];
+        
+        $postData = [
+            "author" => $authorUrn,
+            "lifecycleState" => "PUBLISHED",
+            "specificContent" => [
+                "com.linkedin.ugc.ShareContent" => [
+                    "shareCommentary" => [
+                        "text" => $validated['caption']
+                    ],
+                    "shareMediaCategory" => "NONE"
+                ]
+            ],
+            "visibility" => [
+                "com.linkedin.ugc.MemberNetworkVisibility" => "PUBLIC"
+            ]
+        ];
+
+        $headers = [
+            "Authorization: Bearer " . $validated['token'],
+            "Content-Type: application/json",
+            "X-Restli-Protocol-Version: 2.0.0"
+        ];
+
+        $curl = curl_init();
+        curl_setopt_array($curl, [
+            CURLOPT_URL => $postUrl,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => json_encode($postData),
+            CURLOPT_HTTPHEADER => $headers,
+            CURLOPT_TIMEOUT => 30
+        ]);
+
+        $response = curl_exec($curl);
+        $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        
+        curl_close($curl);
+
+        return [
+            'status' => $httpCode,
+            'response' => json_decode($response, true)
+        ];
+    }
 }

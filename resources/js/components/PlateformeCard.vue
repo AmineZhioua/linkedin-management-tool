@@ -268,7 +268,6 @@
 
 <script>
 import axios from 'axios';
-import LoadingOverlay from './LoadingOverlay.vue';
 
 export default {
     name: "PlateformeCard",
@@ -659,10 +658,6 @@ export default {
     padding: 20px;
 }
 
-.bg-img {
-    width: 50px;
-    height: 50px;
-}
 
 .first-btn {
     background-color: #f0f4fa;
@@ -684,6 +679,15 @@ export default {
     border-radius: 50%;
     border-top: 3px solid white;
     animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 /* Disable pointer events when loading */

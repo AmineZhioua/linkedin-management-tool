@@ -5,7 +5,6 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\GoogleController;
 use App\Http\Controllers\StripeController;
 use App\Http\Controllers\SubscriptionController;
-use App\Http\Controllers\PlateformeMarqueController;
 
 
 Route::get('/', function () {
@@ -54,6 +53,11 @@ Route::middleware(['auth', 'verified', 'linkedin.valid'])->group(function() {
 });
 
 
-// Route for "Plateforme de Marque"
+// Route for "Plateforme de Marque" Page
 Route::get('/plateforme-marque', [App\Http\Controllers\PlateformeMarqueController::class, 'index'])->name('plateforme-marque');
-Route::post('/save-platform-info', [PlateformeMarqueController::class, 'store'])->name('plateforme.store');
+Route::post('/save-platform-info', [App\Http\Controllers\PlateformeMarqueController::class, 'store'])->name('plateforme.store');
+
+
+// Route for "Linkedin Post" Page
+Route::get('/linkedin-post', [App\Http\Controllers\LinkedinPostController::class, 'index'])->name('linkedin-post');
+Route::post('/linkedin/publish', [App\Http\Controllers\LinkedInController::class, 'postTextOnly']);

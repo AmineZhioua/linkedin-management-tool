@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -11,27 +10,14 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     
     @vite(['resources/js/app.js', 'resources/css/app.css'])
-    <title>Lemonade - Plateforme de Marque</title>
+    <title>Lemonade - Publier sur LinkedIn</title>
     <link rel="icon" type="image/x-icon" href="/build/assets/lemonade-logo.svg">
 
     <!-- FontAwesome Kit -->
     <script src="https://kit.fontawesome.com/33f8496b80.js" crossorigin="anonymous"></script>
-    <style>
-        body {
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-            margin: 0;
-            background-color: #FEF4E5;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .socials img {
-            cursor: pointer;
-        }
-    </style>
 </head>
-<body>
+<body class="flex flex-col"
+    style="background-color: #FEF4E5; font-family: 'Inter', sans-serif; min-height:100vh;">
     <!-- Header Section -->
     <header class="d-flex align-items-center justify-content-between container">
         <!-- Lemonade Logo & Text -->
@@ -110,54 +96,7 @@
 
     <!-- Main Section -->
     <main id="app" class="vh-100 pt-8 flex-1" style="border-top: 1px solid #BBBBBB;">
-            <plateforme-card :existing-plateforme="{{ $existingPlateforme ? json_encode($existingPlateforme) : 'null' }}"></plateforme-card>
+        <linkedin-postcard :linkedin-userlist="{{ $linkedinUserList }}" />
     </main>
-
-
-
-    <!-- Footer Setion -->
-    <footer class="d-flex align-items-center justify-content-between container py-7">
-        <!-- Copyright & Date -->
-        <div class="d-flex copyright flex-col text-black fw-semibold">
-            <span>Copyright ©
-                <script>
-                    document.write(new Date().getFullYear());
-                </script>
-                Lemonade.
-            </span>
-            <span>Tous droits réservés</span>
-        </div>
-
-        <!-- Lemonade Logo -->
-        <img 
-            src="/build/assets/lemonade-logo.svg" 
-            alt="Lemonade Logo"
-            height="40"
-            width="40"
-        />
-        <div class="flex gap-3 socials">
-            <!-- LinkedIn Icon -->
-            <img 
-                src="/build/assets/icons/linkedin-black.svg" 
-                alt="LinkedIn Logo" 
-                height="25"
-                width="25" 
-            />
-            <!-- Instagram Icon -->
-            <img 
-                src="/build/assets/icons/instagram-black.svg" 
-                alt="LinkedIn Logo" 
-                height="25"
-                width="25" 
-            />
-            <!-- TikTok Icon -->
-            <img 
-                src="/build/assets/icons/tiktok-black.svg" 
-                alt="LinkedIn Logo" 
-                height="25"
-                width="25" 
-            />
-        </div>
-    </footer>
 </body>
 </html>
