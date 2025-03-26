@@ -61,3 +61,6 @@ Route::post('/save-platform-info', [App\Http\Controllers\PlateformeMarqueControl
 // Route for "Linkedin Post" Page
 Route::get('/linkedin-post', [App\Http\Controllers\LinkedinPostController::class, 'index'])->name('linkedin-post');
 Route::post('/linkedin/publish', [App\Http\Controllers\LinkedInController::class, 'postTextOnly']);
+Route::post('/linkedin/registermedia', [App\Http\Controllers\LinkedInController::class, 'registerMedia']);
+Route::post('/linkedin/upload-media-binary', [App\Http\Controllers\LinkedInController::class, 'uploadMediaBinary']);
+Route::post('/linkedin/share-media', [App\Http\Controllers\LinkedInController::class, 'shareMedia']);

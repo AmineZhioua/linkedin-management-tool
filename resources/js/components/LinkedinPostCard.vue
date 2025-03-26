@@ -111,24 +111,24 @@
                 <textarea 
                     v-model="postText"
                     placeholder="What do you want to share?"
-                    class="w-full border rounded-lg p-2 h-32 mb-4"
-                ></textarea>
+                    class="w-full border rounded-lg p-2 h-32 mb-4">
+                </textarea>
     
-            <div class="flex justify-between">
-                <button 
-                @click="prevStep" 
-                class="bg-gray-300 text-black py-2 px-4 rounded-lg"
-                >
-                Back
-                </button>
-                <button 
-                @click="submitPost" 
-                :disabled="!postText"
-                class="bg-blue-500 text-white py-2 px-4 rounded-lg disabled:bg-gray-300"
-                >
-                Post
-                </button>
-            </div>
+                <div class="flex justify-between">
+                    <button 
+                        @click="prevStep" 
+                        class="bg-gray-300 text-black py-2 px-4 rounded-lg"
+                    >
+                        Back
+                    </button>
+                    <button 
+                        @click="handlePostSubmission" 
+                        :disabled="!postText"
+                        class="bg-blue-500 text-white py-2 px-4 rounded-lg disabled:bg-gray-300"
+                    >
+                        Post
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -154,12 +154,12 @@ export default {
         postTypes: [
           { 
             value: 'image', 
-            label: 'Image', 
+            label: 'image', 
             icon: 'fas fa-image' 
           },
           { 
             value: 'video', 
-            label: 'Video', 
+            label: 'video', 
             icon: 'fas fa-video' 
           },
           { 
@@ -201,6 +201,26 @@ export default {
             }
         },
 
+        handlePostSubmission() {
+            if (!this.selectedAccount) {
+                this.submissionError = 'Please select an account';
+                return;
+            }
+
+            if (!this.postText) {
+                this.submissionError = 'Please enter post text';
+                return;
+            }
+
+            if (this.selectedPostType === null) {
+                // Text-only post
+                this.submitPost();
+            } else {
+                // Media post (image, video, document)
+                this.registerAndShareMedia();
+            }
+        },
+
         async submitPost() {
             if (!this.selectedAccount) {
                 this.submissionError = 'Please select an account';
@@ -212,7 +232,6 @@ export default {
                 return;
             }
 
-            // Set submitting state
             this.isSubmitting = true;
             this.submissionError = null;
 
@@ -223,7 +242,6 @@ export default {
                     caption: this.postText.trim(),
                 };
 
-                // Send post to backend endpoint
                 const response = await axios.post('/linkedin/publish', postData, {
                     headers: {
                         "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
@@ -237,19 +255,139 @@ export default {
                         details: response.data
                     });
 
-                    // Reset form
                     this.resetForm();
                 } else {
+                    this.submissionError = 'An Error occurred while publishing the post';
                     console.log("Error to publish");
                 }
             } catch (error) {
-                // Handle error
-                this.submissionError = error.response?.data?.message || 'Failed to publish post';
+                this.submissionError = error.response?.data?.message || 'An Error occurred while publishing the post';
                 this.$emit('post-error', error);
             } finally {
                 this.isSubmitting = false;
             }
         },
+
+        // ASYNC FUNCTION TO REGISTER MEDIA (IMAGE/VIDEO) TO LINKEDIN
+        async registerAndShareMedia() {
+            if (!this.selectedAccount) {
+                this.submissionError = 'Please select an account';
+                return;
+            }
+
+            if (!this.uploadedFile) {
+                this.submissionError = 'Please select a file';
+                return;
+            }
+
+            this.isSubmitting = true;
+            this.submissionError = null;
+
+            try {
+                const formData = new FormData();
+                formData.append('token', this.selectedAccount.linkedin_token);
+                formData.append('linkedin_id', this.selectedAccount.linkedin_id);
+                formData.append('type', this.selectedPostType);
+                formData.append('media', this.uploadedFile);
+                formData.append('caption', this.postText.trim());
+
+
+                // Register the media
+                const registerResponse = await axios.post('/linkedin/registermedia', formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                        "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
+                    }
+                });
+
+                // Check if media registration was successful
+                if (registerResponse.data.status === 200) {
+                    const binaryUploadFormData = new FormData();
+                    binaryUploadFormData.append('token', this.selectedAccount.linkedin_token);
+                    binaryUploadFormData.append('upload_url', registerResponse.data.uploadUrl);
+                    binaryUploadFormData.append('media', this.uploadedFile);
+
+                    const binaryUploadResponse = await axios.post('/linkedin/upload-media-binary', binaryUploadFormData, {
+                        headers: {
+                            'Content-Type': 'multipart/form-data',
+                            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
+                        }
+                    });
+
+                    const shareResponse = await this.shareMediaPost(registerResponse.data.asset, this.postText.trim(), 
+                        this.selectedPostType === 'image' ? 'IMAGE' : 'VIDEO'
+                    );
+
+                    this.$emit('media-registered', {
+                        message: 'Media posted successfully!',
+                        details: shareResponse.data
+                    });
+
+                    this.resetForm();
+                } else {
+                    throw new Error(registerResponse.data.error || 'Media registration failed');
+                }
+            } catch (error) {
+                this.submissionError = error.response?.data?.error || 'Failed to register media';
+                this.$emit('post-error', error);
+            } finally {
+                this.isSubmitting = false;
+            }
+        },
+
+
+        // ASYNC FUNCTION TO SHARE MEDIA POST TO LINKEDIN
+        async shareMediaPost(asset, caption, mediaType) {
+            this.isSubmitting = true;
+            this.submissionError = null;
+
+            try {
+                const shareData = {
+                    token: this.selectedAccount.linkedin_token,
+                    linkedin_id: this.selectedAccount.linkedin_id,
+                    asset: asset,
+                    caption: caption,
+                    media_type: mediaType
+                };
+
+                const response = await axios.post('/linkedin/share-media', shareData, {
+                    headers: {
+                        "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
+                    }
+                });
+
+                if (response.data.status === 'success') {
+                    this.$emit('media-registered', {
+                        message: 'Media posted successfully!',
+                        details: response.data
+                    });
+
+                    this.resetForm();
+                } else {
+                    throw new Error(response.data.message || 'Failed to share media');
+                }
+            } catch (error) {
+                let errorMessage = 'Failed to share post';
+                
+                if (error.response) {
+                    errorMessage = error.response.data.message || error.response.data.error || 'Failed to share post';
+                    console.error('Detailed Error:', error.response.data);
+                } else if (error.request) {
+                    errorMessage = 'No response received from server';
+                } else {
+                    errorMessage = error.message;
+                }
+
+                this.submissionError = errorMessage;
+                this.$emit('post-error', {
+                    error: errorMessage,
+                    details: error.response ? error.response.data : error
+                });
+            } finally {
+                this.isSubmitting = false;
+            }
+        },
+
 
         resetForm() {
             this.currentStep = 1;
