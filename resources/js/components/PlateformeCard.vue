@@ -491,7 +491,7 @@ export default {
                 }
             }
         },
-        saveAndReturnLater() {
+        async saveAndReturnLater() {
             if (this.isLoading) return; // Prevent multiple submissions
 
             // Store the current answer
@@ -538,7 +538,7 @@ export default {
                 formData.append("logo_changed", "false");
             }
 
-            axios.post("/save-platform-info", formData, {
+            await axios.post("/save-platform-info", formData, {
                 headers: {
                     "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
                 },
@@ -560,7 +560,7 @@ export default {
             });
 
         },
-        submitAnswers() {
+        async submitAnswers() {
             if (this.isLoading) return; // Prevent multiple submissions
 
             this.isLoading = true;
@@ -588,7 +588,7 @@ export default {
                 formData.append("logo_changed", "false");
             }
 
-            axios.post("/save-platform-info", formData, {
+            await axios.post("/save-platform-info", formData, {
                 headers: {
                     "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
                 },

@@ -64,3 +64,5 @@ Route::post('/linkedin/publish', [App\Http\Controllers\LinkedInController::class
 Route::post('/linkedin/registermedia', [App\Http\Controllers\LinkedInController::class, 'registerMedia']);
 Route::post('/linkedin/upload-media-binary', [App\Http\Controllers\LinkedInController::class, 'uploadMediaBinary']);
 Route::post('/linkedin/share-media', [App\Http\Controllers\LinkedInController::class, 'shareMedia']);
+Route::post('/linkedin/share-article', [App\Http\Controllers\LinkedInController::class, 'shareArticle']);
+

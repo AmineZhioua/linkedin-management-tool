@@ -95,7 +95,7 @@
                 </h2>
             
                 <!-- File Input for Image/Video/Article -->
-                <div v-if="selectedPostType !== null" class="mb-4">
+                <div v-if="selectedPostType === 'image' || selectedPostType === 'video'" class="mb-4">
                     <input 
                         type="file" 
                         @change="handleFileUpload"
@@ -106,11 +106,39 @@
                         Selected file: {{ uploadedFile.name }}
                     </p>
                 </div>
+
+                <!-- Input For Article -->
+                <div class="mb-4 flex flex-col gap-2" v-if="selectedPostType == 'article'">
+                    <label for="article" class="text-sm text-gray-600">Article URL* :</label>
+                    <!-- Article URL -->
+                    <input 
+                        type="text" 
+                        class="w-full border rounded-lg p-2" 
+                        placeholder="e.g: www.example.com" 
+                        v-model="articleUrl"
+                    />
+                    <!-- Article Title -->
+                    <label for="title" class="text-sm text-gray-600">Article Title :</label>
+                    <input 
+                        type="text" 
+                        class="w-full border rounded-lg p-2" 
+                        placeholder="Official LinkedIn Blog" 
+                        v-model="articleTitle"
+                    />
+                    <!-- Article Description -->
+                    <label for="description" class="text-sm text-gray-600">Article Description :</label>
+                    <input 
+                        type="text" 
+                        class="w-full border rounded-lg p-2" 
+                        placeholder="Official LinkedIn Blog - Your source for insights and information about LinkedIn." 
+                        v-model="articleDescription"
+                    />
+                </div>
     
                 <!-- Text Input -->
                 <textarea 
                     v-model="postText"
-                    placeholder="What do you want to share?"
+                    placeholder="What do you want to express?"
                     class="w-full border rounded-lg p-2 h-32 mb-4">
                 </textarea>
     
@@ -169,7 +197,10 @@ export default {
           }
         ],
         uploadedFile: null,
-        postText: ''
+        postText: '',
+        articleTitle: '',
+        articleDescription: '',
+        articleUrl: ''
       }
     },
     methods: {
@@ -215,6 +246,9 @@ export default {
             if (this.selectedPostType === null) {
                 // Text-only post
                 this.submitPost();
+            }else if(this.selectedPostType === 'article') {
+                // Article post
+                this.shareArticle();
             } else {
                 // Media post (image, video, document)
                 this.registerAndShareMedia();
@@ -371,6 +405,60 @@ export default {
                 
                 if (error.response) {
                     errorMessage = error.response.data.message || error.response.data.error || 'Failed to share post';
+                    console.error('Detailed Error:', error.response.data);
+                } else if (error.request) {
+                    errorMessage = 'No response received from server';
+                } else {
+                    errorMessage = error.message;
+                }
+
+                this.submissionError = errorMessage;
+                this.$emit('post-error', {
+                    error: errorMessage,
+                    details: error.response ? error.response.data : error
+                });
+            } finally {
+                this.isSubmitting = false;
+            }
+        },
+
+        // ASYNC FUNCTION TO SHARE ARTICLE TO LINKEDIN
+        async shareArticle() {
+            this.isSubmitting = true;
+            this.submissionError = null;
+
+            try {
+                const articleData = {
+                    token: this.selectedAccount.linkedin_token,
+                    linkedin_id: this.selectedAccount.linkedin_id,
+                    article_url: this.articleUrl,
+                    article_title: this.articleTitle,
+                    article_description: this.articleDescription,
+                    caption: this.postText.trim(),
+                };
+
+                // Make the Request to Share Article
+                const articleResponse = await axios.post('/linkedin/share-article', articleData, {
+                    headers: {
+                        "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
+                    }
+                });
+
+                if (response.data.status === 'success') {
+                    this.$emit('media-registered', {
+                        message: 'Media posted successfully!',
+                        details: response.data
+                    });
+
+                    this.resetForm();
+                } else {
+                    throw new Error(response.data.message || 'Failed to share media');
+                }
+            } catch (error) {
+                let errorMessage = 'Failed to share article';
+                
+                if (error.response) {
+                    errorMessage = error.response.data.message || error.response.data.error || 'Failed to share article';
                     console.error('Detailed Error:', error.response.data);
                 } else if (error.request) {
                     errorMessage = 'No response received from server';

@@ -527,4 +527,128 @@ class LinkedInController extends Controller
             ], 500);
         }
     }
+
+
+    // Function to Share Article on LinkedIn
+    public function shareArticle(Request $request) {
+        try {
+            $validated = $request->validate([
+                'token' => 'required|string',
+                'linkedin_id' => 'required|string',
+                'caption' => 'nullable|string',
+                'article_url' => 'required|url',
+                'article_title' => 'required|string',
+                'article_description' => 'required|string',
+            ]);
+
+            $postUrl = "https://api.linkedin.com/v2/ugcPosts";
+
+            $authorUrn = 'urn:li:person:' . $validated['linkedin_id'];
+
+            $postData = [
+                "author" => $authorUrn,
+                "lifecycleState" => "PUBLISHED",
+                "specificContent" => [
+                    "com.linkedin.ugc.ShareContent" => [
+                        "shareCommentary" => [
+                            "text" => $validated['caption'] ?? ''
+                        ],
+                        "shareMediaCategory" => "ARTICLE",
+                        "media" => [
+                            [
+                                "status" => "READY",
+                                "description" => [
+                                    "text" => $validated['article_description'] ?? ''
+                                ],
+                                "originalUrl" => $validated['article_url'],
+                                "title" => [
+                                    "text" => $validated['article_title'] ?? ''
+                                ],
+                            ]
+                        ]
+                    ]
+                ],
+                "visibility" => [
+                    "com.linkedin.ugc.MemberNetworkVisibility" => "PUBLIC"
+                ]
+            ];
+
+            $headers = [
+                "Authorization: Bearer " . $validated['token'],
+                "Content-Type: application/json",
+                "X-Restli-Protocol-Version: 2.0.0"
+            ];
+
+            $curl = curl_init();
+            curl_setopt_array($curl, [
+                CURLOPT_URL => $postUrl,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_POST => true,
+                CURLOPT_POSTFIELDS => json_encode($postData),
+                CURLOPT_HTTPHEADER => $headers,
+                CURLOPT_TIMEOUT => 30
+            ]);
+
+            $response = curl_exec($curl);
+            $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+            $responseData = json_decode($response, true);
+
+            curl_close($curl);
+
+            Log::info('LinkedIn Share Article Response', [
+                'http_code' => $httpCode,
+                'response' => $responseData
+            ]);
+
+            // Successful response handling
+            if ($httpCode >= 200 && $httpCode < 300) {
+                return response()->json([
+                    'status' => 'success',
+                    'http_code' => $httpCode,
+                    'message' => 'Article shared successfully on LinkedIn',
+                    'post_id' => $responseData['id'] ?? null
+                ], 200);
+            }
+
+            // Error handling for unsuccessful responses
+            $errorMessage = 'Failed to share article on LinkedIn';
+            if(isset($responseData['message'])) {
+                $errorMessage = $responseData['message'];
+            } elseif(isset($responseData['error'])) {
+                $errorMessage = $responseData['error'];
+            }
+
+            Log::error('LinkedIn Share Article Error', [
+                'http_code' => $httpCode,
+                'error_message' => $errorMessage,
+                'full_response' => $responseData
+            ]);
+
+            return response()->json([
+                'status' => 'error',
+                'http_code' => $httpCode,
+                'message' => $errorMessage,
+                'details' => $responseData
+            ], $httpCode);
+
+        } catch(\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'status' => 'validation_error',
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
+
+        } catch(\Exception $e) {
+            Log::error('Unexpected LinkedIn Share Article Error', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'status' => 'server_error',
+                'message' => 'An unexpected error occurred',
+                'error_details' => $e->getMessage()
+            ], 500);
+        }
+    }
 }
