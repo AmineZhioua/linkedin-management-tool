@@ -40,7 +40,7 @@
         <!-- Auth Dropdown Menu -->
         <div class="flex align-items-center gap-3">
             <div class="text-black text-sm font-semibold">
-                <button class="nav-item dropdown bg-white hover:bg-gray-50 px-5 py-2 rounded-full transition-colors duration-200 shadow-sm" style="border: 1px solid rgba(0,0,0,0.2);">
+                <button class="nav-item dropdown px-5 py-2 rounded-full" style="border: 1px solid black;">
                     <a id="navbarDropdown" class="nav-link dropdown-toggle text-black flex items-center" href="#" role="button"
                     data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
                         {{ Auth::user()->name }}
@@ -98,5 +98,51 @@
     <main id="app" class="vh-100 pt-8 flex-1" style="border-top: 1px solid #BBBBBB;">
         <linkedin-postcard :linkedin-userlist="{{ $linkedinUserList }}" />
     </main>
+
+
+    <!-- Footer Setion -->
+    <footer class="d-flex align-items-center justify-content-between container py-7">
+        <!-- Copyright & Date -->
+        <div class="d-flex copyright flex-col text-black fw-semibold">
+            <span>Copyright ©
+                <script>
+                    document.write(new Date().getFullYear());
+                </script>
+                Lemonade.
+            </span>
+            <span>Tous droits réservés</span>
+        </div>
+
+        <!-- Lemonade Logo -->
+        <img 
+            src="/build/assets/lemonade-logo.svg" 
+            alt="Lemonade Logo"
+            height="40"
+            width="40"
+        />
+        <div class="flex gap-3 socials">
+            <!-- LinkedIn Icon -->
+            <img 
+                src="/build/assets/icons/linkedin-black.svg" 
+                alt="LinkedIn Logo" 
+                height="25"
+                width="25" 
+            />
+            <!-- Instagram Icon -->
+            <img 
+                src="/build/assets/icons/instagram-black.svg" 
+                alt="LinkedIn Logo" 
+                height="25"
+                width="25" 
+            />
+            <!-- TikTok Icon -->
+            <img 
+                src="/build/assets/icons/tiktok-black.svg" 
+                alt="LinkedIn Logo" 
+                height="25"
+                width="25" 
+            />
+        </div>
+    </footer>
 </body>
 </html>

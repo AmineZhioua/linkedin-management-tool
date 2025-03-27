@@ -85,67 +85,21 @@
                             </div>
                         @endforeach
 
-                        <div class="d-flex flex-col align-items-center">
-                            <!-- "Ajouter un compte" Button -->
-                            <button 
-                                class="flex align-items-center px-3 py-2 rounded-full border cursor-pointer gap-2 mt-2 ajout-btn"
-                                onclick="showAddAccountPopup()"
-                            >
-                                <span class="text-decoration-none text-black flex align-items-center gap-1">
-                                    <img src="/build/assets/icons/add.svg" alt="add-icon" height="25" width="25"/>
-                                    Ajouter un compte LinkedIn
-                                </span>
-                            </button>
-
-                            <!-- "Se Déconnecter" Button -->
-                            <button 
-                                class="flex align-items-center px-3 py-2 rounded-full border cursor-pointer gap-2 mt-2 ajout-btn"
-                                onclick="document.getElementById('linkedin-logout-popup').classList.remove('hidden')"
-                            >
-                                <span class="text-decoration-none text-black flex align-items-center gap-1">
-                                    <img src="/build/assets/icons/logout.svg" alt="logout-icon" height="25" width="25"/>
-                                    Se déconnecter d'un compte
-                                </span>
-                            </button>
-                        </div>
+                        <!-- "Ajouter un compte" Button -->
+                        <button 
+                            class="flex align-items-center px-3 py-2 rounded-full border cursor-pointer gap-2 mt-2 ajout-btn"
+                            onclick="showAddAccountPopup()"
+                        >
+                            <span class="text-decoration-none text-black flex align-items-center gap-1">
+                                <img src="/build/assets/icons/add.svg" alt="add-icon" height="25" width="25"/>
+                                Ajouter un compte LinkedIn
+                            </span>
+                        </button>
                     </div>
                 </div>
             @endif
         </div>
 
-        <!-- Popup for LinkedIn Logout -->
-        <div id="linkedin-logout-popup" class="hidden">
-            <div class="popup-overlay" onclick="document.getElementById('linkedin-logout-popup').classList.add('hidden')"></div>
-            <div class="custom-popup">
-                <button 
-                    class="absolute top-4 right-4"
-                    onclick="document.getElementById('linkedin-logout-popup').classList.add('hidden')"
-                >
-                    <img src="/build/assets/icons/close.svg" alt="close-icon" />
-                </button>
-                <img src="/build/assets/popups/sad-face.svg" alt="Sad Face" height="120" width="120"/>
-                <p class="mt-2 fw-semibold text-xl">
-                    Veuillez vous déconnecter de votre compte LinkedIn actuel avant d'ajouter un nouveau compte.
-                </p>
-                <div class="flex align-items-center gap-2">
-                    <a 
-                        href="{{ route('linkedin.logout') }}" 
-                        class="bg-black rounded-full text-white decoration-none px-4 py-2" 
-                        target="_blank"
-                        style="text-decoration: none;"
-                    >
-                        Logout
-                    </a>
-                    <button 
-                        class="bg-transparent rounded-full text-black decoration-none px-4 py-2" 
-                        onclick="document.getElementById('linkedin-logout-popup').classList.add('hidden')"
-                        style="border: 1px solid black;"
-                    >
-                        Annuler
-                    </button>
-                </div>
-            </div>
-        </div>
 
         <!-- Popup for Adding Account -->
         <div id="linkedin-add-account-popup" class="hidden">
@@ -171,14 +125,63 @@
                     Si vous êtes connecté à un compte LinkedIn, Cliquez sur <br><u>Se déconnecter d'un compte</u><br>
                     avant d'ajouter un nouveau compte.<br>
                     Sinon, cette action se poursuivra dans 
-                    <span id="countdown">10</span> secondes.
+                    <span id="countdown">15</span> secondes.
                 </p>
+                <div class="flex align-items-center gap-2">
+                    <button 
+                        class="flex align-items-center px-3 py-2 rounded-full border cursor-pointer gap-2 mt-2 ajout-btn"
+                        onclick="
+                            document.getElementById('linkedin-logout-popup').classList.remove('hidden');
+                            document.getElementById('linkedin-add-account-popup').classList.add('hidden');"
+                        id="logout-button"
+                    >
+                        <span class="text-decoration-none text-black flex align-items-center gap-1">
+                            <img src="/build/assets/icons/logout.svg" alt="logout-icon" height="25" width="25"/>
+                            Se déconnecter
+                        </span>
+                    </button>
+                    <button 
+                        class="bg-black rounded-full text-white decoration-none px-4 py-2 mt-2 annuler-btn" 
+                        onclick="document.getElementById('linkedin-add-account-popup').classList.add('hidden')"
+                    >
+                        Annuler
+                    </button>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Popup for LinkedIn Logout -->
+        <div id="linkedin-logout-popup" class="hidden">
+            <div class="popup-overlay" onclick="document.getElementById('linkedin-logout-popup').classList.add('hidden')"></div>
+            <div class="custom-popup">
                 <button 
-                    class="bg-black rounded-full text-white decoration-none px-4 py-2 mt-2 annuler-btn" 
-                    onclick="document.getElementById('linkedin-add-account-popup').classList.add('hidden')"
+                    class="absolute top-4 right-4"
+                    onclick="document.getElementById('linkedin-logout-popup').classList.add('hidden')"
                 >
-                    Annuler
+                    <img src="/build/assets/icons/close.svg" alt="close-icon" />
                 </button>
+                <img src="/build/assets/popups/sad-face.svg" alt="Sad Face" height="120" width="120"/>
+                <p class="mt-2 fw-semibold text-xl">
+                    Veuillez vous déconnecter de votre compte LinkedIn actuel avant d'ajouter un nouveau compte.
+                </p>
+                <div class="flex align-items-center gap-2">
+                    <a 
+                        href="{{ route('linkedin.logout') }}" 
+                        class="bg-black rounded-full text-white decoration-none px-4 py-2" 
+                        target="_blank"
+                        style="text-decoration: none;"
+                    >
+                        Déconnexion
+                    </a>
+                    <button 
+                        class="bg-transparent rounded-full text-black decoration-none px-4 py-2" 
+                        onclick="document.getElementById('linkedin-logout-popup').classList.add('hidden')"
+                        style="border: 1px solid black;"
+                    >
+                        Annuler
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -242,9 +245,9 @@
         function showAddAccountPopup() {
             const popup = document.getElementById('linkedin-add-account-popup');
             const countdownElement = document.getElementById('countdown');
-            let timeLeft = 10;
+            const logoutButton = document.getElementById('logout-button');
+            let timeLeft = 15;
 
-            // Show the popup
             popup.classList.remove('hidden');
 
             const countdown = setInterval(() => {
@@ -254,10 +257,15 @@
                 if (timeLeft <= 0) {
                     clearInterval(countdown);
                     popup.classList.add('hidden');
-                    // Proceed to LinkedIn auth after 7 seconds
+                    // Proceed to LinkedIn auth after 15 seconds
                     window.location.href = "{{ route('linkedin.auth') }}";
                 }
             }, 1000);
+
+            logoutButton.addEventListener('click', function(event) {
+                event.preventDefault();
+                clearInterval(countdown);
+            });
 
             popup.querySelector('.annuler-btn').addEventListener('click', () => {
                 clearInterval(countdown);
@@ -266,6 +274,7 @@
             popup.querySelector('.close').addEventListener('click', () => {
                 clearInterval(countdown);
             });
+
         }
 
         function showDeletePopup(linkedinId) {
