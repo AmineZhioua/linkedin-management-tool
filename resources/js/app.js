@@ -7,6 +7,7 @@ import PlateformeCard from "./components/PlateformeCard.vue";
 import LoadingOverlay from "./components/LoadingOverlay.vue";
 import ProgressIndicator from "./components/ProgressIndicator.vue";
 import LinkedinPostCard from "./components/LinkedinPostCard.vue";
+import PlateformeStart from "./components/PlateformeStart.vue";
 
 const app = createApp();
 
@@ -16,5 +17,6 @@ app.component("plateforme-card", PlateformeCard);
 app.component("loading-overlay", LoadingOverlay);
 app.component("progress-indicator", ProgressIndicator);
 app.component("linkedin-postcard", LinkedinPostCard);
+app.component("plateforme-start", PlateformeStart);
 
 app.mount("#app");

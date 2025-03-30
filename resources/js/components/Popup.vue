@@ -21,14 +21,16 @@ export default {
     props: {
         path: {
             type: String,
-            required: true
-        }   
+            required: false,
+        },
     },
+
     data() {
         return {
             isVisible: true,
         };
     },
+
     methods: {
         closePopup() {
             this.isVisible = false;

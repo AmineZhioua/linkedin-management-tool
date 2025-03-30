@@ -1,5 +1,5 @@
 <template>
-    <div class="bg-white wh-100 vh-100 relative mt-8 plateforme-card">
+    <div class="bg-white wh-100 vh-100 relative mt-8">
         <!-- Heart Sticker -->
         <div class="absolute top-[-40px] left-[40px] flex items-center">
             <img

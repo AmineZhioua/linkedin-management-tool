@@ -1,5 +1,5 @@
 <template>
-    <div class="bg-white wh-100 vh-100 relative mt-8 plateforme-card">
+    <div class="wh-100 vh-100 relative mt-8 plateforme-card">
         <!-- Heart Sticker -->
         <div class="absolute top-[-40px] left-[40px] flex align-items-center">
             <img
@@ -46,48 +46,12 @@
         <!-- Card Main Content -->
         <div class="flex flex-col align-items-center justify-center card-main">
             <!-- Start Screen - Shows different button text based on existingData -->
-            <div v-if="!startedQuestionnaire"
-                class="w-full h-[80%] flex align-items-center justify-content-center"
-            >
-                <div class="flex flex-col gap-4 text-center align-items-center">
-                    <h2 class="text-black">Plateforme de Marque</h2>
-                    <p class="text-muted">
-                        {{
-                            hasCompletedData
-                                ? "Modifiez les informations de votre marque."
-                                : hasPartialData
-                                ? "Continuez à compléter les informations de votre marque."
-                                : "Complétez les informations de votre marque."
-                        }}
-                    </p>
-                    <!-- If fully completed, show "Recommencer" -->
-                    <button
-                        v-if="hasCompletedData"
-                        class="py-2 px-4 rounded-full bg-black text-white fw-semibold"
-                        @click="startQuestionnaire"
-                    >
-                        Recommencer la plateforme de marque
-                    </button>
-
-                    <!-- If partially completed, show "Continuer" -->
-                    <button
-                        v-if="hasPartialData && !hasCompletedData"
-                        class="py-2 px-4 rounded-full bg-black text-white fw-semibold"
-                        @click="startQuestionnaire"
-                    >
-                        Continuer le questionnaire
-                    </button>
-
-                    <!-- If never started, show "Commencer" -->
-                    <button
-                        v-if="!hasPartialData && !hasCompletedData"
-                        class="py-2 px-4 rounded-full bg-black text-white fw-semibold"
-                        @click="startQuestionnaire"
-                    >
-                        Commencer
-                    </button>
-                </div>
-            </div>
+            <plateforme-start
+                v-if="!startedQuestionnaire"
+                :has-completed-data="hasCompletedData"
+                :has-partial-data="hasPartialData"
+                @start="startQuestionnaire"
+            />
 
             <!-- Questionnaire -->
             <div v-else class="w-full h-[80%] flex align-items-center justify-content-center">
@@ -220,7 +184,7 @@
                     Suivant
                 </button>
                 <button
-                    v-if="
+                    v-if ="
                         currentQuestionIndex === questions.length - 1 &&
                         startedQuestionnaire
                     "
@@ -228,7 +192,7 @@
                     @click="submitAnswers"
                     :disabled="isLoading"
                 >
-                    <span v-if="!isLoading">Soumettre</span>
+                    <span v-if = "!isLoading">Soumettre</span>
                     <span v-else class="btn-loader"></span>
                 </button>
             </div>
@@ -240,6 +204,15 @@
             >
                 {{ successMessage }}
             </div>
+
+            <!-- Error Message -->
+            <Popup
+                v-if="errorMessage"
+                path="/build/assets/popups/sad-face.svg"
+                @close ="errorMessage = null"
+            >
+                {{ errorMessage }}
+            </Popup>
         </div>
 
         <!-- Icons in The Background -->
@@ -268,8 +241,12 @@
 
 <script>
 import axios from 'axios';
+import Popup from './Popup.vue';
 
 export default {
+    components: {
+        Popup,
+    },
     name: "PlateformeCard",
     props: {
         existingPlateforme: {
@@ -291,6 +268,7 @@ export default {
             existingLogo: null,
             showSuccess: false,
             successMessage: "",
+            errorMessage: null,
             isLoading: false,
             answers: {},
             questions: [
@@ -320,19 +298,20 @@ export default {
             ],
         };
     },
+
     computed: {
         logoUrl() {
             if (this.existingLogo) {
-                return this.existingLogo.startsWith("/storage/")
-                    ? this.existingLogo
-                    : "/storage/" + this.existingLogo;
+                return this.existingLogo.startsWith("/storage/") ? this.existingLogo : "/storage/" + this.existingLogo;
             }
             return "";
         },
     },
+
     created() {
         this.checkExistingData();
     },
+
     methods: {
         // Check for existing data and pre-fill form if it exists
         checkExistingData() {
@@ -359,16 +338,13 @@ export default {
 
                 // Pre-populate answers for fields that exist
                 if (this.existingPlateforme.nom_marque) {
-                    this.answers["Le nom de ta marque"] =
-                        this.existingPlateforme.nom_marque;
+                    this.answers["Le nom de ta marque"] = this.existingPlateforme.nom_marque;
                 }
                 if (this.existingPlateforme.domaine_marque) {
-                    this.answers["Domaine de la marque"] =
-                        this.existingPlateforme.domaine_marque;
+                    this.answers["Domaine de la marque"] = this.existingPlateforme.domaine_marque;
                 }
                 if (this.existingPlateforme.description_marque) {
-                    this.answers["Description de ta marque"] =
-                        this.existingPlateforme.description_marque;
+                    this.answers["Description de ta marque"] = this.existingPlateforme.description_marque;
                 }
                 if (this.existingLogo) {
                     this.answers["Logo de ta marque"] = "existing";
@@ -415,6 +391,7 @@ export default {
         getSelectedOption() {
             return this.selectedOption;
         },
+
         previousQuestion() {
             if (this.currentQuestionIndex > 0) {
                 this.storeAnswer();
@@ -422,9 +399,15 @@ export default {
                 this.updateInputsForCurrentQuestion();
             }
         },
+
+        resetErrorMessage() {
+            this.errorMessage = null;
+        },
         validateAndProceed() {
             const currentQuestion = this.questions[this.currentQuestionIndex];
             let isValid = false;
+
+            this.resetErrorMessage();
 
             if (currentQuestion.textInput) {
                 isValid = this.getInputValue() !== "";
@@ -440,8 +423,9 @@ export default {
                 this.storeAnswer();
                 this.nextQuestion();
             } else {
-                alert("Veuillez répondre à la question avant de passer à la suivante.");
+                this.errorMessage = "Veuillez remplir ce champ avant de continuer.";
             }
+
         },
         selectAndNext(choice) {
             // Store the selected choice and move to next question
@@ -501,7 +485,8 @@ export default {
             const hasAtLeastOneAnswer = Object.keys(this.answers).length > 0;
 
             if (!hasAtLeastOneAnswer) {
-                alert("Veuillez remplir au moins un champ avant d'enregistrer.");
+                // Show error message if no answers are provided
+                this.errorMessage = "Veuillez remplir au moins un champ avant d'enregistrer.";
                 return;
             }
 
@@ -556,7 +541,7 @@ export default {
             })
             .catch((error) => {
                 this.isLoading = false; // Deactivate loading state even on error
-                alert("Une erreur s'est produite lors de l'enregistrement du formulaire.");
+                this.errorMessage = "Une erreur s'est produite lors de l'enregistrement du formulaire.";
             });
 
         },
@@ -599,7 +584,7 @@ export default {
             })
             .catch((error) => {
                 this.isLoading = false;
-                alert("Une erreur s'est produite lors de la soumission du formulaire.");
+                this.errorMessage = "Une erreur s'est produite lors de la soumission du formulaire.";
             });
 
         },
