@@ -15,8 +15,10 @@ Auth::routes([
     'verify' => true,
 ]);
 
-// Route for Applying Coupon Code in Subscription Page
-Route::post('/apply-coupon', [App\Http\Controllers\StripeController::class, 'applyCoupon'])->name('applyCoupon');
+
+// Google Auth Routes
+Route::get('auth/google/redirect', [GoogleController::class, 'redirect'])->name('google-auth');
+Route::get('auth/google/callback', [GoogleController::class, 'callback']);
 
 
 // Home Page route with middleware for checking if user is verified and has subscription
@@ -31,16 +33,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/cancel', [StripeController::class, 'cancel'])->name('cancel');
 
     Route::get('/subscriptions', [SubscriptionController::class, 'index'])->name('subscriptions');
+    // Route for Applying Coupon Code in Subscription Page
+    Route::post('/apply-coupon', [App\Http\Controllers\StripeController::class, 'applyCoupon'])->name('applyCoupon');
 });
 
 
-// Google Auth Routes
-Route::get('auth/google/redirect', [GoogleController::class, 'redirect'])->name('google-auth');
-Route::get('auth/google/callback', [GoogleController::class, 'callback']);
 
-
-
-// LinkedIn Auth Route
+// LinkedIn Auth Page Routes
 Route::middleware(['auth', 'verified', 'linkedin.valid'])->group(function() {
     Route::get('/login-linkedin', [App\Http\Controllers\LinkedInController::class, 'index'])->name('login-linkedin');
     Route::get('/linkedin/auth', [App\Http\Controllers\LinkedInController::class, 'redirect'])->name('linkedin.auth');
@@ -53,16 +52,19 @@ Route::middleware(['auth', 'verified', 'linkedin.valid'])->group(function() {
 });
 
 
-// Route for "Plateforme de Marque" Page
-Route::get('/plateforme-marque', [App\Http\Controllers\PlateformeMarqueController::class, 'index'])->name('plateforme-marque');
-Route::post('/save-platform-info', [App\Http\Controllers\PlateformeMarqueController::class, 'store'])->name('plateforme.store');
+// Routes for "Plateforme de Marque" Page
+Route::middleware(['auth', 'verified', 'check.subscriptions'])->group(function() {
+    Route::get('/plateforme-marque', [App\Http\Controllers\PlateformeMarqueController::class, 'index'])->name('plateforme-marque');
+    Route::post('/save-platform-info', [App\Http\Controllers\PlateformeMarqueController::class, 'store'])->name('plateforme.store');
+});
 
 
-// Route for "Linkedin Post" Page
-Route::get('/linkedin-post', [App\Http\Controllers\LinkedinPostController::class, 'index'])->name('linkedin-post');
-Route::post('/linkedin/publish', [App\Http\Controllers\LinkedInController::class, 'postTextOnly']);
-Route::post('/linkedin/registermedia', [App\Http\Controllers\LinkedInController::class, 'registerMedia']);
-Route::post('/linkedin/upload-media-binary', [App\Http\Controllers\LinkedInController::class, 'uploadMediaBinary']);
-Route::post('/linkedin/share-media', [App\Http\Controllers\LinkedInController::class, 'shareMedia']);
-Route::post('/linkedin/share-article', [App\Http\Controllers\LinkedInController::class, 'shareArticle']);
-
+// Routes for "Linkedin Post" Page
+Route::middleware(['auth', 'verified', 'linkedin.valid', 'linkedin.account.exist'])->group(function() {
+    Route::get('/linkedin-post', [App\Http\Controllers\LinkedinPostController::class, 'index'])->name('linkedin-post');
+    Route::post('/linkedin/publish', [App\Http\Controllers\LinkedInController::class, 'postTextOnly']);
+    Route::post('/linkedin/registermedia', [App\Http\Controllers\LinkedInController::class, 'registerMedia']);
+    Route::post('/linkedin/upload-media-binary', [App\Http\Controllers\LinkedInController::class, 'uploadMediaBinary']);
+    Route::post('/linkedin/share-media', [App\Http\Controllers\LinkedInController::class, 'shareMedia']);
+    Route::post('/linkedin/share-article', [App\Http\Controllers\LinkedInController::class, 'shareArticle']);
+});

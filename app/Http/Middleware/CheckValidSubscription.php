@@ -24,9 +24,7 @@ class CheckValidSubscription
             return redirect()->route('subscriptions');
         }
 
-        $validSubscription = UserSubscription::where('user_id', $userId)
-            ->where('date_expiration', '>', Carbon::now())
-            ->exists();
+        $validSubscription = UserSubscription::where('user_id', $userId)->where('date_expiration', '>', Carbon::now())->exists();
 
         if (!$validSubscription) {
             return redirect()->route('subscriptions')
