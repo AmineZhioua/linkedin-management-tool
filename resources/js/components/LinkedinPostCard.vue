@@ -81,17 +81,14 @@
 
             <!-- Step 2: Choose Post Type -->
             <div v-if="currentStep === 2" class="w-full max-w-md">
-                <h2 class="text-xl font-bold mb-4">Choose Post Type</h2>
+                <h2 class="text-xl font-bold mb-4">Choissisez le Type du Post</h2>
                 <div class="grid grid-cols-3 gap-4">
                     <div
                         v-for="type in postTypes"
                         :key="type.value"
                         @click="selectPostType(type.value)"
                         class="border rounded-lg p-4 text-center cursor-pointer"
-                        :class="{
-                            'bg-blue-500 text-white':
-                                selectedPostType === type.value,
-                        }"
+                        :class="{'bg-blue-500 text-white': selectedPostType === type.value}"
                     >
                         <i :class="type.icon" class="text-3xl mb-2"></i>
                         <p>{{ type.label }}</p>
@@ -119,21 +116,13 @@
                 <h2 class="text-xl font-bold mb-4">
                     {{
                         selectedPostType
-                            ? `Add ${
-                                  postTypes.find(
-                                      (t) => t.value === selectedPostType
-                                  ).label
-                              }`
-                            : "Add Post Content"
+                            ? `Ajouter ${postTypes.find((t) => t.value === selectedPostType).label}` : "Ajouter le contenu du Post"
                     }}
                 </h2>
 
                 <!-- File Input for Image/Video/Article -->
                 <div
-                    v-if="
-                        selectedPostType === 'image' ||
-                        selectedPostType === 'video'
-                    "
+                    v-if = "selectedPostType === 'image' || selectedPostType === 'video'"
                     class="mb-4"
                 >
                     <input
@@ -143,36 +132,30 @@
                         class="w-full border rounded-lg p-2"
                     />
                     <p v-if="uploadedFile" class="mt-2 text-sm text-gray-600">
-                        Selected file: {{ uploadedFile.name }}
+                        Le fichier Sélectionné : {{ uploadedFile.name }}
                     </p>
                 </div>
 
                 <!-- Input For Article -->
                 <div
                     class="mb-4 flex flex-col gap-2"
-                    v-if="selectedPostType == 'article'"
+                    v-if = "selectedPostType == 'article'"
                 >
-                    <label for="article" class="text-sm text-gray-600"
-                        >Article URL* :</label
-                    >
+                    <label for="article" class="text-sm text-gray-600">Article URL* :</label>
                     <input
                         type="text"
                         class="w-full border rounded-lg p-2"
                         placeholder="e.g: www.example.com"
                         v-model="articleUrl"
                     />
-                    <label for="title" class="text-sm text-gray-600"
-                        >Article Title :</label
-                    >
+                    <label for="title" class="text-sm text-gray-600">Article Title :</label>
                     <input
                         type="text"
                         class="w-full border rounded-lg p-2"
                         placeholder="Official LinkedIn Blog"
                         v-model="articleTitle"
                     />
-                    <label for="description" class="text-sm text-gray-600"
-                        >Article Description :</label
-                    >
+                    <label for="description" class="text-sm text-gray-600">Article Description :</label>
                     <input
                         type="text"
                         class="w-full border rounded-lg p-2"
@@ -189,10 +172,14 @@
                 >
                 </textarea>
 
-                <!-- Error Message -->
-                <p v-if="submissionError" class="text-red-500 mb-4">
+                <!-- Error Messages -->
+                <Popup
+                    v-if="submissionError"
+                    path="/build/assets/popups/sad-face.svg"
+                    @close="submissionError = null"
+                >
                     {{ submissionError }}
-                </p>
+                </Popup>
 
                 <div class="flex justify-between">
                     <button
@@ -226,6 +213,7 @@ export default {
         linkedinUserlist: {
             type: Array,
             required: true,
+            default: [],
         },
     },
     data() {
@@ -270,38 +258,43 @@ export default {
         selectAccount(account) {
             this.selectedAccount = account;
         },
+
         selectPostType(type) {
             this.selectedPostType = type;
         },
+
         nextStep() {
             if (this.currentStep < 3) {
                 this.currentStep++;
             }
         },
+
         prevStep() {
             if (this.currentStep > 1) {
                 this.currentStep--;
             }
         },
+
         handleFileUpload(event) {
             this.uploadedFile = event.target.files[0];
         },
+
         getAcceptedFileTypes() {
             switch (this.selectedPostType) {
                 case "image":
                     return "image/*";
                 case "video":
                     return "video/*";
-                case "article":
-                    return ".pdf,.doc,.docx";
                 default:
                     return "";
             }
         },
+
         isPostSubmissionValid() {
-            // Validate post submission based on selected type
             if (!this.selectedAccount) return false;
-            if (!this.postText.trim()) return false;
+            if (!this.postText.trim()) {
+                return false;
+            };
 
             switch (this.selectedPostType) {
                 case "text":
@@ -315,11 +308,10 @@ export default {
                     return true;
             }
         },
+
         handlePostSubmission() {
-            // Reset previous errors
             this.submissionError = null;
 
-            // Choose the appropriate submission method based on post type
             switch (this.selectedPostType) {
                 case "text":
                     this.submitPost();
@@ -335,6 +327,8 @@ export default {
                     this.submitPost(); // Default to text post
             }
         },
+
+
         async submitPost() {
             this.isSubmitting = true;
             this.submissionError = null;
@@ -346,14 +340,9 @@ export default {
                     caption: this.postText.trim(),
                 };
 
-                const response = await axios.post(
-                    "/linkedin/publish",
-                    postData,
-                    {
+                const response = await axios.post("/linkedin/publish", postData, {
                         headers: {
-                            "X-CSRF-TOKEN": document
-                                .querySelector('meta[name="csrf-token"]')
-                                .getAttribute("content"),
+                            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
                         },
                     }
                 );
@@ -364,17 +353,13 @@ export default {
                     response.data.status === 200
                 ) {
                     this.showSuccessPopup = true;
-                    this.successMessage =
-                        "Your post was successfully published on LinkedIn!";
+                    this.successMessage = "Votre post a été publié avec succès sur LinkedIn!";
                     this.resetForm();
                 } else {
-                    this.submissionError =
-                        "An error occurred while publishing the post";
+                    this.submissionError = "Une erreur s'est produite lors de la publication du post";
                 }
             } catch (error) {
-                this.submissionError =
-                    error.response?.data?.message ||
-                    "An error occurred while publishing the post";
+                this.submissionError = error.response?.data?.message || "Une erreur s'est produite lors de la publication du post";
             } finally {
                 this.isSubmitting = false;
             }
@@ -386,24 +371,16 @@ export default {
             try {
                 const formData = new FormData();
                 formData.append("token", this.selectedAccount.linkedin_token);
-                formData.append(
-                    "linkedin_id",
-                    this.selectedAccount.linkedin_id
-                );
+                formData.append("linkedin_id", this.selectedAccount.linkedin_id);
                 formData.append("type", this.selectedPostType);
                 formData.append("media", this.uploadedFile);
                 formData.append("caption", this.postText.trim());
 
                 // Register the media
-                const registerResponse = await axios.post(
-                    "/linkedin/registermedia",
-                    formData,
-                    {
+                const registerResponse = await axios.post("/linkedin/registermedia", formData, {
                         headers: {
                             "Content-Type": "multipart/form-data",
-                            "X-CSRF-TOKEN": document
-                                .querySelector('meta[name="csrf-token"]')
-                                .getAttribute("content"),
+                            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
                         },
                     }
                 );
@@ -411,48 +388,31 @@ export default {
                 // Check if media registration was successful
                 if (registerResponse.data.status === 200) {
                     const binaryUploadFormData = new FormData();
-                    binaryUploadFormData.append(
-                        "token",
-                        this.selectedAccount.linkedin_token
-                    );
-                    binaryUploadFormData.append(
-                        "upload_url",
-                        registerResponse.data.uploadUrl
-                    );
+                    binaryUploadFormData.append("token", this.selectedAccount.linkedin_token);
+                    binaryUploadFormData.append("upload_url", registerResponse.data.uploadUrl);
                     binaryUploadFormData.append("media", this.uploadedFile);
 
-                    await axios.post(
-                        "/linkedin/upload-media-binary",
-                        binaryUploadFormData,
-                        {
-                            headers: {
-                                "Content-Type": "multipart/form-data",
-                                "X-CSRF-TOKEN": document
-                                    .querySelector('meta[name="csrf-token"]')
-                                    .getAttribute("content"),
-                            },
+                    await axios.post("/linkedin/upload-media-binary", binaryUploadFormData,{
+                        headers: {
+                            "Content-Type": "multipart/form-data",
+                            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
+                        },
                         }
                     );
 
-                    const shareResponse = await this.shareMediaPost(
-                        registerResponse.data.asset,
-                        this.postText.trim(),
+                    const shareResponse = await this.shareMediaPost(registerResponse.data.asset, this.postText.trim(),
                         this.selectedPostType === "image" ? "IMAGE" : "VIDEO"
                     );
 
                     this.showSuccessPopup = true;
-                    this.successMessage =
-                        "Your media post was successfully published on LinkedIn!";
+                    this.successMessage = "Votre post a été publié avec succès sur LinkedIn!";
                     this.resetForm();
                 } else {
-                    throw new Error(
-                        registerResponse.data.error ||
-                            "Media registration failed"
-                    );
+                    console.log(registerResponse.data.error); // for debugging
+                    throw new Error(registerResponse.data.error || "Media registration failed");
                 }
             } catch (error) {
-                this.submissionError =
-                    error.response?.data?.error || "Failed to register media";
+                this.submissionError = "Une erreur s'est produite lors de la publication du post!";
             } finally {
                 this.isSubmitting = false;
             }
@@ -467,20 +427,17 @@ export default {
                     media_type: mediaType,
                 };
 
-                const response = await axios.post(
-                    "/linkedin/share-media",
-                    shareData,
-                    {
+                const response = await axios.post("/linkedin/share-media", shareData, {
                         headers: {
-                            "X-CSRF-TOKEN": document
-                                .querySelector('meta[name="csrf-token"]')
-                                .getAttribute("content"),
+                            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
                         },
                     }
                 );
 
                 return response;
             } catch (error) {
+                this.submissionError = "Une erreur s'est produite lors de la publication de votre post!";
+                console.log(error); // for debugging
                 throw error;
             }
         },
@@ -498,31 +455,23 @@ export default {
                     caption: this.postText.trim(),
                 };
 
-                const response = await axios.post(
-                    "/linkedin/share-article",
-                    articleData,
-                    {
+                const response = await axios.post( "/linkedin/share-article", articleData, {
                         headers: {
-                            "X-CSRF-TOKEN": document
-                                .querySelector('meta[name="csrf-token"]')
-                                .getAttribute("content"),
+                            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
                         },
                     }
                 );
 
                 if (response.data.status === "success") {
                     this.showSuccessPopup = true;
-                    this.successMessage =
-                        "Your article was successfully published on LinkedIn!";
+                    this.successMessage = "Votre Article a été publié avec succès!";
                     this.resetForm();
                 } else {
-                    throw new Error(
-                        response.data.message || "Failed to share article"
-                    );
+                    console.log(response.data.error); // for debugging
+                    throw new Error(response.data.message || "Failed to share article");
                 }
             } catch (error) {
-                this.submissionError =
-                    error.response?.data?.message || "Failed to share article";
+                this.submissionError = "Une erreur s'est produite lors de la publication de votre article!";
             } finally {
                 this.isSubmitting = false;
             }
