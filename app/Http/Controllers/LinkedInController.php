@@ -438,7 +438,7 @@ class LinkedInController extends Controller
                                 ],
                                 "media" => $validated['asset'],
                                 "title" => [
-                                    "text" => "Shared Media"
+                                    "text" => "Shared Media" // FIX THIS ASAP
                                 ]
                             ]
                         ]

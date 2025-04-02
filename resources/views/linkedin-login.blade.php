@@ -68,8 +68,13 @@
                         @foreach($linkedinUserList as $linkedinUser)
                             <div class="flex px-2 py-2 rounded-full border justify-content-between cursor-pointer mt-2 linkedin-account">
                                 <div class="flex align-items-center justify-content-center gap-3">
-                                    <img src="{{ $linkedinUser->linkedin_picture ?? '/build/assets/images/default-profile.png' }}"
-                                        alt="profile-picture" height="50" width="50" class="rounded-full"/>
+                                    <img 
+                                        src="{{ $linkedinUser->linkedin_picture ?? '/build/assets/images/default-profile.png' }}"
+                                        alt="profile-picture" 
+                                        height="50" 
+                                        width="50" 
+                                        class="rounded-full"
+                                    />
                                     <p class="mb-0 text-lg fw-semibold flex-grow-1">
                                         {{ $linkedinUser->linkedin_firstname }} {{ $linkedinUser->linkedin_lastname }}
                                     </p>

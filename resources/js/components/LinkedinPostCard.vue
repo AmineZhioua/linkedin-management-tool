@@ -42,32 +42,32 @@
         <!-- Card Main Content -->
         <div class="flex flex-col items-center justify-center card-main">
             <!-- Step 1: Choose LinkedIn Account -->
-            <div v-if="currentStep === 1" class="w-full max-w-md">
-                <h2 class="text-xl font-bold mb-4">
+            <h2 class="text-xl font-bold mb-4">
                     Sélectionner votre Compte LinkedIn
-                </h2>
-                <div
-                    v-for="linkedinUser in linkedinUserlist"
-                    :key="linkedinUser.id"
-                    @click="selectAccount(linkedinUser)"
-                    class="bg-white px-4 py-2 rounded-xl border mb-4 cursor-pointer"
-                    :class="{
-                        'border-blue-500':
-                            selectedAccount &&
-                            selectedAccount.id === linkedinUser.id,
-                    }"
-                >
-                    <div class="flex flex-row items-center gap-2">
-                        <img
-                            :src="linkedinUser.linkedin_picture"
-                            alt="Profile Picture"
-                            class="rounded-full"
-                            width="80"
-                        />
-                        <p class="mb-0">
-                            {{ linkedinUser.linkedin_firstname }}
-                            {{ linkedinUser.linkedin_lastname }}
-                        </p>
+            </h2>
+            <div v-if="currentStep === 1" class="w-full max-w-md">
+                <div class="grid grid-cols-2 gap-4">
+                    <div
+                        v-for="linkedinUser in linkedinUserlist"
+                        :key="linkedinUser.id"
+                        @click="selectAccount(linkedinUser)"
+                        class="bg-white py-4 rounded-xl border mb-4 cursor-pointer max-w-[250px]"
+                        :class="{'border-blue-500': selectedAccount && selectedAccount.id === linkedinUser.id}"
+                    >
+                        <div class="flex flex-col align-items-center px-2 gap-2">
+                            <img
+                                :src="linkedinUser.linkedin_picture 
+                                    ? linkedinUser.linkedin_picture 
+                                    : '/build/assets/images/default-profile.png'"
+                                alt="Profile Picture"
+                                class="rounded-full"
+                                width="100"
+                            />
+                            <p class="mb-0">
+                                {{ linkedinUser.linkedin_firstname }}
+                                {{ linkedinUser.linkedin_lastname }}
+                            </p>
+                        </div>
                     </div>
                 </div>
                 <button
