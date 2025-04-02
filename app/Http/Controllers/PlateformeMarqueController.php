@@ -26,34 +26,33 @@ class PlateformeMarqueController extends Controller
             'existingPlateforme' => $existingPlateforme
         ]);
     }
-    public function showMarque()
-{
-    $user = Auth::user();
-    if (!$user) {
-        return redirect()->route('login');
+
+
+    public function showMarque() {
+        $user = Auth::user();
+        if (!$user) {
+            return redirect()->route('login');
+        }
+        
+        // Get existing platform data if available
+        $existingPlateforme = PlateformeMarque::where('user_id', $user->id)->first();
+        
+        if (!$existingPlateforme) {
+            return redirect()->route('plateforme-marque')->with('profile_error', 'Veuillez d\'abord créer votre profil de marque');
+        }
+        
+        return view('marque', ['existingPlateforme' => $existingPlateforme]);
     }
     
-    // Get existing platform data if available
-    $existingPlateforme = PlateformeMarque::where('user_id', $user->id)->first();
-    
-    if (!$existingPlateforme) {
-        return redirect()->route('plateforme.marque')->with('error', 'Veuillez d\'abord créer votre profil de marque');
-    }
-    
-    return view('marque', [
-        'existingPlateforme' => $existingPlateforme
-    ]);
-}
-    
-    public function store(Request $request)
-    {
+
+
+    public function store(Request $request) {
         try {
             $user = Auth::user();
             if (!$user) {
                 return redirect()->route('login');
             }
 
-            // Validate the incoming request
             $request->validate([
                 'nom_marque' => 'nullable|string|max:255',
                 'domaine_marque' => 'nullable|string|max:255',
@@ -94,7 +93,6 @@ class PlateformeMarqueController extends Controller
 
             // Handle logo upload if provided
             if ($request->hasFile('logo_marque') && $request->logo_changed === 'true') {
-                // Delete old logo if exists
                 if (($isUpdate || $isPartial) && $platformInfo->logo_marque) {
                     Storage::disk('public')->delete($platformInfo->logo_marque);
                 }

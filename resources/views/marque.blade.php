@@ -97,11 +97,8 @@
 
     <!-- Main Section -->
     <main id="app" class="vh-100 pt-8 flex-1" style="border-top: 1px solid #BBBBBB;">
-           <marque-component 
-                    :plateforme="{{ json_encode($existingPlateforme) }}"
-                ></marque-component>
+        <marque-component :plateforme="{{ json_encode($existingPlateforme) }}"></marque-component>
     </main>
-
 
 
     <!-- Footer Setion -->

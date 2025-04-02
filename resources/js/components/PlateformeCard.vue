@@ -205,6 +205,13 @@
             >
                 {{ successMessage }}
             </div>
+            <Popup
+                v-if="showSuccess"
+                path="/build/assets/popups/like-popup.svg"
+                @close="showSuccess = false"
+            >
+                {{ successMessage }}
+            </Popup>
 
             <!-- Error Message -->
             <Popup
@@ -500,13 +507,11 @@ export default {
             }
 
             if (this.answers["Domaine de la marque"]) {
-                formData.append("domaine_marque", this.answers["Domaine de la marque"]
-                );
+                formData.append("domaine_marque", this.answers["Domaine de la marque"]);
             }
 
             if (this.answers["Description de ta marque"]) {
-                formData.append("description_marque", this.answers["Description de ta marque"]
-                );
+                formData.append("description_marque", this.answers["Description de ta marque"]);
             }
 
             formData.append("mode", "partial");
@@ -524,27 +529,29 @@ export default {
                 formData.append("logo_changed", "false");
             }
 
-            await axios
-                .post("/save-platform-info", formData, {
+            try {
+                const response = await axios.post("/save-platform-info", formData, {
                     headers: {
                         "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
                     },
-                })
-                .then((response) => {
-                    this.isLoading = false;
-                    this.successMessage = "Informations enregistrées. Vous pouvez revenir compléter plus tard.";
-                    this.showSuccess = true;
-
-                    setTimeout(() => {
-                        this.showSuccess = false;
-                        this.startedQuestionnaire = false;
-                        window.location.reload();
-                    }, 2000);
-                })
-                .catch((error) => {
-                    this.isLoading = false; // Deactivate loading state even on error
-                    this.errorMessage = "Une erreur s'est produite lors de l'enregistrement du formulaire.";
                 });
+
+                // Success handling
+                this.isLoading = false;
+                this.successMessage = "Informations enregistrées. Vous pouvez revenir compléter plus tard.";
+                this.showSuccess = true;
+
+                setTimeout(() => {
+                    this.showSuccess = false;
+                    this.startedQuestionnaire = false;
+                    window.location.reload();
+                }, 3000);
+
+            } catch (error) {
+                // Error handling
+                this.isLoading = false;
+                this.errorMessage = "Une erreur s'est produite lors de l'enregistrement du formulaire.";
+            }
         },
         async submitAnswers() {
             if (this.isLoading) return; // Prevent multiple submissions
@@ -554,10 +561,8 @@ export default {
 
             const formData = new FormData();
             formData.append("nom_marque", this.answers["Le nom de ta marque"]);
-            formData.append("domaine_marque", this.answers["Domaine de la marque"]
-            );
-            formData.append("description_marque", this.answers["Description de ta marque"]
-            );
+            formData.append("domaine_marque", this.answers["Domaine de la marque"]);
+            formData.append("description_marque", this.answers["Description de ta marque"]);
 
             // Add mode parameter for update/create
             formData.append("mode", this.existingData ? "update" : "create");

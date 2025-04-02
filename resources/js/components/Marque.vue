@@ -6,11 +6,8 @@
                 <h2 class="text-lg font-medium text-gray-500 mb-4">
                     Ta marque
                 </h2>
-                <div
-                    class="bg-white rounded-lg p-6 shadow-md flex flex-col gap-6"
-                >
+                <div class="bg-white rounded-lg p-6 shadow-md flex flex-col gap-6">
                     <!-- Brand Logo -->
-
                     <div class="flex-shrink-0 w-32 h-32 mx-auto">
                         <img
                             :src="logoUrl"
@@ -18,8 +15,7 @@
                             class="w-full h-full object-contain mx-auto"
                             v-if="plateforme.logo_marque"
                         />
-                        <div
-                            class="w-full h-full bg-gray-200 rounded-full flex items-center justify-center"
+                        <div class="w-full h-full bg-gray-200 rounded-full flex items-center justify-center"
                             v-else
                         >
                             <span class="text-gray-400">Logo</span>
@@ -75,15 +71,12 @@ export default {
     computed: {
         logoUrl() {
             if (this.plateforme.logo_marque) {
-                // Check if it already contains the full path with /storage/
                 if (this.plateforme.logo_marque.startsWith("/storage/")) {
                     return this.plateforme.logo_marque;
                 }
-                // Check if it already contains 'storage/'
                 else if (this.plateforme.logo_marque.startsWith("storage/")) {
                     return "/" + this.plateforme.logo_marque;
                 }
-                // Otherwise, prepend /storage/
                 else {
                     return "/storage/" + this.plateforme.logo_marque;
                 }
