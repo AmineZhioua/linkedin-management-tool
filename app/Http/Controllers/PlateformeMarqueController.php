@@ -36,12 +36,17 @@ class PlateformeMarqueController extends Controller
         
         // Get existing platform data if available
         $existingPlateforme = PlateformeMarque::where('user_id', $user->id)->first();
+
+        $linkedinUserList = LinkedinUser::where('user_id', $user->id)->get();
         
         if (!$existingPlateforme) {
             return redirect()->route('plateforme-marque')->with('profile_error', 'Veuillez d\'abord créer votre profil de marque');
         }
         
-        return view('marque', ['existingPlateforme' => $existingPlateforme]);
+        return view('marque', [
+            'linkedinUserList' => $linkedinUserList,
+            'existingPlateforme' => $existingPlateforme
+        ]);
     }
     
 

@@ -54,7 +54,7 @@
         <!-- Auth Dropdown Menu -->
         <div class="flex align-items-center gap-3">
             <div class="text-black text-sm font-semibold">
-                <button class="nav-item dropdown bg-white hover:bg-gray-50 px-5 py-2 rounded-full transition-colors duration-200 shadow-sm" style="border: 1px solid rgba(0,0,0,0.2);">
+                <button class="nav-item dropdown px-5 py-2 rounded-full" style="border: 1px solid black;">
                     <a id="navbarDropdown" class="nav-link dropdown-toggle text-black flex items-center" href="#" role="button"
                     data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
                         {{ Auth::user()->name }}
@@ -89,7 +89,20 @@
                     </a>
 
                     <!-- Dropdown menu with the rest of the accounts -->
-               
+                    <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                        @foreach($linkedinUserList as $index => $linkedinUser)
+                            <a class="dropdown-item bg-pink-200 d-flex align-items-center gap-2 px-2" href="#">
+                                <img 
+                                    src="{{ $linkedinUser->linkedin_picture ?? '/build/assets/images/default-profile.png' }}"
+                                    alt="profile-picture" 
+                                    height="35" 
+                                    width="35" 
+                                    class="rounded-full"
+                                />
+                                <p class="mb-0">{{ $linkedinUser->linkedin_firstname }} {{ $linkedinUser->linkedin_lastname }}</p>
+                            </a>
+                        @endforeach
+                    </div>
                 </button>
             </div>
         </div>
