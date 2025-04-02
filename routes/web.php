@@ -56,6 +56,8 @@ Route::middleware(['auth', 'verified', 'linkedin.valid'])->group(function() {
 Route::middleware(['auth', 'verified', 'check.subscriptions'])->group(function() {
     Route::get('/plateforme-marque', [App\Http\Controllers\PlateformeMarqueController::class, 'index'])->name('plateforme-marque');
     Route::post('/save-platform-info', [App\Http\Controllers\PlateformeMarqueController::class, 'store'])->name('plateforme.store');
+    Route::get('/marque', [App\Http\Controllers\PlateformeMarqueController::class, 'showMarque'])->name('marque.show');
+
 });
 
 

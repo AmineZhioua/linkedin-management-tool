@@ -8,6 +8,7 @@ import LoadingOverlay from "./components/LoadingOverlay.vue";
 import ProgressIndicator from "./components/ProgressIndicator.vue";
 import LinkedinPostCard from "./components/LinkedinPostCard.vue";
 import PlateformeStart from "./components/PlateformeStart.vue";
+import MarqueComponent from "./components/Marque.vue";
 
 const app = createApp();
 
@@ -18,5 +19,6 @@ app.component("loading-overlay", LoadingOverlay);
 app.component("progress-indicator", ProgressIndicator);
 app.component("linkedin-postcard", LinkedinPostCard);
 app.component("plateforme-start", PlateformeStart);
+app.component("marque-component", MarqueComponent);
 
 app.mount("#app");

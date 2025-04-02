@@ -32,7 +32,7 @@
                     src="/build/assets/icons/rocket-sticker.svg"
                     alt="Rocket Sticker"
                     class="rocket-sticker"
-                    style="z-index: 10; margin-right: -15px;"
+                    style="z-index: 10; margin-right: -15px"
                 />
                 <p class="rocket-pg text-black fw-semibold">
                     Cette étape est obligatoire!
@@ -41,7 +41,10 @@
         </div>
 
         <!-- Loading Overlay -->
-        <loading-overlay :isLoading="isLoading" message="Traitement en cours..." />
+        <loading-overlay
+            :isLoading="isLoading"
+            message="Traitement en cours..."
+        />
 
         <!-- Card Main Content -->
         <div class="flex flex-col align-items-center justify-center card-main">
@@ -54,17 +57,22 @@
             />
 
             <!-- Questionnaire -->
-            <div v-else class="w-full h-[80%] flex align-items-center justify-content-center">
+            <div
+                v-else
+                class="w-full h-[80%] flex align-items-center justify-content-center"
+            >
                 <div v-if="currentQuestionIndex < questions.length">
                     <!-- Progress Indicator -->
                     <div class="mb-4 w-full flex justify-center">
-                        <progress-indicator 
-                            :total-steps="questions.length" 
-                            :current-step="currentQuestionIndex + 1" 
+                        <progress-indicator
+                            :total-steps="questions.length"
+                            :current-step="currentQuestionIndex + 1"
                         />
                     </div>
                     <!-- Questions Header -->
-                    <div class="flex flex-col gap-4 text-center align-items-center">
+                    <div
+                        class="flex flex-col gap-4 text-center align-items-center"
+                    >
                         <h2 class="text-black">
                             {{ questions[currentQuestionIndex].title }}
                         </h2>
@@ -80,12 +88,20 @@
                         <!-- Question Choices -->
                         <div v-if="questions[currentQuestionIndex].choices">
                             <div
-                                v-for="(choice, index) in questions[currentQuestionIndex].choices"
+                                v-for="(choice, index) in questions[
+                                    currentQuestionIndex
+                                ].choices"
                                 :key="index"
                                 class="choix-btns"
                             >
-                                <p style="color: #374957" class="text-lg fw-semibold">
-                                    {{ questions[currentQuestionIndex].choicesTitle[index] }}
+                                <p
+                                    style="color: #374957"
+                                    class="text-lg fw-semibold"
+                                >
+                                    {{
+                                        questions[currentQuestionIndex]
+                                            .choicesTitle[index]
+                                    }}
                                 </p>
                                 <button
                                     @click="selectAndNext(choice)"
@@ -151,7 +167,9 @@
                 </div>
             </div>
 
-            <div class="flex align-items-center flex-wrap justify-content-center gap-2 mt-4">
+            <div
+                class="flex align-items-center flex-wrap justify-content-center gap-2 mt-4"
+            >
                 <!-- Navigation buttons -->
                 <button
                     v-if="currentQuestionIndex > 0 && startedQuestionnaire"
@@ -184,7 +202,7 @@
                     Suivant
                 </button>
                 <button
-                    v-if ="
+                    v-if="
                         currentQuestionIndex === questions.length - 1 &&
                         startedQuestionnaire
                     "
@@ -192,7 +210,7 @@
                     @click="submitAnswers"
                     :disabled="isLoading"
                 >
-                    <span v-if = "!isLoading">Soumettre</span>
+                    <span v-if="!isLoading">Soumettre</span>
                     <span v-else class="btn-loader"></span>
                 </button>
             </div>
@@ -209,7 +227,7 @@
             <Popup
                 v-if="errorMessage"
                 path="/build/assets/popups/sad-face.svg"
-                @close ="errorMessage = null"
+                @close="errorMessage = null"
             >
                 {{ errorMessage }}
             </Popup>
@@ -240,8 +258,8 @@
 </template>
 
 <script>
-import axios from 'axios';
-import Popup from './Popup.vue';
+import axios from "axios";
+import Popup from "./Popup.vue";
 
 export default {
     components: {
@@ -302,7 +320,9 @@ export default {
     computed: {
         logoUrl() {
             if (this.existingLogo) {
-                return this.existingLogo.startsWith("/storage/") ? this.existingLogo : "/storage/" + this.existingLogo;
+                return this.existingLogo.startsWith("/storage/")
+                    ? this.existingLogo
+                    : "/storage/" + this.existingLogo;
             }
             return "";
         },
@@ -323,7 +343,8 @@ export default {
                 const hasNom = !!this.existingPlateforme.nom_marque;
                 const hasDomaine = !!this.existingPlateforme.domaine_marque;
                 const hasLogo = !!this.existingPlateforme.logo_marque;
-                const hasDescription = !!this.existingPlateforme.description_marque;
+                const hasDescription =
+                    !!this.existingPlateforme.description_marque;
 
                 // If all fields are filled, it's complete data
                 if (hasNom && hasDomaine && hasLogo && hasDescription) {
@@ -338,13 +359,16 @@ export default {
 
                 // Pre-populate answers for fields that exist
                 if (this.existingPlateforme.nom_marque) {
-                    this.answers["Le nom de ta marque"] = this.existingPlateforme.nom_marque;
+                    this.answers["Le nom de ta marque"] =
+                        this.existingPlateforme.nom_marque;
                 }
                 if (this.existingPlateforme.domaine_marque) {
-                    this.answers["Domaine de la marque"] = this.existingPlateforme.domaine_marque;
+                    this.answers["Domaine de la marque"] =
+                        this.existingPlateforme.domaine_marque;
                 }
                 if (this.existingPlateforme.description_marque) {
-                    this.answers["Description de ta marque"] = this.existingPlateforme.description_marque;
+                    this.answers["Description de ta marque"] =
+                        this.existingPlateforme.description_marque;
                 }
                 if (this.existingLogo) {
                     this.answers["Logo de ta marque"] = "existing";
@@ -423,9 +447,9 @@ export default {
                 this.storeAnswer();
                 this.nextQuestion();
             } else {
-                this.errorMessage = "Veuillez remplir ce champ avant de continuer.";
+                this.errorMessage =
+                    "Veuillez remplir ce champ avant de continuer.";
             }
-
         },
         selectAndNext(choice) {
             // Store the selected choice and move to next question
@@ -463,14 +487,23 @@ export default {
 
             // Set input values based on stored answers
             const currentQuestion = this.questions[this.currentQuestionIndex];
-            if (currentQuestion.textInput && this.answers[currentQuestion.title]) {
+            if (
+                currentQuestion.textInput &&
+                this.answers[currentQuestion.title]
+            ) {
                 this.inputValue = this.answers[currentQuestion.title];
-            } else if (currentQuestion.selectInput && this.answers[currentQuestion.title]) {
+            } else if (
+                currentQuestion.selectInput &&
+                this.answers[currentQuestion.title]
+            ) {
                 this.selectedOption = this.answers[currentQuestion.title];
             } else if (currentQuestion.imgInput) {
                 // Make sure to reset newLogoSelected when we arrive at the logo question
                 // so the existing logo displays properly
-                if (this.existingLogo && this.answers[currentQuestion.title] === "existing") {
+                if (
+                    this.existingLogo &&
+                    this.answers[currentQuestion.title] === "existing"
+                ) {
                     this.newLogoSelected = false;
                 }
             }
@@ -486,7 +519,8 @@ export default {
 
             if (!hasAtLeastOneAnswer) {
                 // Show error message if no answers are provided
-                this.errorMessage = "Veuillez remplir au moins un champ avant d'enregistrer.";
+                this.errorMessage =
+                    "Veuillez remplir au moins un champ avant d'enregistrer.";
                 return;
             }
 
@@ -496,15 +530,24 @@ export default {
 
             // Only append fields that have answers
             if (this.answers["Le nom de ta marque"]) {
-                formData.append("nom_marque", this.answers["Le nom de ta marque"]);
+                formData.append(
+                    "nom_marque",
+                    this.answers["Le nom de ta marque"]
+                );
             }
 
             if (this.answers["Domaine de la marque"]) {
-                formData.append("domaine_marque", this.answers["Domaine de la marque"]);
+                formData.append(
+                    "domaine_marque",
+                    this.answers["Domaine de la marque"]
+                );
             }
 
             if (this.answers["Description de ta marque"]) {
-                formData.append("description_marque", this.answers["Description de ta marque"]);
+                formData.append(
+                    "description_marque",
+                    this.answers["Description de ta marque"]
+                );
             }
 
             // Set mode to partial for save and return later
@@ -523,27 +566,31 @@ export default {
                 formData.append("logo_changed", "false");
             }
 
-            await axios.post("/save-platform-info", formData, {
-                headers: {
-                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
-                },
-            })
-            .then((response) => {
-                this.isLoading = false;
-                this.successMessage = "Informations enregistrées. Vous pouvez revenir compléter plus tard.";
-                this.showSuccess = true;
+            await axios
+                .post("/save-platform-info", formData, {
+                    headers: {
+                        "X-CSRF-TOKEN": document
+                            .querySelector('meta[name="csrf-token"]')
+                            .getAttribute("content"),
+                    },
+                })
+                .then((response) => {
+                    this.isLoading = false;
+                    this.successMessage =
+                        "Informations enregistrées. Vous pouvez revenir compléter plus tard.";
+                    this.showSuccess = true;
 
-                setTimeout(() => {
-                    this.showSuccess = false;
-                    this.startedQuestionnaire = false;
-                    window.location.reload();
-                }, 2000);
-            })
-            .catch((error) => {
-                this.isLoading = false; // Deactivate loading state even on error
-                this.errorMessage = "Une erreur s'est produite lors de l'enregistrement du formulaire.";
-            });
-
+                    setTimeout(() => {
+                        this.showSuccess = false;
+                        this.startedQuestionnaire = false;
+                        window.location.reload();
+                    }, 2000);
+                })
+                .catch((error) => {
+                    this.isLoading = false; // Deactivate loading state even on error
+                    this.errorMessage =
+                        "Une erreur s'est produite lors de l'enregistrement du formulaire.";
+                });
         },
         async submitAnswers() {
             if (this.isLoading) return; // Prevent multiple submissions
@@ -553,8 +600,14 @@ export default {
 
             const formData = new FormData();
             formData.append("nom_marque", this.answers["Le nom de ta marque"]);
-            formData.append("domaine_marque", this.answers["Domaine de la marque"]);
-            formData.append("description_marque", this.answers["Description de ta marque"]);
+            formData.append(
+                "domaine_marque",
+                this.answers["Domaine de la marque"]
+            );
+            formData.append(
+                "description_marque",
+                this.answers["Description de ta marque"]
+            );
 
             // Add mode parameter for update/create
             formData.append("mode", this.existingData ? "update" : "create");
@@ -573,23 +626,27 @@ export default {
                 formData.append("logo_changed", "false");
             }
 
-            await axios.post("/save-platform-info", formData, {
-                headers: {
-                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
-                },
-            })
-            .then((response) => {
-                this.isLoading = false;
-                this.showSuccessMessage();
-            })
-            .catch((error) => {
-                this.isLoading = false;
-                this.errorMessage = "Une erreur s'est produite lors de la soumission du formulaire.";
-            });
-
+            await axios
+                .post("/save-platform-info", formData, {
+                    headers: {
+                        "X-CSRF-TOKEN": document
+                            .querySelector('meta[name="csrf-token"]')
+                            .getAttribute("content"),
+                    },
+                })
+                .then((response) => {
+                    this.isLoading = false;
+                    this.showSuccessMessage();
+                })
+                .catch((error) => {
+                    this.isLoading = false;
+                    this.errorMessage =
+                        "Une erreur s'est produite lors de la soumission du formulaire.";
+                });
         },
         showSuccessMessage() {
-            this.successMessage = this.existingData ? "Les informations de votre marque ont été mises à jour avec succès!"
+            this.successMessage = this.existingData
+                ? "Les informations de votre marque ont été mises à jour avec succès!"
                 : "Les informations de votre marque ont été enregistrées avec succès!";
             this.showSuccess = true;
 
@@ -631,7 +688,11 @@ export default {
 .rocket-pg {
     margin-left: -15px;
     background-color: white;
-    background: linear-gradient(90deg, rgba(255, 0, 204, 0.645) 0%, rgba(247, 206, 71, 0.656) 100%);
+    background: linear-gradient(
+        90deg,
+        rgba(255, 0, 204, 0.645) 0%,
+        rgba(247, 206, 71, 0.656) 100%
+    );
     padding: 20px 30px;
     font-size: 14px;
 }
@@ -643,7 +704,6 @@ export default {
     padding: 20px;
 }
 
-
 .first-btn {
     background-color: #f0f4fa;
 }
@@ -654,7 +714,6 @@ export default {
     align-items: center;
     margin-bottom: 15px;
 }
-
 
 .btn-loader {
     display: inline-block;

@@ -26,6 +26,24 @@ class PlateformeMarqueController extends Controller
             'existingPlateforme' => $existingPlateforme
         ]);
     }
+    public function showMarque()
+{
+    $user = Auth::user();
+    if (!$user) {
+        return redirect()->route('login');
+    }
+    
+    // Get existing platform data if available
+    $existingPlateforme = PlateformeMarque::where('user_id', $user->id)->first();
+    
+    if (!$existingPlateforme) {
+        return redirect()->route('plateforme.marque')->with('error', 'Veuillez d\'abord créer votre profil de marque');
+    }
+    
+    return view('marque', [
+        'existingPlateforme' => $existingPlateforme
+    ]);
+}
     
     public function store(Request $request)
     {
