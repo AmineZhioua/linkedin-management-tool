@@ -42,7 +42,7 @@
         <!-- Card Main Content -->
         <div class="flex flex-col items-center justify-center card-main">
             <!-- Step 1: Choose LinkedIn Account -->
-            <h2 class="text-xl font-bold mb-4">
+            <h2 v-if="currentStep === 1" class="text-xl font-bold mb-4">
                     Sélectionner votre Compte LinkedIn
             </h2>
             <div v-if="currentStep === 1" class="w-full max-w-md">

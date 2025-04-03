@@ -11,6 +11,9 @@
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
+    <!-- FontAwesome Kit -->
+    <script src="https://kit.fontawesome.com/33f8496b80.js" crossorigin="anonymous"></script>
+
     @vite(['resources/js/app.js', 'resources/css/app.css'])
     <title>Lemonade - Dashboard</title>
     <style>
@@ -24,30 +27,29 @@
             overflow-x: hidden;
         }
 
-        .task-btns button:last-of-type {
-            border: 1px solid black;
+        .landing-text {
+            display: inline-block;
+            color: white;
+            padding: 10px 30px;
+            font-size: 3rem;
+            font-weight: bold;
+            transform: rotate(-3deg);
+            margin-left: 20px;
         }
-        .special-text {
-    display: inline-block;
-    font-weight: bold;
-    font-size: 4rem; /* Adjust as needed */
-}
 
-.special-text span {
-    display: inline-block;
-    padding: 8px 16px;
-    border-radius: 25px;
-    color: black;
-    font-weight: bold;
-}
+        .landing-text:last-of-type {
+            position: relative;
+            left: 50px;
+            top: -20px;
+        }
 
-.blue-bg {
-    background-color: #BCECFB; /* Light blue */
-}
+        .baby-blue {
+            background-color: #B4EAED;
+        }
 
-.pink-bg {
-    background-color: #FFDDDD; /* Light pink */
-}
+        .pastel-pink {
+            background-color: #FFD6D3;
+        }
     </style>
 </head>
 <body>
@@ -64,13 +66,11 @@
                 <!-- Main Text Section -->
                 <div class="text-white flex-grow-1">
                     <h1 class="fw-bold text-5xl">Bienvenue sur ton</h1>
-                    <h1 class="special-text my-2">
-                        <span class="blue-bg">
-                        Plateforme
-                        </span> </h1>
-                    <h1 class="special-text my-2">
-                        <span class="pink-bg">de marque !</span></h1>
-
+                    <div class="d-flex flex-column my-3 relative">
+                        <h1 class="landing-text baby-blue rounded-full w-min px-8 py-3">Plateforme</h1>
+                        <h1 class="landing-text pastel-pink rounded-full w-fit px-8 py-3">de marque !</h1>
+                    </div>
+                    <h1 class="fw-bold text-5xl">à tes pinceaux !</h1>
                     <p class="fw-semibold mt-4 text-lg">
                         Devenez un pro en programmant et personnalisant <br> vos prochains posts.
                     </p>
@@ -78,35 +78,17 @@
 
                 <!-- Main Image Section -->
                 <img 
-                    src="/build/assets/images/dashboard-img.svg" 
+                    src="/build/assets/images/marque-img.svg" 
                     alt="dashboard" 
                     height="400" 
                     width="420"
                     class="dashboard-img d-none d-lg-block"
                 />
-
-                <div id="circle-container" class="flex absolute bottom-[-8%] left-[-120px]" style="z-index: -1;">
-                    <span id="circle" class="bg-black h-24 w-24 rounded-full"></span>
-                    <!-- Script to Create more Circles -->
-                    <script>
-                        let blackCircle = document.getElementById('circle');
-                        let circleContainer = document.getElementById('circle-container');
-                        for (let i = 0; i < 15; i++) {
-                            circleContainer.appendChild(blackCircle.cloneNode(true));
-                        }
-                    </script>
-                </div>
             </div>
         </main>
     </div>
 
-
- 
-
-
-        </div>
-    </div>
-        <main id="app" class="vh-100 pt-8 flex-1" style="border-top: 1px solid #BBBBBB;">
+    <main id="app" class="vh-100 pt-8 flex-1" style="border-top: 1px solid #BBBBBB;">
         <marque-component :plateforme="{{ json_encode($existingPlateforme) }}"></marque-component>
     </main>
 </body>
