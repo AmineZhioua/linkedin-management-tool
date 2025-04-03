@@ -41,7 +41,10 @@
         </div>
 
         <!-- Loading Overlay -->
-        <loading-overlay :isLoading="isLoading" message="Traitement en cours..." />
+        <loading-overlay
+            :isLoading="isLoading"
+            message="Traitement en cours..."
+        />
 
         <!-- Card Main Content -->
         <div class="flex flex-col align-items-center justify-center card-main">
@@ -85,7 +88,9 @@
                         <!-- Question Choices -->
                         <div v-if="questions[currentQuestionIndex].choices">
                             <div
-                                v-for="(choice, index) in questions[currentQuestionIndex].choices"
+                                v-for="(choice, index) in questions[
+                                    currentQuestionIndex
+                                ].choices"
                                 :key="index"
                                 class="choix-btns"
                             >
@@ -93,7 +98,10 @@
                                     style="color: #374957"
                                     class="text-lg fw-semibold"
                                 >
-                                    {{ questions[currentQuestionIndex].choicesTitle[index] }}
+                                    {{
+                                        questions[currentQuestionIndex]
+                                            .choicesTitle[index]
+                                    }}
                                 </p>
                                 <button
                                     @click="selectAndNext(choice)"
@@ -111,7 +119,10 @@
                                 id="textInput"
                                 v-model="inputValue"
                                 type="text"
-                                :placeholder="questions[currentQuestionIndex].placeholder || 'Entrez votre texte ici'"
+                                :placeholder="
+                                    questions[currentQuestionIndex]
+                                        .placeholder || 'Entrez votre texte ici'
+                                "
                                 class="p-2 border border-gray-300 rounded-md w-[300px] h-[40px]"
                             />
                         </div>
@@ -120,9 +131,13 @@
                                 v-model="selectedOption"
                                 class="p-2 border border-gray-300 rounded-md w-[300px] h-[40px]"
                             >
-                                <option disabled value="">Sélectionner une option</option>
+                                <option disabled value="">
+                                    Sélectionner une option
+                                </option>
                                 <option
-                                    v-for="option in questions[currentQuestionIndex].selectOptions"
+                                    v-for="option in questions[
+                                        currentQuestionIndex
+                                    ].selectOptions"
                                     :key="option"
                                 >
                                     {{ option }}
@@ -178,7 +193,8 @@
                 <button
                     v-if="
                         currentQuestionIndex < questions.length - 1 &&
-                        startedQuestionnaire"
+                        startedQuestionnaire
+                    "
                     class="py-2 px-5 rounded-full bg-black text-white fw-semibold"
                     @click="validateAndProceed"
                     :disabled="isLoading"
@@ -188,7 +204,8 @@
                 <button
                     v-if="
                         currentQuestionIndex === questions.length - 1 &&
-                        startedQuestionnaire"
+                        startedQuestionnaire
+                    "
                     class="py-2 px-5 rounded-full bg-green-500 text-white fw-semibold"
                     @click="submitAnswers"
                     :disabled="isLoading"
@@ -338,21 +355,23 @@ export default {
                 if (hasNom && hasDomaine && hasLogo && hasDescription) {
                     this.hasCompletedData = true;
                     this.hasPartialData = false;
-                }
-                else if (hasNom || hasDomaine || hasLogo || hasDescription) {
+                } else if (hasNom || hasDomaine || hasLogo || hasDescription) {
                     this.hasPartialData = true;
                     this.hasCompletedData = false;
                 }
 
                 // Pre-populate answers for fields that exist
                 if (this.existingPlateforme.nom_marque) {
-                    this.answers["Le nom de ta marque"] = this.existingPlateforme.nom_marque;
+                    this.answers["Le nom de ta marque"] =
+                        this.existingPlateforme.nom_marque;
                 }
                 if (this.existingPlateforme.domaine_marque) {
-                    this.answers["Domaine de la marque"] = this.existingPlateforme.domaine_marque;
+                    this.answers["Domaine de la marque"] =
+                        this.existingPlateforme.domaine_marque;
                 }
                 if (this.existingPlateforme.description_marque) {
-                    this.answers["Description de ta marque"] = this.existingPlateforme.description_marque;
+                    this.answers["Description de ta marque"] =
+                        this.existingPlateforme.description_marque;
                 }
                 if (this.existingLogo) {
                     this.answers["Logo de ta marque"] = "existing";
@@ -388,7 +407,8 @@ export default {
         },
         getSelectedFile() {
             return (
-                this.selectedFile || (this.existingLogo && !this.newLogoSelected ? "existing" : null)
+                this.selectedFile ||
+                (this.existingLogo && !this.newLogoSelected ? "existing" : null)
             );
         },
         handleFileChange(event) {
@@ -470,16 +490,19 @@ export default {
             // Set input values based on stored answers
             const currentQuestion = this.questions[this.currentQuestionIndex];
             if (
-                currentQuestion.textInput && this.answers[currentQuestion.title]
+                currentQuestion.textInput &&
+                this.answers[currentQuestion.title]
             ) {
                 this.inputValue = this.answers[currentQuestion.title];
             } else if (
-                currentQuestion.selectInput && this.answers[currentQuestion.title]
+                currentQuestion.selectInput &&
+                this.answers[currentQuestion.title]
             ) {
                 this.selectedOption = this.answers[currentQuestion.title];
             } else if (currentQuestion.imgInput) {
                 if (
-                    this.existingLogo && this.answers[currentQuestion.title] === "existing"
+                    this.existingLogo &&
+                    this.answers[currentQuestion.title] === "existing"
                 ) {
                     this.newLogoSelected = false;
                 }
@@ -493,7 +516,8 @@ export default {
             const hasAtLeastOneAnswer = Object.keys(this.answers).length > 0;
 
             if (!hasAtLeastOneAnswer) {
-                this.errorMessage = "Veuillez remplir au moins un champ avant d'enregistrer.";
+                this.errorMessage =
+                    "Veuillez remplir au moins un champ avant d'enregistrer.";
                 return;
             }
 
@@ -502,16 +526,24 @@ export default {
             const formData = new FormData();
 
             if (this.answers["Le nom de ta marque"]) {
-                formData.append("nom_marque", this.answers["Le nom de ta marque"]
+                formData.append(
+                    "nom_marque",
+                    this.answers["Le nom de ta marque"]
                 );
             }
 
             if (this.answers["Domaine de la marque"]) {
-                formData.append("domaine_marque", this.answers["Domaine de la marque"]);
+                formData.append(
+                    "domaine_marque",
+                    this.answers["Domaine de la marque"]
+                );
             }
 
             if (this.answers["Description de ta marque"]) {
-                formData.append("description_marque", this.answers["Description de ta marque"]);
+                formData.append(
+                    "description_marque",
+                    this.answers["Description de ta marque"]
+                );
             }
 
             formData.append("mode", "partial");
@@ -530,27 +562,33 @@ export default {
             }
 
             try {
-                const response = await axios.post("/save-platform-info", formData, {
-                    headers: {
-                        "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
-                    },
-                });
+                const response = await axios.post(
+                    "/save-platform-info",
+                    formData,
+                    {
+                        headers: {
+                            "X-CSRF-TOKEN": document
+                                .querySelector('meta[name="csrf-token"]')
+                                .getAttribute("content"),
+                        },
+                    }
+                );
 
                 // Success handling
                 this.isLoading = false;
-                this.successMessage = "Informations enregistrées. Vous pouvez revenir compléter plus tard.";
+                this.successMessage =
+                    "Informations enregistrées. Vous allez être redirigé...";
                 this.showSuccess = true;
 
+                // Add timeout before redirecting
                 setTimeout(() => {
-                    this.showSuccess = false;
-                    this.startedQuestionnaire = false;
-                    window.location.reload();
-                }, 3000);
-
+                    window.location.href = "/marque";
+                }, 2000);
             } catch (error) {
                 // Error handling
                 this.isLoading = false;
-                this.errorMessage = "Une erreur s'est produite lors de l'enregistrement du formulaire.";
+                this.errorMessage =
+                    "Une erreur s'est produite lors de l'enregistrement du formulaire.";
             }
         },
         async submitAnswers() {
@@ -561,8 +599,14 @@ export default {
 
             const formData = new FormData();
             formData.append("nom_marque", this.answers["Le nom de ta marque"]);
-            formData.append("domaine_marque", this.answers["Domaine de la marque"]);
-            formData.append("description_marque", this.answers["Description de ta marque"]);
+            formData.append(
+                "domaine_marque",
+                this.answers["Domaine de la marque"]
+            );
+            formData.append(
+                "description_marque",
+                this.answers["Description de ta marque"]
+            );
 
             // Add mode parameter for update/create
             formData.append("mode", this.existingData ? "update" : "create");
@@ -580,13 +624,17 @@ export default {
                 formData.append("logo_changed", "false");
             }
 
-            await axios.post("/save-platform-info", formData, {
+            await axios
+                .post("/save-platform-info", formData, {
                     headers: {
-                        "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
+                        "X-CSRF-TOKEN": document
+                            .querySelector('meta[name="csrf-token"]')
+                            .getAttribute("content"),
                     },
                 })
                 .then((response) => {
                     this.isLoading = false;
+                    // Show success message
                     this.showSuccessMessage();
                 })
                 .catch((error) => {
@@ -594,21 +642,20 @@ export default {
                     this.errorMessage =
                         "Une erreur s'est produite lors de la soumission du formulaire.";
                 });
+            setTimeout(() => {
+                window.location.href = "/marque";
+            }, 2000);
         },
+
         showSuccessMessage() {
-            this.successMessage = this.existingData? "Les informations de votre marque ont été mises à jour avec succès!"
+            this.successMessage = this.existingData
+                ? "Les informations de votre marque ont été mises à jour avec succès!"
                 : "Les informations de votre marque ont été enregistrées avec succès!";
             this.showSuccess = true;
 
-            // Reset form after 2 seconds
+            // Wait 2 seconds before redirecting
             setTimeout(() => {
-                this.showSuccess = false;
-                this.startedQuestionnaire = false;
-
-                // Refresh existing data if needed
-                if (this.existingData) {
-                    window.location.reload();
-                }
+                window.location.href = "/marque";
             }, 2000);
         },
     },

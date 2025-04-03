@@ -51,73 +51,69 @@ class PlateformeMarqueController extends Controller
     
 
 
-    public function store(Request $request) {
-        try {
-            $user = Auth::user();
-            if (!$user) {
-                return redirect()->route('login');
-            }
+public function store(Request $request) {
+    try {
+        $user = Auth::user();
+        if (!$user) {
+            return redirect()->route('login');
+        }
 
-            $request->validate([
-                'nom_marque' => 'nullable|string|max:255',
-                'domaine_marque' => 'nullable|string|max:255',
-                'logo_marque' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg',
-                'description_marque' => 'nullable|string|max:500',
-                'mode' => 'required|string|in:create,update,partial',
-                'logo_changed' => 'nullable|string|in:true,false',
-            ]);
+        $request->validate([
+            'nom_marque' => 'nullable|string|max:255',
+            'domaine_marque' => 'nullable|string|max:255',
+            'logo_marque' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg',
+            'description_marque' => 'nullable|string|max:500',
+            'mode' => 'required|string|in:create,update,partial',
+            'logo_changed' => 'nullable|string|in:true,false',
+        ]);
 
-            // Determine if we're creating, updating, or saving partial data
-            $isUpdate = $request->mode === 'update';
-            $isPartial = $request->mode === 'partial';
+        // Determine if we're creating, updating, or saving partial data
+        $isUpdate = $request->mode === 'update';
+        $isPartial = $request->mode === 'partial';
+        
+        if ($isUpdate || $isPartial) {
+            $platformInfo = PlateformeMarque::where('user_id', $user->id)->first();
             
-            if ($isUpdate || $isPartial) {
-                $platformInfo = PlateformeMarque::where('user_id', $user->id)->first();
-                
-                if (!$platformInfo) {
-                    $platformInfo = new PlateformeMarque();
-                    $platformInfo->user_id = $user->id;
-                }
-            } else {
+            if (!$platformInfo) {
                 $platformInfo = new PlateformeMarque();
                 $platformInfo->user_id = $user->id;
             }
-            
-            // Update fields - only update fields that are provided in partial mode
-            if ($request->has('nom_marque')) {
-                $platformInfo->nom_marque = $request->nom_marque;
-            }
-            
-            if ($request->has('domaine_marque')) {
-                $platformInfo->domaine_marque = $request->domaine_marque;
-            }
-            
-            if ($request->has('description_marque')) {
-                $platformInfo->description_marque = $request->description_marque;
-            }
-
-            // Handle logo upload if provided
-            if ($request->hasFile('logo_marque') && $request->logo_changed === 'true') {
-                if (($isUpdate || $isPartial) && $platformInfo->logo_marque) {
-                    Storage::disk('public')->delete($platformInfo->logo_marque);
-                }
-                
-                // Store new logo
-                $path = $request->file('logo_marque')->store('logos', 'public');
-                $platformInfo->logo_marque = $path;
-            }
-
-            $platformInfo->save();
-
-            $message = $isPartial ? 'Informations enregistrées, vous pouvez revenir plus tard' : 
-                      ($isUpdate ? 'Informations mises à jour avec succès' : 'Informations soumises avec succès');
-
-            return response()->json([
-                'message' => $message,
-                'plateforme' => $platformInfo
-            ], 200);
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
+        } else {
+            $platformInfo = new PlateformeMarque();
+            $platformInfo->user_id = $user->id;
         }
+        
+        // Update fields - only update fields that are provided in partial mode
+        if ($request->has('nom_marque')) {
+            $platformInfo->nom_marque = $request->nom_marque;
+        }
+        
+        if ($request->has('domaine_marque')) {
+            $platformInfo->domaine_marque = $request->domaine_marque;
+        }
+        
+        if ($request->has('description_marque')) {
+            $platformInfo->description_marque = $request->description_marque;
+        }
+
+        // Handle logo upload if provided
+        if ($request->hasFile('logo_marque') && $request->logo_changed === 'true') {
+            if (($isUpdate || $isPartial) && $platformInfo->logo_marque) {
+                Storage::disk('public')->delete($platformInfo->logo_marque);
+            }
+            
+            // Store new logo
+            $path = $request->file('logo_marque')->store('logos', 'public');
+            $platformInfo->logo_marque = $path;
+        }
+
+        $platformInfo->save();
+
+        return redirect('/marque')->with('success', $isPartial ? 'Informations enregistrées, vous pouvez revenir plus tard' : 
+                                                      ($isUpdate ? 'Informations mises à jour avec succès' : 'Informations soumises avec succès'));
+    } catch (\Exception $e) {
+        return redirect('/marque')->with('error', 'Une erreur s\'est produite : ' . $e->getMessage());
     }
+}
+
 }
