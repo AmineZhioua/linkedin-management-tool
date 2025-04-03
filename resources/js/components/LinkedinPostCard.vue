@@ -43,7 +43,7 @@
         <div class="flex flex-col items-center justify-center card-main">
             <!-- Step 1: Choose LinkedIn Account -->
             <h2 v-if="currentStep === 1" class="text-xl font-bold mb-4">
-                    Sélectionner votre Compte LinkedIn
+                Sélectionner votre Compte LinkedIn
             </h2>
             <div v-if="currentStep === 1" class="w-full max-w-md">
                 <div class="grid grid-cols-2 gap-4">
@@ -56,9 +56,7 @@
                     >
                         <div class="flex flex-col align-items-center px-2 gap-2">
                             <img
-                                :src="linkedinUser.linkedin_picture 
-                                    ? linkedinUser.linkedin_picture 
-                                    : '/build/assets/images/default-profile.png'"
+                                :src="linkedinUser.linkedin_picture ? linkedinUser.linkedin_picture : '/build/assets/images/default-profile.png'"
                                 alt="Profile Picture"
                                 class="rounded-full"
                                 width="100"
@@ -75,13 +73,131 @@
                     :disabled="!selectedAccount"
                     class="w-full bg-blue-500 text-white py-2 rounded-lg mt-4 disabled:bg-gray-300"
                 >
-                    Next
+                    Commencer votre Campagne
                 </button>
             </div>
 
-            <!-- Step 2: Choose Post Type -->
+
+            <!-- Step 2 : Date Debut & Date de Fin -->
             <div v-if="currentStep === 2" class="w-full max-w-md">
-                <h2 class="text-xl font-bold mb-4">Choissisez le Type du Post</h2>
+                <h2 class="text-xl font-bold mb-4">Durée du Campagne</h2>
+                <!-- Date de Debut -->
+                <div>
+                    <label for="startDate" class="text-md mb-2">
+                        Date de Début
+                        <span style="color: red;">*</span> :
+                    </label>
+                    <input
+                        type="date"
+                        id="startDate"
+                        v-model="startDate"
+                        class="w-full border rounded-lg p-2 mb-4"
+                        :min="startDate"
+                        :max="endDate"
+                    />
+                </div>
+
+                <!-- Date de Fin -->
+                <div>
+                    <label for="startDate" class="text-md mb-2">
+                        Date de Fin <span style="color: red;">*</span> :
+                    </label>
+                    <input
+                        type="date"
+                        id="endDate"
+                        v-model="endDate"
+                        class="w-full border rounded-lg p-2 mb-4"
+                    />
+                </div>
+
+                <!-- Previous & Next Buttons -->
+                <div class="flex justify-between mt-4">
+                    <button
+                        @click="prevStep"
+                        class="bg-gray-300 text-black py-2 px-4 rounded-lg"
+                    >
+                        Back
+                    </button>
+                    <button
+                        @click="nextStep"
+                        class="bg-blue-500 text-white py-2 px-4 rounded-lg disabled:bg-gray-300"
+                    >
+                        Next
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 3 : Description du Campagne -->
+            <div v-if="currentStep === 3" class="w-full max-w-md">
+                <h2 class="text-xl font-bold mb-4">Description du Campagne :</h2>
+                <textarea 
+                    name="descriptionCampagne" 
+                    id="descriptionCampagne"
+                    v-model="descriptionCampagne"
+                    class="w-full border rounded-lg p-3 h-32 mb-2"
+                    placeholder="Décrivez votre Campagne ici..."
+                ></textarea>
+
+                <!-- Previous & Next Buttons -->
+                <div class="flex justify-between mt-4">
+                    <button
+                        @click="prevStep"
+                        class="bg-gray-300 text-black py-2 px-4 rounded-lg"
+                    >
+                        Back
+                    </button>
+                    <button
+                        @click="nextStep"
+                        :disabled="!descriptionCampagne.trim()"
+                        class="bg-blue-500 text-white py-2 px-4 rounded-lg disabled:bg-gray-300"
+                    >
+                        Next
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 4 : Frequence des Posts -->
+            <div v-if="currentStep === 4" class="w-full max-w-md">
+                <h2 class="text-xl font-bold mb-4">Fréquence des Posts :</h2>
+                <div class="flex align-items-center relative">
+                    <input 
+                        type="number"
+                        v-model="frequenceParJour"
+                        class="w-full border rounded-lg p-2 px-4"
+                        placeholder="Nombre de Posts"
+                        min="1"
+                    />
+
+                    <button 
+                        class="bg-black text-white absolute right-0 py-2 px-3" 
+                        style="border-top-right-radius: 8px; border-bottom-right-radius: 8px;"
+                        disabled
+                    >
+                        par Jour
+                    </button>
+                </div>
+
+                <!-- Previous & Next Buttons -->
+                <div class="flex justify-between mt-4">
+                    <button
+                        @click="prevStep"
+                        class="bg-gray-300 text-black py-2 px-4 rounded-lg"
+                    >
+                        Back
+                    </button>
+                    <button
+                        @click="nextStep"
+                        class="bg-blue-500 text-white py-2 px-4 rounded-lg disabled:bg-gray-300"
+                    >
+                        Next
+                    </button>
+                </div>
+            </div>
+
+
+            <!-- Step 5: Choose Post Type -->
+            <div v-if="currentStep === 5" class="w-full max-w-md">
+                <h2 class="text-xl font-bold mb-4">Choissisez le type du Post</h2>
                 <div class="grid grid-cols-3 gap-4">
                     <div
                         v-for="type in postTypes"
@@ -111,8 +227,9 @@
                 </div>
             </div>
 
-            <!-- Step 3: Add Content -->
-            <div v-if="currentStep === 3" class="w-full max-w-md">
+
+            <!-- Step 6: Add Content -->
+            <div v-if="currentStep === 6" class="w-full max-w-md">
                 <h2 class="text-xl font-bold mb-4">
                     {{
                         selectedPostType
@@ -167,7 +284,7 @@
                 <!-- Text Input -->
                 <textarea
                     v-model="postText"
-                    placeholder="What do you want to express?"
+                    :placeholder="selectedPostType === 'text' ? 'Exprimez-vous !' : 'Ajouter une légende... (Optionnel)'"
                     class="w-full border rounded-lg p-2 h-32 mb-4"
                 >
                 </textarea>
@@ -225,6 +342,12 @@ export default {
             submissionError: null,
             showSuccessPopup: false,
             successMessage: "",
+            startDate: new Date().toISOString().split('T')[0],
+            // End date is set to 7 days from today (probably for testing now)
+            endDate: new Date(new Date().setDate(new Date().getDate() + 2)).toISOString().split('T')[0],
+            // Minimum of 1 post per day
+            frequenceParJour: 1,
+            descriptionCampagne: "",
             postTypes: [
                 {
                     value: "text",
@@ -264,7 +387,7 @@ export default {
         },
 
         nextStep() {
-            if (this.currentStep < 3) {
+            if (this.currentStep < 6) {
                 this.currentStep++;
             }
         },
