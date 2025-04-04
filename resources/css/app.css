@@ -397,8 +397,12 @@ footer .copyright {
 } */
 /* ################ DASHBOARD PAGE STYLING END ################ */
 
+
+
 /* ################ LINKEDIN LOGIN PAGE STYLING START ################ */
-.linkedin-login .popup-overlay {
+/* ################ LINKEDIN POST PAGE STYLING START ################ */
+.linkedin-login .popup-overlay,
+.linkedin-post .popup-overlay {
     position: fixed;
     top: 0;
     left: 0;
@@ -410,7 +414,8 @@ footer .copyright {
 }
 
 /* Popup Styles */
-.linkedin-login .custom-popup {
+.linkedin-login .custom-popup,
+.linkedin-post .custom-popup {
     position: fixed;
     top: 50%;
     left: 50%;
@@ -430,12 +435,15 @@ footer .copyright {
     animation: slideUp 0.3s ease-in-out;
 }
 
-.linkedin-login .hidden {
+.linkedin-login .hidden,
+.linkedin-post .hidden {
     display: none;
 }
 
 .linkedin-login .ajout-btn:hover,
-.linkedin-login .linkedin-account:hover {
+.linkedin-login .linkedin-account:hover,
+.linkedin-post .ajout-btn:hover,
+.linkedin-post .linkedin-account:hover {
     background-color: #f0f0f0;
 }
 

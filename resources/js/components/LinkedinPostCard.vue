@@ -25,10 +25,7 @@
         />
 
         <!-- Loading Overlay -->
-        <loading-overlay
-            :isLoading="isSubmitting"
-            message="Traitement en cours..."
-        />
+        <loading-overlay :isLoading="isSubmitting" message="Traitement en cours..." />
 
         <!-- Success Popup -->
         <Popup
@@ -51,8 +48,9 @@
                         v-for="linkedinUser in linkedinUserlist"
                         :key="linkedinUser.id"
                         @click="selectAccount(linkedinUser)"
-                        class="bg-white py-4 rounded-xl border mb-4 cursor-pointer max-w-[250px]"
-                        :class="{'border-blue-500': selectedAccount && selectedAccount.id === linkedinUser.id}"
+                        class="py-4 rounded-xl border mb-4 cursor-pointer max-w-[250px]"
+                        :class="{'bg-blue-500 text-white': selectedAccount && selectedAccount.id === linkedinUser.id,
+                                'bg-white': !(selectedAccount && selectedAccount.id === linkedinUser.id)}"
                     >
                         <div class="flex flex-col align-items-center px-2 gap-2">
                             <img
@@ -68,6 +66,9 @@
                         </div>
                     </div>
                 </div>
+                
+                <!-- Slot for the "Ajouter" Button in the Blade Template -->
+                <slot></slot>
                 <button
                     @click="nextStep"
                     :disabled="!selectedAccount"

@@ -16,8 +16,7 @@
     <!-- FontAwesome Kit -->
     <script src="https://kit.fontawesome.com/33f8496b80.js" crossorigin="anonymous"></script>
 </head>
-<body class="flex flex-col"
-    style="background-color: #FEF4E5; font-family: 'Inter', sans-serif; min-height:100vh;">
+<body class="flex flex-col linkedin-post" style="background-color: #FEF4E5; font-family: 'Inter', sans-serif; min-height:100vh;">
     <!-- Header Section -->
     <header class="d-flex align-items-center justify-content-between container">
         <!-- Lemonade Logo & Text -->
@@ -96,8 +95,27 @@
 
     <!-- Main Section -->
     <main id="app" class="vh-100 pt-8 flex-1" style="border-top: 1px solid #BBBBBB;">
-        <linkedin-postcard :linkedin-userlist="{{ $linkedinUserList }}" />
+        <!-- LinkedInPostCard Component -->
+        <linkedin-postcard :linkedin-userlist="{{ $linkedinUserList }}">
+            <button 
+                class="flex justify-center align-items-center cursor-pointer w-full py-2 rounded-lg"
+                style="background: linear-gradient(45deg, #ff1eac, #ff9f34);"
+                onclick="showAddAccountPopup()"
+            >
+                <span class="text-decoration-none text-white flex align-items-center gap-1">
+                    <img src="/build/assets/icons/add-white.svg" alt="add-icon" height="25" width="25"/>
+                    Ajouter un compte LinkedIn
+                </span>
+            </button>
+        </linkedin-postcard>
     </main>
+
+
+    <!-- Popup for Adding Account -->
+    <x-add-account-popup />
+
+    <!-- Popup for LinkedIn Logout -->
+    <x-logout-popup />
 
 
     <!-- Footer Setion -->
@@ -144,5 +162,44 @@
             />
         </div>
     </footer>
+
+
+
+    <script>
+        function showAddAccountPopup() {
+            const popup = document.getElementById('linkedin-add-account-popup');
+            const countdownElement = document.getElementById('countdown');
+            const logoutButton = document.getElementById('logout-button');
+            let timeLeft = 15;
+
+            popup.classList.remove('hidden');
+
+            const countdown = setInterval(() => {
+                timeLeft--;
+                countdownElement.textContent = timeLeft;
+
+                if (timeLeft <= 0) {
+                    clearInterval(countdown);
+                    popup.classList.add('hidden');
+                    // Proceed to LinkedIn auth after 15 seconds
+                    window.location.href = "{{ route('linkedin.auth') }}";
+                }
+            }, 1000);
+
+            logoutButton.addEventListener('click', function(event) {
+                event.preventDefault();
+                clearInterval(countdown);
+            });
+
+            popup.querySelector('.annuler-btn').addEventListener('click', () => {
+                clearInterval(countdown);
+            });
+
+            popup.querySelector('.close').addEventListener('click', () => {
+                clearInterval(countdown);
+            });
+
+        }
+    </script>
 </body>
 </html>
