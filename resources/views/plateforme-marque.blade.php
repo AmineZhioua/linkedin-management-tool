@@ -22,7 +22,7 @@
             flex-direction: column;
             min-height: 100vh;
             margin: 0;
-            background-color: #FEF4E5;
+            background-color: #FEF4E5 !important;
             font-family: 'Inter', sans-serif;
         }
 
@@ -53,15 +53,22 @@
 
         <!-- Auth Dropdown Menu -->
         <div class="flex align-items-center gap-3">
-            <div class="text-black text-sm font-semibold">
-                <button class="nav-item dropdown bg-white hover:bg-gray-50 px-5 py-2 rounded-full transition-colors duration-200 shadow-sm" style="border: 1px solid rgba(0,0,0,0.2);">
-                    <a id="navbarDropdown" class="nav-link dropdown-toggle text-black flex items-center" href="#" role="button"
-                    data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
-                        {{ Auth::user()->name }}
-                    </a>
-                    <x-login-dropdown />
+            <div class="relative text-black text-sm font-semibold">
+                <!-- Dropdown Toggle Button -->
+                <button 
+                    id="navbarDropdown" 
+                    class="nav-item dropdown px-5 py-2 rounded-full border border-black flex items-center"
+                    data-bs-toggle="dropdown"
+                    aria-haspopup="true"
+                    aria-expanded="false"
+                >
+                    {{ Auth::user()->name }}
                 </button>
+
+                <!-- Dropdown Menu Component -->
+                <x-login-dropdown />
             </div>
+
 
             <!-- LinkedIn Accounts -->
             <div class="text-black text-sm fw-semibold">

@@ -1,5 +1,5 @@
 <template>
-    <div class="wh-100 vh-100 relative mt-8 plateforme-card">
+    <div class="bg-white wh-100 vh-100 relative mt-8 plateforme-card">
         <!-- Heart Sticker -->
         <div class="absolute top-[-40px] left-[40px] flex align-items-center">
             <img
@@ -41,10 +41,7 @@
         </div>
 
         <!-- Loading Overlay -->
-        <loading-overlay
-            :isLoading="isLoading"
-            message="Traitement en cours..."
-        />
+        <loading-overlay :isLoading="isLoading" message="Traitement en cours..." />
 
         <!-- Card Main Content -->
         <div class="flex flex-col align-items-center justify-center card-main">
@@ -216,12 +213,6 @@
             </div>
 
             <!-- Success Message -->
-            <div
-                v-if="showSuccess"
-                class="mt-4 p-3 bg-green-100 text-green-700 rounded-md w-full max-w-md text-center"
-            >
-                {{ successMessage }}
-            </div>
             <Popup
                 v-if="showSuccess"
                 path="/build/assets/popups/like-popup.svg"
@@ -663,6 +654,11 @@ export default {
 </script>
 
 <style scoped>
+.plateforme-card {
+    border-top-right-radius: 15px;
+    border-top-left-radius: 15px;
+}
+
 .waves {
     position: absolute;
     top: 50%;
