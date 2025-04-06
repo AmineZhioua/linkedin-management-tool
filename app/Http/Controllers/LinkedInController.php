@@ -17,6 +17,7 @@ class LinkedInController extends Controller
             return redirect()->route('login');
         }
         $linkedinUserList = LinkedinUser::where('user_id', $user->id)->get();
+        
         return view('linkedin-login', [
             'user' => $user,
             'linkedinUserList' => $linkedinUserList,
