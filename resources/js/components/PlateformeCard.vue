@@ -34,7 +34,7 @@
                     class="rocket-sticker"
                     style="z-index: 10; margin-right: -15px"
                 />
-                <p class="rocket-pg text-black fw-semibold">
+                <p class="rocket-pg text-black fw-semibold d-none d-lg-block">
                     Cette étape est obligatoire!
                 </p>
             </div>
@@ -58,24 +58,24 @@
                 v-else
                 class="w-full h-[80%] flex align-items-center justify-content-center"
             >
-                <div v-if="currentQuestionIndex < questions.length">
-                    <!-- Progress Indicator -->
-                    <div class="mb-4 w-full flex justify-center">
-                        <progress-indicator
-                            :total-steps="questions.length"
-                            :current-step="currentQuestionIndex + 1"
-                        />
-                    </div>
-                    <!-- Questions Header -->
-                    <div
-                        class="flex flex-col gap-4 text-center align-items-center"
-                    >
-                        <h2 class="text-black">
-                            {{ questions[currentQuestionIndex].title }}
-                        </h2>
-                        <p class="text-muted">
-                            {{ questions[currentQuestionIndex].paragraph }}
-                        </p>
+                <div v-if="currentQuestionIndex < questions.length" class="h-full flex flex-col justify-evenly">
+                    <div>
+                        <!-- Progress Indicator -->
+                        <div class="mb-4 w-full flex justify-center">
+                            <progress-indicator :total-steps="questions.length" :current-step="currentQuestionIndex + 1" />
+                        </div>
+                        
+                        <!-- Questions Header -->
+                        <div
+                            class="flex flex-col gap-4 text-center align-items-center"
+                        >
+                            <h2 class="text-black">
+                                {{ questions[currentQuestionIndex].title }}
+                            </h2>
+                            <p class="text-muted">
+                                {{ questions[currentQuestionIndex].paragraph }}
+                            </p>
+                        </div>
                     </div>
 
                     <div
@@ -250,7 +250,7 @@
         <img
             src="/build/assets/icons/fi-sr-calendar.svg"
             alt="Calendar Icon"
-            class="absolute top-[20%] right-[12%] bg-img"
+            class="absolute top-[30%] right-[12%] bg-img"
         />
     </div>
 </template>

@@ -16,7 +16,7 @@
     <!-- FontAwesome Kit -->
     <script src="https://kit.fontawesome.com/33f8496b80.js" crossorigin="anonymous"></script>
 </head>
-<body class="flex flex-col linkedin-post" style="background-color: #FEF4E5; font-family: 'Inter', sans-serif; min-height:100vh;">
+<body class="flex flex-col linkedin-post" style="background-color: #FEF4E5; min-height:100vh;">
     <!-- Header Section -->
     <header class="d-flex align-items-center justify-content-between container">
         <!-- Lemonade Logo & Text -->
@@ -28,7 +28,7 @@
                 width="50"
             />
             <img 
-                src="/build/assets/icons/lemonade-black.svg" 
+                src="/build/assets/icons/Lemonade-black.svg" 
                 alt="Lemonade Text"
                 class="lemonade-text"
                 height="50"

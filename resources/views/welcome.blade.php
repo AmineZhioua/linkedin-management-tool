@@ -10,12 +10,12 @@
     @vite(['resources/js/app.js', 'resources/css/app.css'])
 </head>
 <body>
-    <div class="min-h-screen bg-black overflow-hidden">
+    <div class="min-h-screen bg-black flex flex-col overflow-hidden cont">
         <!-- Header Component -->
         <x-header />
 
         <!-- Main Content -->
-        <main class="container main-content text-white py-2">
+        <main class="container main-content flex-1 text-white py-2">
             <!-- Line at the Top -->
             <span class="top-line"></span>
 
