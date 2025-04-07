@@ -6,6 +6,9 @@ use App\Models\LinkedinUser;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use App\Models\ScheduledLinkedInPost;
+use App\Jobs\ScheduleLinkedInPost;
+use Carbon\Carbon;
 
 
 class LinkedInController extends Controller
@@ -23,6 +26,96 @@ class LinkedInController extends Controller
             'linkedinUserList' => $linkedinUserList,
         ]);
     }
+   public function schedulePost(Request $request)
+{
+    $validated = $request->validate([
+        'linkedin_id' => 'required|exists:linkedin_users,id',
+        'caption' => 'required|string|max:3000',  // Caption is required for text posts
+        'asset' => 'nullable|string',  // For image/video posts
+        'media_type' => 'nullable|in:image,video',  // For image/video posts
+        'article_url' => 'nullable|url',  // For article posts
+        'article_title' => 'nullable|string|max:200',  // For article posts
+        'article_description' => 'nullable|string|max:500',  // For article posts
+        'scheduled_date' => 'required|date|after:now',
+    ]);
+
+    // Prepare the content data
+    $content = [
+        'text' => $validated['caption'],
+        'asset' => $validated['asset'] ?? null,
+        'url' => $validated['article_url'] ?? null,
+        'title' => $validated['article_title'] ?? null,
+        'description' => $validated['article_description'] ?? null,
+    ];
+
+    // Create the scheduled post
+    $post = ScheduledLinkedInPost::create([
+        'user_id' => auth()->id(),
+        'linkedin_user_id' => $validated['linkedin_id'],
+        'type' => $validated['media_type'] ?? 'text', // Default to 'text' if media_type is null
+        'content' => json_encode($content),
+        'scheduled_time' => $validated['scheduled_date'],
+        'status' => 'queued',
+    ]);
+
+    // Dispatch the job to post it at the scheduled time
+    ScheduleLinkedInPost::dispatch($post)
+        ->delay(Carbon::parse($validated['scheduled_date']));  // Delay the post for the scheduled time
+
+    return response()->json(['message' => 'Post scheduled successfully']);
+}
+
+     public function publish(Request $request)
+{
+    $validated = $request->validate([
+        'linkedin_id' => 'required|exists:linkedin_users,id',
+        'type' => 'required|in:text,image,video,article',  // Ensures valid post types
+        'content' => 'required|array',  // The content must be an array
+        'scheduled_date' => 'required|date|after:now'  // Ensures scheduled date is in the future
+    ]);
+
+    // Additional validation based on post type
+    switch ($validated['type']) {
+        case 'text':
+            $request->validate([
+                'content.text' => 'required|string|max:3000',  // Caption for text posts
+            ]);
+            break;
+        case 'image':
+        case 'video':
+            $request->validate([
+                'content.asset' => 'required|string',  // Asset URL for media posts
+                'content.caption' => 'nullable|string|max:3000',  // Optional caption for media
+            ]);
+            break;
+        case 'article':
+            $request->validate([
+                'content.url' => 'required|url',  // Article URL for article posts
+                'content.title' => 'required|string|max:200',  // Article title
+                'content.description' => 'required|string|max:500',  // Article description
+                'content.caption' => 'nullable|string|max:3000',  // Optional caption for article
+            ]);
+            break;
+        default:
+            abort(400, 'Invalid post type');
+    }
+
+    // Create the scheduled post
+    $post = ScheduledLinkedInPost::create([
+        'user_id' => auth()->id(),
+        'linkedin_user_id' => $validated['linkedin_id'],
+        'type' => $validated['type'],
+        'content' => json_encode($validated['content']),  // Store content as JSON
+        'scheduled_time' => $validated['scheduled_date'],
+        'status' => 'queued'
+    ]);
+
+    // Dispatch the job to post it at the scheduled time
+    ScheduleLinkedInPost::dispatch($post);
+
+    return response()->json(['message' => 'Post scheduled successfully']);
+}
+
 
 
     // Redirect function to redirect the user to LinkedIn
@@ -176,60 +269,67 @@ class LinkedInController extends Controller
 
 
     // Function to post only text in LinkedIn
-    public function postTextOnly(Request $request) {
-        $postUrl = "https://api.linkedin.com/v2/ugcPosts";
+public function postTextOnly(array $data)
+{
+    $postUrl = "https://api.linkedin.com/v2/ugcPosts";
 
-        $validated = $request->validate([
-            'token' => 'required|string',
-            'linkedin_id' => 'required|string',
-            'caption' => 'required|string|max:3000'
-        ]);
-
-        $authorUrn = 'urn:li:person:' . $validated['linkedin_id'];
-        
-        $postData = [
-            "author" => $authorUrn,
-            "lifecycleState" => "PUBLISHED",
-            "specificContent" => [
-                "com.linkedin.ugc.ShareContent" => [
-                    "shareCommentary" => [
-                        "text" => $validated['caption']
-                    ],
-                    "shareMediaCategory" => "NONE"
-                ]
-            ],
-            "visibility" => [
-                "com.linkedin.ugc.MemberNetworkVisibility" => "PUBLIC"
+    $validated = $data;
+    $authorUrn = 'urn:li:person:' . $validated['linkedin_id'];
+    
+    $postData = [
+        "author" => $authorUrn,
+        "lifecycleState" => "PUBLISHED",
+        "specificContent" => [
+            "com.linkedin.ugc.ShareContent" => [
+                "shareCommentary" => [
+                    "text" => $validated['caption']
+                ],
+                "shareMediaCategory" => "NONE"
             ]
-        ];
+        ],
+        "visibility" => [
+            "com.linkedin.ugc.MemberNetworkVisibility" => "PUBLIC"
+        ]
+    ];
 
-        $headers = [
-            "Authorization: Bearer " . $validated['token'],
-            "Content-Type: application/json",
-            "X-Restli-Protocol-Version: 2.0.0"
-        ];
+    $headers = [
+        "Authorization: Bearer " . $validated['token'],
+        "Content-Type: application/json",
+        "X-Restli-Protocol-Version: 2.0.0"
+    ];
 
-        $curl = curl_init();
-        curl_setopt_array($curl, [
-            CURLOPT_URL => $postUrl,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_POST => true,
-            CURLOPT_POSTFIELDS => json_encode($postData),
-            CURLOPT_HTTPHEADER => $headers,
-            CURLOPT_TIMEOUT => 30
-        ]);
+    $curl = curl_init();
+    curl_setopt_array($curl, [
+        CURLOPT_URL => $postUrl,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST => true,
+        CURLOPT_POSTFIELDS => json_encode($postData),
+        CURLOPT_HTTPHEADER => $headers,
+        CURLOPT_TIMEOUT => 30
+    ]);
 
-        $response = curl_exec($curl);
-        $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-        
-        curl_close($curl);
+    $response = curl_exec($curl);
+    $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+    $errorMsg = curl_error($curl);
+    curl_close($curl);
 
-        return [
-            'status' => $httpCode,
-            'response' => json_decode($response, true)
-        ];
-    }
+    // Create a proper response object with the necessary methods
+    $responseObj = new \stdClass();
+    $responseObj->statusCode = $httpCode;
+    $responseObj->data = json_decode($response);
+    $responseObj->error = $errorMsg;
+    
+    // Add methods to the object
+    $responseObj->getStatusCode = function() use ($httpCode) {
+        return $httpCode;
+    };
+    
+    $responseObj->getData = function() use ($response) {
+        return json_decode($response);
+    };
 
+    return $responseObj;
+}
 
     // Function to Register Media (Image/Video) in LinkedIn
     public function registerMedia(Request $request) {

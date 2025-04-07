@@ -547,7 +547,6 @@ export default {
             this.submissionError = null;
 
             try {
-                // Sort posts by scheduled datetime
                 const sortedPosts = [...this.postCards].sort((a, b) => {
                     return (
                         new Date(a.scheduledDateTime) -
@@ -555,15 +554,60 @@ export default {
                     );
                 });
 
-                // Process posts in chronological order
                 for (const post of sortedPosts) {
-                    if (post.type === "text") {
-                        await this.submitTextPost(post);
-                    } else if (post.type === "image" || post.type === "video") {
-                        await this.submitMediaPost(post);
-                    } else if (post.type === "article") {
-                        await this.submitArticlePost(post);
+                    let formData;
+
+                    switch (post.type) {
+                        case "text":
+                            formData = {
+                                linkedin_id: this.selectedAccount.id,
+                                type: "text",
+                                content: {
+                                    text: post.content.text.trim(),
+                                },
+                                scheduled_date: post.scheduledDateTime,
+                            };
+                            break;
+
+                        case "image":
+                        case "video":
+                            const asset = await this.uploadMedia(post);
+                            formData = {
+                                linkedin_id: this.selectedAccount.id,
+                                type: post.type,
+                                content: {
+                                    asset: asset,
+                                    caption: post.content.caption.trim(),
+                                },
+                                scheduled_date: post.scheduledDateTime,
+                            };
+                            break;
+
+                        case "article":
+                            formData = {
+                                linkedin_id: this.selectedAccount.id,
+                                type: "article",
+                                content: {
+                                    url: post.content.url,
+                                    title: post.content.title,
+                                    description: post.content.description,
+                                    caption: post.content.caption.trim(),
+                                },
+                                scheduled_date: post.scheduledDateTime,
+                            };
+                            break;
+
+                        default:
+                            throw new Error("Invalid post type");
                     }
+
+                    await axios.post("/linkedin/schedule-post", formData, {
+                        headers: {
+                            "X-CSRF-TOKEN": document
+                                .querySelector('meta[name="csrf-token"]')
+                                .getAttribute("content"),
+                        },
+                    });
                 }
 
                 this.showSuccessPopup = true;
@@ -574,9 +618,41 @@ export default {
                 console.error("Error submitting posts:", error);
                 this.submissionError =
                     error.response?.data?.message ||
+                    error.message ||
                     "Une erreur s'est produite lors de la publication des posts";
             } finally {
                 this.isSubmitting = false;
+            }
+        },
+
+        async uploadMedia(post) {
+            try {
+                const formData = new FormData();
+                formData.append("media", post.content.file);
+                formData.append("type", post.type);
+                formData.append("caption", post.content.caption.trim());
+
+                const response = await axios.post(
+                    "/linkedin/registermedia",
+                    formData,
+                    {
+                        headers: {
+                            "Content-Type": "multipart/form-data",
+                            "X-CSRF-TOKEN": document
+                                .querySelector('meta[name="csrf-token"]')
+                                .getAttribute("content"),
+                        },
+                    }
+                );
+
+                if (response.data.status === 200) {
+                    return response.data.asset; // Ensure this matches the response structure
+                } else {
+                    throw new Error("Media upload failed");
+                }
+            } catch (error) {
+                console.error("Error uploading media:", error);
+                throw error;
             }
         },
 
@@ -734,30 +810,92 @@ export default {
     position: relative;
     z-index: 10;
     height: 100%;
-    padding: 20px;
+    padding: 2% 5%; /* Using percentages for responsive padding */
+    margin-top: 10%; /* Added margin to push content below header */
+    overflow-y: auto; /* Add scroll if content is too long */
 }
 
 /* Style for datetime input */
 input[type="datetime-local"] {
-    padding: 8px;
+    padding: 0.5em;
     border: 1px solid #ccc;
     border-radius: 4px;
     font-family: inherit;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Responsive grid for post cards */
+.posts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5em;
+    width: 100%;
+}
+
+/* Post card styling */
+.post-card {
+    border: 1px solid #e2e8f0;
+    border-radius: 0.5em;
+    padding: 1.5em;
+    background: white;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-    .grid {
+    .card-main {
+        margin-top: 15%; /* More margin on smaller screens */
+        padding: 5%; /* More padding on smaller screens */
+    }
+
+    .posts-grid {
         grid-template-columns: 1fr;
     }
 
     .flex.justify-between {
         flex-direction: column;
-        gap: 10px;
+        gap: 0.5em;
     }
 
     button {
         width: 100%;
     }
+}
+
+/* Ensure the container doesn't overflow */
+.wh-100 {
+    width: 100%;
+    overflow-x: hidden;
+}
+
+/* Button styling adjustments */
+button {
+    padding: 0.75em 1.5em;
+    font-size: 1em;
+    border-radius: 0.5em;
+    transition: all 0.2s ease;
+}
+
+/* Textarea styling */
+textarea {
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 8em;
+    padding: 0.75em;
+    border-radius: 0.5em;
+    border: 1px solid #e2e8f0;
+}
+
+/* Input field styling */
+input[type="text"],
+input[type="date"],
+input[type="number"],
+select {
+    width: 100%;
+    padding: 0.75em;
+    border-radius: 0.5em;
+    border: 1px solid #e2e8f0;
+    box-sizing: border-box;
 }
 </style>

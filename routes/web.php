@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\GoogleController;
 use App\Http\Controllers\StripeController;
 use App\Http\Controllers\SubscriptionController;
+use App\Http\Controllers\LinkedInController;
+
 
 
 Route::get('/', function () {
@@ -59,12 +61,13 @@ Route::middleware(['auth', 'verified', 'check.subscriptions'])->group(function()
     Route::get('/marque', [App\Http\Controllers\PlateformeMarqueController::class, 'showMarque'])->name('marque.show');
 
 });
+Route::post('/linkedin/schedule-post', [LinkedInController::class, 'publish']);
+
 
 
 // Routes for "Linkedin Post" Page
 Route::middleware(['auth', 'verified', 'linkedin.valid', 'linkedin.account.exist'])->group(function() {
     Route::get('/linkedin-post', [App\Http\Controllers\LinkedinPostController::class, 'index'])->name('linkedin-post');
-    Route::post('/linkedin/publish', [App\Http\Controllers\LinkedInController::class, 'postTextOnly']);
     Route::post('/linkedin/registermedia', [App\Http\Controllers\LinkedInController::class, 'registerMedia']);
     Route::post('/linkedin/upload-media-binary', [App\Http\Controllers\LinkedInController::class, 'uploadMediaBinary']);
     Route::post('/linkedin/share-media', [App\Http\Controllers\LinkedInController::class, 'shareMedia']);
