@@ -25,7 +25,10 @@
         />
 
         <!-- Loading Overlay -->
-        <loading-overlay :isLoading="isSubmitting" message="Traitement en cours..." />
+        <loading-overlay
+            :isLoading="isSubmitting"
+            message="Traitement en cours..."
+        />
 
         <!-- Success Popup -->
         <Popup
@@ -49,12 +52,25 @@
                         :key="linkedinUser.id"
                         @click="selectAccount(linkedinUser)"
                         class="py-4 rounded-xl border mb-4 cursor-pointer max-w-[250px]"
-                        :class="{'bg-blue-500 text-white': selectedAccount && selectedAccount.id === linkedinUser.id,
-                                'bg-white': !(selectedAccount && selectedAccount.id === linkedinUser.id)}"
+                        :class="{
+                            'bg-blue-500 text-white':
+                                selectedAccount &&
+                                selectedAccount.id === linkedinUser.id,
+                            'bg-white': !(
+                                selectedAccount &&
+                                selectedAccount.id === linkedinUser.id
+                            ),
+                        }"
                     >
-                        <div class="flex flex-col align-items-center px-2 gap-2">
+                        <div
+                            class="flex flex-col align-items-center px-2 gap-2"
+                        >
                             <img
-                                :src="linkedinUser.linkedin_picture ? linkedinUser.linkedin_picture : '/build/assets/images/default-profile.png'"
+                                :src="
+                                    linkedinUser.linkedin_picture
+                                        ? linkedinUser.linkedin_picture
+                                        : '/build/assets/images/default-profile.png'
+                                "
                                 alt="Profile Picture"
                                 class="rounded-full"
                                 width="100"
@@ -66,7 +82,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Slot for the "Ajouter" Button in the Blade Template -->
                 <slot></slot>
                 <button
@@ -78,7 +94,6 @@
                 </button>
             </div>
 
-
             <!-- Step 2 : Date Debut & Date de Fin -->
             <div v-if="currentStep === 2" class="w-full max-w-md">
                 <h2 class="text-xl font-bold mb-4">Durée du Campagne</h2>
@@ -86,28 +101,28 @@
                 <div>
                     <label for="startDate" class="text-md mb-2">
                         Date de Début
-                        <span style="color: red;">*</span> :
+                        <span style="color: red">*</span> :
                     </label>
                     <input
                         type="date"
                         id="startDate"
                         v-model="startDate"
                         class="w-full border rounded-lg p-2 mb-4"
-                        :min="startDate"
-                        :max="endDate"
+                        :min="todayDate"
                     />
                 </div>
 
                 <!-- Date de Fin -->
                 <div>
-                    <label for="startDate" class="text-md mb-2">
-                        Date de Fin <span style="color: red;">*</span> :
+                    <label for="endDate" class="text-md mb-2">
+                        Date de Fin <span style="color: red">*</span> :
                     </label>
                     <input
                         type="date"
                         id="endDate"
                         v-model="endDate"
                         class="w-full border rounded-lg p-2 mb-4"
+                        :min="startDate"
                     />
                 </div>
 
@@ -121,6 +136,7 @@
                     </button>
                     <button
                         @click="nextStep"
+                        :disabled="!startDate || !endDate"
                         class="bg-blue-500 text-white py-2 px-4 rounded-lg disabled:bg-gray-300"
                     >
                         Next
@@ -130,9 +146,11 @@
 
             <!-- Step 3 : Description du Campagne -->
             <div v-if="currentStep === 3" class="w-full max-w-md">
-                <h2 class="text-xl font-bold mb-4">Description du Campagne :</h2>
-                <textarea 
-                    name="descriptionCampagne" 
+                <h2 class="text-xl font-bold mb-4">
+                    Description du Campagne :
+                </h2>
+                <textarea
+                    name="descriptionCampagne"
                     id="descriptionCampagne"
                     v-model="descriptionCampagne"
                     class="w-full border rounded-lg p-3 h-32 mb-2"
@@ -161,17 +179,21 @@
             <div v-if="currentStep === 4" class="w-full max-w-md">
                 <h2 class="text-xl font-bold mb-4">Fréquence des Posts :</h2>
                 <div class="flex align-items-center relative">
-                    <input 
+                    <input
                         type="number"
                         v-model="frequenceParJour"
                         class="w-full border rounded-lg p-2 px-4"
                         placeholder="Nombre de Posts"
                         min="1"
+                        max="10"
                     />
 
-                    <button 
-                        class="bg-black text-white absolute right-0 py-2 px-3" 
-                        style="border-top-right-radius: 8px; border-bottom-right-radius: 8px;"
+                    <button
+                        class="bg-black text-white absolute right-0 py-2 px-3"
+                        style="
+                            border-top-right-radius: 8px;
+                            border-bottom-right-radius: 8px;
+                        "
                         disabled
                     >
                         par Jour
@@ -187,108 +209,136 @@
                         Back
                     </button>
                     <button
-                        @click="nextStep"
+                        @click="generatePostCards"
+                        :disabled="
+                            frequenceParJour < 1 || frequenceParJour > 10
+                        "
                         class="bg-blue-500 text-white py-2 px-4 rounded-lg disabled:bg-gray-300"
                     >
-                        Next
+                        Générer les Posts
                     </button>
                 </div>
             </div>
 
+            <!-- Step 5: Post Cards -->
+            <div v-if="currentStep === 5" class="w-full max-w-4xl">
+                <h2 class="text-xl font-bold mb-4">Configurez vos Posts</h2>
 
-            <!-- Step 5: Choose Post Type -->
-            <div v-if="currentStep === 5" class="w-full max-w-md">
-                <h2 class="text-xl font-bold mb-4">Choissisez le type du Post</h2>
-                <div class="grid grid-cols-3 gap-4">
+                <div class="grid gap-6">
                     <div
-                        v-for="type in postTypes"
-                        :key="type.value"
-                        @click="selectPostType(type.value)"
-                        class="border rounded-lg p-4 text-center cursor-pointer"
-                        :class="{'bg-blue-500 text-white': selectedPostType === type.value}"
+                        v-for="(post, index) in postCards"
+                        :key="index"
+                        class="border rounded-lg p-6"
                     >
-                        <i :class="type.icon" class="text-3xl mb-2"></i>
-                        <p>{{ type.label }}</p>
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="font-semibold">Post #{{ index + 1 }}</h3>
+                            <div class="flex items-center gap-2">
+                                <input
+                                    type="datetime-local"
+                                    v-model="post.scheduledDateTime"
+                                    :min="campaignStartDateTime"
+                                    :max="campaignEndDateTime"
+                                    class="border rounded p-2"
+                                />
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-2 mb-4">
+                            <label class="text-sm">Type de Post:</label>
+                            <select
+                                v-model="post.type"
+                                @change="resetPostContent(post)"
+                                class="border rounded p-2"
+                            >
+                                <option
+                                    v-for="type in postTypes"
+                                    :key="type.value"
+                                    :value="type.value"
+                                >
+                                    {{ type.label }}
+                                </option>
+                            </select>
+                        </div>
+
+                        <!-- Content based on post type -->
+                        <div v-if="post.type === 'text'">
+                            <textarea
+                                v-model="post.content.text"
+                                placeholder="Exprimez-vous !"
+                                class="w-full border rounded-lg p-2 h-32 mb-4"
+                            ></textarea>
+                        </div>
+
+                        <div
+                            v-if="
+                                post.type === 'image' || post.type === 'video'
+                            "
+                        >
+                            <input
+                                type="file"
+                                @change="(e) => handleFileUpload(e, post)"
+                                :accept="
+                                    post.type === 'image'
+                                        ? 'image/*'
+                                        : 'video/*'
+                                "
+                                class="w-full border rounded-lg p-2 mb-2"
+                            />
+                            <p
+                                v-if="post.content.file"
+                                class="mt-2 text-sm text-gray-600"
+                            >
+                                Fichier sélectionné :
+                                {{ post.content.file.name }}
+                            </p>
+                            <textarea
+                                v-model="post.content.caption"
+                                placeholder="Ajouter une légende... (Optionnel)"
+                                class="w-full border rounded-lg p-2 h-32 mt-2"
+                            ></textarea>
+                        </div>
+
+                        <div
+                            v-if="post.type === 'article'"
+                            class="flex flex-col gap-2"
+                        >
+                            <label for="article" class="text-sm text-gray-600"
+                                >Article URL* :</label
+                            >
+                            <input
+                                type="text"
+                                class="w-full border rounded-lg p-2"
+                                placeholder="e.g: www.example.com"
+                                v-model="post.content.url"
+                            />
+                            <label for="title" class="text-sm text-gray-600"
+                                >Article Title :</label
+                            >
+                            <input
+                                type="text"
+                                class="w-full border rounded-lg p-2"
+                                placeholder="Official LinkedIn Blog"
+                                v-model="post.content.title"
+                            />
+                            <label
+                                for="description"
+                                class="text-sm text-gray-600"
+                                >Article Description :</label
+                            >
+                            <input
+                                type="text"
+                                class="w-full border rounded-lg p-2"
+                                placeholder="Official LinkedIn Blog - Your source for insights and information about LinkedIn."
+                                v-model="post.content.description"
+                            />
+                            <textarea
+                                v-model="post.content.caption"
+                                placeholder="Ajouter un commentaire... (Optionnel)"
+                                class="w-full border rounded-lg p-2 h-32 mt-2"
+                            ></textarea>
+                        </div>
                     </div>
                 </div>
-                <div class="flex justify-between mt-4">
-                    <button
-                        @click="prevStep"
-                        class="bg-gray-300 text-black py-2 px-4 rounded-lg"
-                    >
-                        Back
-                    </button>
-                    <button
-                        @click="nextStep"
-                        :disabled="!selectedPostType"
-                        class="bg-blue-500 text-white py-2 px-4 rounded-lg disabled:bg-gray-300"
-                    >
-                        Next
-                    </button>
-                </div>
-            </div>
-
-
-            <!-- Step 6: Add Content -->
-            <div v-if="currentStep === 6" class="w-full max-w-md">
-                <h2 class="text-xl font-bold mb-4">
-                    {{
-                        selectedPostType
-                            ? `Ajouter ${postTypes.find((t) => t.value === selectedPostType).label}` : "Ajouter le contenu du Post"
-                    }}
-                </h2>
-
-                <!-- File Input for Image/Video/Article -->
-                <div
-                    v-if = "selectedPostType === 'image' || selectedPostType === 'video'"
-                    class="mb-4"
-                >
-                    <input
-                        type="file"
-                        @change="handleFileUpload"
-                        :accept="getAcceptedFileTypes()"
-                        class="w-full border rounded-lg p-2"
-                    />
-                    <p v-if="uploadedFile" class="mt-2 text-sm text-gray-600">
-                        Le fichier Sélectionné : {{ uploadedFile.name }}
-                    </p>
-                </div>
-
-                <!-- Input For Article -->
-                <div
-                    class="mb-4 flex flex-col gap-2"
-                    v-if = "selectedPostType == 'article'"
-                >
-                    <label for="article" class="text-sm text-gray-600">Article URL* :</label>
-                    <input
-                        type="text"
-                        class="w-full border rounded-lg p-2"
-                        placeholder="e.g: www.example.com"
-                        v-model="articleUrl"
-                    />
-                    <label for="title" class="text-sm text-gray-600">Article Title :</label>
-                    <input
-                        type="text"
-                        class="w-full border rounded-lg p-2"
-                        placeholder="Official LinkedIn Blog"
-                        v-model="articleTitle"
-                    />
-                    <label for="description" class="text-sm text-gray-600">Article Description :</label>
-                    <input
-                        type="text"
-                        class="w-full border rounded-lg p-2"
-                        placeholder="Official LinkedIn Blog - Your source for insights and information about LinkedIn."
-                        v-model="articleDescription"
-                    />
-                </div>
-
-                <!-- Text Input -->
-                <textarea
-                    v-model="postText"
-                    :placeholder="selectedPostType === 'text' ? 'Exprimez-vous !' : 'Ajouter une légende... (Optionnel)'"
-                    class="w-full border rounded-lg p-2 h-32 mb-4"
-                >
-                </textarea>
 
                 <!-- Error Messages -->
                 <Popup
@@ -299,7 +349,7 @@
                     {{ submissionError }}
                 </Popup>
 
-                <div class="flex justify-between">
+                <div class="flex justify-between mt-6">
                     <button
                         @click="prevStep"
                         class="bg-gray-300 text-black py-2 px-4 rounded-lg"
@@ -307,11 +357,11 @@
                         Back
                     </button>
                     <button
-                        @click="handlePostSubmission"
-                        :disabled="!isPostSubmissionValid()"
+                        @click="submitAllPosts"
+                        :disabled="!areAllPostsValid"
                         class="bg-blue-500 text-white py-2 px-4 rounded-lg disabled:bg-gray-300"
                     >
-                        Post
+                        Publier tous les Posts
                     </button>
                 </div>
             </div>
@@ -335,20 +385,24 @@ export default {
         },
     },
     data() {
+        const today = new Date();
+        const tomorrow = new Date();
+        tomorrow.setDate(today.getDate() + 1);
+
         return {
             currentStep: 1,
             selectedAccount: null,
-            selectedPostType: null,
             isSubmitting: false,
             submissionError: null,
             showSuccessPopup: false,
             successMessage: "",
-            startDate: new Date().toISOString().split('T')[0],
-            // End date is set to 7 days from today (probably for testing now)
-            endDate: new Date(new Date().setDate(new Date().getDate() + 2)).toISOString().split('T')[0],
-            // Minimum of 1 post per day
+            todayDate: today.toISOString().split("T")[0],
+            startDate: today.toISOString().split("T")[0],
+            endDate: tomorrow.toISOString().split("T")[0],
             frequenceParJour: 1,
             descriptionCampagne: "",
+            campaignStartDateTime: "",
+            campaignEndDateTime: "",
             postTypes: [
                 {
                     value: "text",
@@ -371,24 +425,48 @@ export default {
                     icon: "fas fa-file-alt",
                 },
             ],
-            uploadedFile: null,
-            postText: "",
-            articleTitle: "",
-            articleDescription: "",
-            articleUrl: "",
+            postCards: [],
         };
+    },
+    computed: {
+        areAllPostsValid() {
+            return this.postCards.every((post) => {
+                // Validate datetime
+                if (!post.scheduledDateTime) return false;
+
+                const postDateTime = new Date(post.scheduledDateTime);
+                const startDateTime = new Date(this.campaignStartDateTime);
+                const endDateTime = new Date(this.campaignEndDateTime);
+
+                if (
+                    postDateTime < startDateTime ||
+                    postDateTime > endDateTime
+                ) {
+                    return false;
+                }
+
+                // Validate content based on type
+                switch (post.type) {
+                    case "text":
+                        return post.content.text.trim() !== "";
+                    case "image":
+                    case "video":
+                        return !!post.content.file;
+                    case "article":
+                        return !!post.content.url;
+                    default:
+                        return false;
+                }
+            });
+        },
     },
     methods: {
         selectAccount(account) {
             this.selectedAccount = account;
         },
 
-        selectPostType(type) {
-            this.selectedPostType = type;
-        },
-
         nextStep() {
-            if (this.currentStep < 6) {
+            if (this.currentStep < 4) {
                 this.currentStep++;
             }
         },
@@ -399,217 +477,243 @@ export default {
             }
         },
 
-        handleFileUpload(event) {
-            this.uploadedFile = event.target.files[0];
+        generatePostCards() {
+            this.postCards = [];
+            const start = new Date(this.startDate);
+            const end = new Date(this.endDate);
+
+            // Set campaign datetime boundaries
+            this.campaignStartDateTime = `${this.startDate}T00:00`;
+            this.campaignEndDateTime = `${this.endDate}T23:59`;
+
+            // Calculate total days
+            const diffTime = Math.abs(end - start);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+
+            // Generate posts for each day
+            for (let i = 0; i < diffDays; i++) {
+                const currentDate = new Date(start);
+                currentDate.setDate(start.getDate() + i);
+
+                // Generate posts for each frequency per day
+                for (let j = 0; j < this.frequenceParJour; j++) {
+                    // Calculate time slot (distribute posts evenly throughout the day)
+                    const timeSlot = Math.floor(
+                        (24 / this.frequenceParJour) * j
+                    );
+                    const hours = Math.min(timeSlot, 23);
+                    const minutes = Math.floor((timeSlot % 1) * 60) || 0;
+
+                    const postDateTime = new Date(currentDate);
+                    postDateTime.setHours(hours, minutes, 0, 0);
+
+                    this.postCards.push({
+                        scheduledDateTime: postDateTime
+                            .toISOString()
+                            .slice(0, 16),
+                        type: "text",
+                        content: {
+                            text: "",
+                            file: null,
+                            caption: "",
+                            url: "",
+                            title: "",
+                            description: "",
+                        },
+                    });
+                }
+            }
+
+            this.currentStep = 5;
         },
 
-        getAcceptedFileTypes() {
-            switch (this.selectedPostType) {
-                case "image":
-                    return "image/*";
-                case "video":
-                    return "video/*";
-                default:
-                    return "";
+        handleFileUpload(event, post) {
+            post.content.file = event.target.files[0];
+        },
+
+        resetPostContent(post) {
+            post.content = {
+                text: "",
+                file: null,
+                caption: "",
+                url: "",
+                title: "",
+                description: "",
+            };
+        },
+
+        async submitAllPosts() {
+            this.isSubmitting = true;
+            this.submissionError = null;
+
+            try {
+                // Sort posts by scheduled datetime
+                const sortedPosts = [...this.postCards].sort((a, b) => {
+                    return (
+                        new Date(a.scheduledDateTime) -
+                        new Date(b.scheduledDateTime)
+                    );
+                });
+
+                // Process posts in chronological order
+                for (const post of sortedPosts) {
+                    if (post.type === "text") {
+                        await this.submitTextPost(post);
+                    } else if (post.type === "image" || post.type === "video") {
+                        await this.submitMediaPost(post);
+                    } else if (post.type === "article") {
+                        await this.submitArticlePost(post);
+                    }
+                }
+
+                this.showSuccessPopup = true;
+                this.successMessage =
+                    "Tous vos posts ont été programmés avec succès!";
+                this.resetForm();
+            } catch (error) {
+                console.error("Error submitting posts:", error);
+                this.submissionError =
+                    error.response?.data?.message ||
+                    "Une erreur s'est produite lors de la publication des posts";
+            } finally {
+                this.isSubmitting = false;
             }
         },
 
-        isPostSubmissionValid() {
-            if (!this.selectedAccount) return false;
-            if (!this.postText.trim()) {
-                return false;
+        async submitTextPost(post) {
+            const postData = {
+                token: this.selectedAccount.linkedin_token,
+                linkedin_id: this.selectedAccount.linkedin_id,
+                caption: post.content.text.trim(),
+                scheduled_date: post.scheduledDateTime,
             };
 
-            switch (this.selectedPostType) {
-                case "text":
-                    return true;
-                case "image":
-                case "video":
-                    return !!this.uploadedFile;
-                case "article":
-                    return !!this.articleUrl;
-                default:
-                    return true;
-            }
+            await axios.post("/linkedin/publish", postData, {
+                headers: {
+                    "X-CSRF-TOKEN": document
+                        .querySelector('meta[name="csrf-token"]')
+                        .getAttribute("content"),
+                },
+            });
         },
 
-        handlePostSubmission() {
-            this.submissionError = null;
+        async submitMediaPost(post) {
+            const formData = new FormData();
+            formData.append("token", this.selectedAccount.linkedin_token);
+            formData.append("linkedin_id", this.selectedAccount.linkedin_id);
+            formData.append("type", post.type);
+            formData.append("media", post.content.file);
+            formData.append("caption", post.content.caption.trim());
+            formData.append("scheduled_date", post.scheduledDateTime);
 
-            switch (this.selectedPostType) {
-                case "text":
-                    this.submitPost();
-                    break;
-                case "image":
-                case "video":
-                    this.registerAndShareMedia();
-                    break;
-                case "article":
-                    this.shareArticle();
-                    break;
-                default:
-                    this.submitPost(); // Default to text post
-            }
-        },
-
-
-        async submitPost() {
-            this.isSubmitting = true;
-            this.submissionError = null;
-
-            try {
-                const postData = {
-                    token: this.selectedAccount.linkedin_token,
-                    linkedin_id: this.selectedAccount.linkedin_id,
-                    caption: this.postText.trim(),
-                };
-
-                const response = await axios.post("/linkedin/publish", postData, {
-                        headers: {
-                            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
-                        },
-                    }
-                );
-
-                // Handle successful post
-                if (
-                    response.data.status === 201 ||
-                    response.data.status === 200
-                ) {
-                    this.showSuccessPopup = true;
-                    this.successMessage = "Votre post a été publié avec succès sur LinkedIn!";
-                    this.resetForm();
-                } else {
-                    this.submissionError = "Une erreur s'est produite lors de la publication du post";
+            const registerResponse = await axios.post(
+                "/linkedin/registermedia",
+                formData,
+                {
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                        "X-CSRF-TOKEN": document
+                            .querySelector('meta[name="csrf-token"]')
+                            .getAttribute("content"),
+                    },
                 }
-            } catch (error) {
-                this.submissionError = error.response?.data?.message || "Une erreur s'est produite lors de la publication du post";
-            } finally {
-                this.isSubmitting = false;
-            }
-        },
-        async registerAndShareMedia() {
-            this.isSubmitting = true;
-            this.submissionError = null;
+            );
 
-            try {
-                const formData = new FormData();
-                formData.append("token", this.selectedAccount.linkedin_token);
-                formData.append("linkedin_id", this.selectedAccount.linkedin_id);
-                formData.append("type", this.selectedPostType);
-                formData.append("media", this.uploadedFile);
-                formData.append("caption", this.postText.trim());
+            if (registerResponse.data.status === 200) {
+                const binaryUploadFormData = new FormData();
+                binaryUploadFormData.append(
+                    "token",
+                    this.selectedAccount.linkedin_token
+                );
+                binaryUploadFormData.append(
+                    "upload_url",
+                    registerResponse.data.uploadUrl
+                );
+                binaryUploadFormData.append("media", post.content.file);
 
-                // Register the media
-                const registerResponse = await axios.post("/linkedin/registermedia", formData, {
+                await axios.post(
+                    "/linkedin/upload-media-binary",
+                    binaryUploadFormData,
+                    {
                         headers: {
                             "Content-Type": "multipart/form-data",
-                            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
+                            "X-CSRF-TOKEN": document
+                                .querySelector('meta[name="csrf-token"]')
+                                .getAttribute("content"),
                         },
                     }
                 );
 
-                // Check if media registration was successful
-                if (registerResponse.data.status === 200) {
-                    const binaryUploadFormData = new FormData();
-                    binaryUploadFormData.append("token", this.selectedAccount.linkedin_token);
-                    binaryUploadFormData.append("upload_url", registerResponse.data.uploadUrl);
-                    binaryUploadFormData.append("media", this.uploadedFile);
+                await this.shareMediaPost(
+                    registerResponse.data.asset,
+                    post.content.caption.trim(),
+                    post.type === "image" ? "IMAGE" : "VIDEO",
+                    post.scheduledDateTime
+                );
+            } else {
+                throw new Error(
+                    registerResponse.data.error || "Media registration failed"
+                );
+            }
+        },
 
-                    await axios.post("/linkedin/upload-media-binary", binaryUploadFormData,{
-                        headers: {
-                            "Content-Type": "multipart/form-data",
-                            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
-                        },
-                        }
-                    );
+        async shareMediaPost(asset, caption, mediaType, scheduledDateTime) {
+            const shareData = {
+                token: this.selectedAccount.linkedin_token,
+                linkedin_id: this.selectedAccount.linkedin_id,
+                asset: asset,
+                caption: caption,
+                media_type: mediaType,
+                scheduled_date: scheduledDateTime,
+            };
 
-                    const shareResponse = await this.shareMediaPost(registerResponse.data.asset, this.postText.trim(),
-                        this.selectedPostType === "image" ? "IMAGE" : "VIDEO"
-                    );
-
-                    this.showSuccessPopup = true;
-                    this.successMessage = "Votre post a été publié avec succès sur LinkedIn!";
-                    this.resetForm();
-                } else {
-                    console.log(registerResponse.data.error); // for debugging
-                    throw new Error(registerResponse.data.error || "Media registration failed");
+            const response = await axios.post(
+                "/linkedin/share-media",
+                shareData,
+                {
+                    headers: {
+                        "X-CSRF-TOKEN": document
+                            .querySelector('meta[name="csrf-token"]')
+                            .getAttribute("content"),
+                    },
                 }
-            } catch (error) {
-                this.submissionError = "Une erreur s'est produite lors de la publication du post!";
-            } finally {
-                this.isSubmitting = false;
-            }
+            );
+
+            return response;
         },
-        async shareMediaPost(asset, caption, mediaType) {
-            try {
-                const shareData = {
-                    token: this.selectedAccount.linkedin_token,
-                    linkedin_id: this.selectedAccount.linkedin_id,
-                    asset: asset,
-                    caption: caption,
-                    media_type: mediaType,
-                };
 
-                const response = await axios.post("/linkedin/share-media", shareData, {
-                        headers: {
-                            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
-                        },
-                    }
-                );
+        async submitArticlePost(post) {
+            const articleData = {
+                token: this.selectedAccount.linkedin_token,
+                linkedin_id: this.selectedAccount.linkedin_id,
+                article_url: post.content.url,
+                article_title: post.content.title,
+                article_description: post.content.description,
+                caption: post.content.caption.trim(),
+                scheduled_date: post.scheduledDateTime,
+            };
 
-                return response;
-            } catch (error) {
-                this.submissionError = "Une erreur s'est produite lors de la publication de votre post!";
-                console.log(error); // for debugging
-                throw error;
-            }
+            await axios.post("/linkedin/share-article", articleData, {
+                headers: {
+                    "X-CSRF-TOKEN": document
+                        .querySelector('meta[name="csrf-token"]')
+                        .getAttribute("content"),
+                },
+            });
         },
-        async shareArticle() {
-            this.isSubmitting = true;
-            this.submissionError = null;
 
-            try {
-                const articleData = {
-                    token: this.selectedAccount.linkedin_token,
-                    linkedin_id: this.selectedAccount.linkedin_id,
-                    article_url: this.articleUrl,
-                    article_title: this.articleTitle,
-                    article_description: this.articleDescription,
-                    caption: this.postText.trim(),
-                };
-
-                const response = await axios.post( "/linkedin/share-article", articleData, {
-                        headers: {
-                            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
-                        },
-                    }
-                );
-
-                if (response.data.status === "success") {
-                    this.showSuccessPopup = true;
-                    this.successMessage = "Votre Article a été publié avec succès!";
-                    this.resetForm();
-                } else {
-                    console.log(response.data.error); // for debugging
-                    throw new Error(response.data.message || "Failed to share article");
-                }
-            } catch (error) {
-                this.submissionError = "Une erreur s'est produite lors de la publication de votre article!";
-            } finally {
-                this.isSubmitting = false;
-            }
-        },
         resetForm() {
             this.currentStep = 1;
             this.selectedAccount = null;
-            this.selectedPostType = null;
-            this.uploadedFile = null;
-            this.postText = "";
-            this.articleUrl = "";
-            this.articleTitle = "";
-            this.articleDescription = "";
+            this.postCards = [];
+            this.startDate = this.todayDate;
+            const tomorrow = new Date();
+            tomorrow.setDate(new Date().getDate() + 1);
+            this.endDate = tomorrow.toISOString().split("T")[0];
+            this.frequenceParJour = 1;
+            this.descriptionCampagne = "";
         },
+
         closeSuccessPopup() {
             this.showSuccessPopup = false;
         },
@@ -631,5 +735,29 @@ export default {
     z-index: 10;
     height: 100%;
     padding: 20px;
+}
+
+/* Style for datetime input */
+input[type="datetime-local"] {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-family: inherit;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .grid {
+        grid-template-columns: 1fr;
+    }
+
+    .flex.justify-between {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    button {
+        width: 100%;
+    }
 }
 </style>
