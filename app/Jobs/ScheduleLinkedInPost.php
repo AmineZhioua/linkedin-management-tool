@@ -41,12 +41,12 @@ class ScheduleLinkedInPost implements ShouldQueue
                 'linkedin_id' => $linkedinUser->linkedin_id,
             ];
 
-            switch ($post->type) {
-                case 'text':
-                    $response = $linkedinController->postTextOnly(array_merge($payload, [
-                        'caption' => $content['text'],
-                    ]));
-                    break;
+        switch ($post->type) {
+            case 'text':
+                $response = $linkedinController->postTextOnly(array_merge($payload, [
+                    'caption' => $content['text'],
+                ]));
+                break;
 
                 case 'image':
                 case 'video':
@@ -71,27 +71,16 @@ class ScheduleLinkedInPost implements ShouldQueue
             }
 
             // Check the response status using the callable methods on our object
-            $httpCode = $response->getStatusCode();
-            $responseData = $response->getData();
+           $httpCode = $response['status'];
+        $responseData = $response['data'] ?? [];
+        $errorMsg = $response['error'] ?? 'Unknown error';
 
-            if ($httpCode >= 200 && $httpCode < 300) {
-                $post->update(['status' => 'posted']);
-            } else {
-                $errorMsg = '';
-                if (isset($responseData->error)) {
-                    $errorMsg = $responseData->error;
-                } elseif (isset($responseData->message)) {
-                    $errorMsg = $responseData->message;
-                } else {
-                    $errorMsg = 'Unknown error';
-                }
-                
-                Log::error("Failed to post", [
-                    'code' => $httpCode,
-                    'error' => $errorMsg
-                ]);
-                $post->update(['status' => 'failed', 'error' => $errorMsg]);
-            }
+        if ($httpCode >= 200 && $httpCode < 300) {
+            $post->update(['status' => 'posted']);
+        } else {
+            Log::error("Failed to post", ['code' => $httpCode, 'error' => $errorMsg]);
+            $post->update(['status' => 'failed', 'error' => $errorMsg]);
+        }
 
         } catch (\Exception $e) {
             Log::error("Error processing scheduled LinkedIn post {$post->id}: " . $e->getMessage());

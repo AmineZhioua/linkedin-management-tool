@@ -26,41 +26,57 @@ class LinkedInController extends Controller
             'linkedinUserList' => $linkedinUserList,
         ]);
     }
-   public function schedulePost(Request $request)
+  public function schedulePost(Request $request)
 {
     $validated = $request->validate([
         'linkedin_id' => 'required|exists:linkedin_users,id',
-        'caption' => 'required|string|max:3000',  // Caption is required for text posts
-        'asset' => 'nullable|string',  // For image/video posts
-        'media_type' => 'nullable|in:image,video',  // For image/video posts
-        'article_url' => 'nullable|url',  // For article posts
-        'article_title' => 'nullable|string|max:200',  // For article posts
-        'article_description' => 'nullable|string|max:500',  // For article posts
+        'type' => 'required|in:text,image,video,article',
+        'content' => 'required|array',
         'scheduled_date' => 'required|date|after:now',
     ]);
 
-    // Prepare the content data
-    $content = [
-        'text' => $validated['caption'],
-        'asset' => $validated['asset'] ?? null,
-        'url' => $validated['article_url'] ?? null,
-        'title' => $validated['article_title'] ?? null,
-        'description' => $validated['article_description'] ?? null,
-    ];
+    // Additional validation based on post type
+    switch ($validated['type']) {
+        case 'text':
+            $request->validate([
+                'content.text' => 'required|string|max:3000',
+            ]);
+            break;
+
+        case 'image':
+        case 'video':
+            $request->validate([
+                'content.asset' => 'required|string',
+                'content.caption' => 'nullable|string|max:3000',
+            ]);
+            break;
+
+        case 'article':
+            $request->validate([
+                'content.url' => 'required|url',
+                'content.title' => 'required|string|max:200',
+                'content.description' => 'required|string|max:500',
+                'content.caption' => 'nullable|string|max:3000',
+            ]);
+            break;
+
+        default:
+            abort(400, 'Invalid post type');
+    }
 
     // Create the scheduled post
     $post = ScheduledLinkedInPost::create([
         'user_id' => auth()->id(),
         'linkedin_user_id' => $validated['linkedin_id'],
-        'type' => $validated['media_type'] ?? 'text', // Default to 'text' if media_type is null
-        'content' => json_encode($content),
+        'type' => $validated['type'],
+        'content' => json_encode($validated['content']),
         'scheduled_time' => $validated['scheduled_date'],
         'status' => 'queued',
     ]);
 
-    // Dispatch the job to post it at the scheduled time
+    // Dispatch the job
     ScheduleLinkedInPost::dispatch($post)
-        ->delay(Carbon::parse($validated['scheduled_date']));  // Delay the post for the scheduled time
+        ->delay(Carbon::parse($validated['scheduled_date']));
 
     return response()->json(['message' => 'Post scheduled successfully']);
 }
@@ -111,7 +127,8 @@ class LinkedInController extends Controller
     ]);
 
     // Dispatch the job to post it at the scheduled time
-    ScheduleLinkedInPost::dispatch($post);
+    ScheduleLinkedInPost::dispatch($post)
+    ->delay(Carbon::parse($validated['scheduled_date']));
 
     return response()->json(['message' => 'Post scheduled successfully']);
 }
@@ -313,134 +330,118 @@ public function postTextOnly(array $data)
     $errorMsg = curl_error($curl);
     curl_close($curl);
 
-    // Create a proper response object with the necessary methods
-    $responseObj = new \stdClass();
-    $responseObj->statusCode = $httpCode;
-    $responseObj->data = json_decode($response);
-    $responseObj->error = $errorMsg;
-    
-    // Add methods to the object
-    $responseObj->getStatusCode = function() use ($httpCode) {
-        return $httpCode;
-    };
-    
-    $responseObj->getData = function() use ($response) {
-        return json_decode($response);
-    };
-
-    return $responseObj;
+    return [
+        'status' => $httpCode,
+        'data' => json_decode($response),
+        'error' => $errorMsg,
+    ];
 }
 
     // Function to Register Media (Image/Video) in LinkedIn
-    public function registerMedia(Request $request) {
-        try {
-            $validated = $request->validate([
-                'token' => 'required|string',
-                'linkedin_id' => 'required|string',
-                'type' => 'required|in:image,video',
-                'media' => 'required|file|max:20480', // 20MB max file size
-                'caption' => 'nullable|string|max:3000'
-            ]);
-    
-            // WE CAN DELETE THIS 
-            // #####################
-            $file = $request->file('media');
-            $mimeType = $file->getMimeType();
-    
-            // Validate file type
-            $allowedMimeTypes = [
-                'image' => ['image/jpeg', 'image/png', 'image/gif'],
-                'video' => ['video/mp4', 'video/mpeg', 'video/quicktime']
-            ];
-    
-            if (!in_array($mimeType, $allowedMimeTypes[$validated['type']])) {
-                return response()->json([
-                    'status' => 400,
-                    'error' => 'Invalid file type for the selected media type'
-                ], 400);
-            }
-            // #####################
-    
-            $authorUrn = 'urn:li:person:' . $validated['linkedin_id'];
-    
-            // Determine recipe based on media type
-            $recipe = $validated['type'] === 'image' 
-                ? "urn:li:digitalmediaRecipe:feedshare-image"
-                : "urn:li:digitalmediaRecipe:feedshare-video";
-    
-            $registerData = [
-                "registerUploadRequest" => [
-                    "recipes" => [$recipe],
-                    "owner" => $authorUrn,
-                    "serviceRelationships" => [
-                        [
-                            "relationshipType" => "OWNER",
-                            "identifier" => "urn:li:userGeneratedContent"
-                        ]
+public function registerMedia(Request $request) {
+    try {
+        $validated = $request->validate([
+            'token' => 'required|string',
+            'linkedin_id' => 'required|string',
+            'type' => 'required|in:image,video',
+            'media' => 'required|file|max:20480', // 20MB max file size
+            'caption' => 'nullable|string|max:3000'
+        ]);
+
+        $authorUrn = 'urn:li:person:' . $validated['linkedin_id'];
+
+        // Determine recipe based on media type
+        $recipe = $validated['type'] === 'image'
+            ? "urn:li:digitalmediaRecipe:feedshare-image"
+            : "urn:li:digitalmediaRecipe:feedshare-video";
+
+        $registerData = [
+            "registerUploadRequest" => [
+                "recipes" => [$recipe],
+                "owner" => $authorUrn,
+                "serviceRelationships" => [
+                    [
+                        "relationshipType" => "OWNER",
+                        "identifier" => "urn:li:userGeneratedContent"
                     ]
                 ]
-            ];
-    
-            $headers = [
-                "Authorization: Bearer " . $validated['token'],
-                "Content-Type: application/json",
-                "X-Restli-Protocol-Version: 2.0.0"
-            ];
-    
-            $curl = curl_init();
-            curl_setopt_array($curl, [
-                CURLOPT_URL => "https://api.linkedin.com/v2/assets?action=registerUpload",
-                CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_POST => true,
-                CURLOPT_POSTFIELDS => json_encode($registerData),
-                CURLOPT_HTTPHEADER => $headers,
-                CURLOPT_TIMEOUT => 30
-            ]);
-    
-            $response = curl_exec($curl);
-            $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-            $responseData = json_decode($response, true);
-    
-            curl_close($curl);
-    
-            Log::info('LinkedIn Asset Registration Response', [
+            ]
+        ];
+
+        $headers = [
+            "Authorization: Bearer " . $validated['token'],
+            "Content-Type: application/json",
+            "X-Restli-Protocol-Version: 2.0.0"
+        ];
+
+        $curl = curl_init();
+        curl_setopt_array($curl, [
+            CURLOPT_URL => "https://api.linkedin.com/v2/assets?action=registerUpload",
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => json_encode($registerData),
+            CURLOPT_HTTPHEADER => $headers,
+            CURLOPT_TIMEOUT => 30
+        ]);
+
+        $response = curl_exec($curl);
+        $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        $responseData = json_decode($response, true);
+
+        curl_close($curl);
+
+        // Log the API response for debugging
+        Log::info('LinkedIn API Response', [
+            'http_code' => $httpCode,
+            'response_raw' => $response,
+            'response_decoded' => $responseData
+        ]);
+
+        // Check if the response is successful and well-formed
+        if ($httpCode == 200 && is_array($responseData) && isset($responseData['value'])) {
+            $uploadMechanism = $responseData['value']['uploadMechanism']['com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest'] ?? null;
+
+            if ($uploadMechanism && isset($uploadMechanism['uploadUrl'])) {
+                return response()->json([
+                    'status' => 200,
+                    'uploadUrl' => $uploadMechanism['uploadUrl'],
+                    'asset' => $responseData['value']['asset'],
+                    'mediaArtifact' => $responseData['value']['mediaArtifact']
+                ]);
+            } else {
+                Log::error('Missing upload mechanism in LinkedIn response', [
+                    'response' => $responseData
+                ]);
+                return response()->json([
+                    'status' => 400,
+                    'error' => 'Missing upload mechanism in LinkedIn response',
+                    'details' => $responseData
+                ], 400);
+            }
+        } else {
+            Log::error('LinkedIn API registration failed', [
                 'http_code' => $httpCode,
                 'response' => $responseData
             ]);
-    
-            // Validate successful response
-            if ($httpCode == 200 && isset($responseData['value'])) {
-                $uploadMechanism = $responseData['value']['uploadMechanism']['com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest'] ?? null;
-                
-                if ($uploadMechanism && isset($uploadMechanism['uploadUrl'])) {
-                    return response()->json([
-                        'status' => 200,
-                        'uploadUrl' => $uploadMechanism['uploadUrl'],
-                        'asset' => $responseData['value']['asset'],
-                        'mediaArtifact' => $responseData['value']['mediaArtifact']
-                    ]);
-                }
-            }
-    
-            // Handle unsuccessful response
             return response()->json([
                 'status' => $httpCode,
-                'error' => 'Failed to register media',
-                'raw_response' => $responseData
-            ], 400);
-    
-        } catch (\Exception $e) {
-            Log::error('LinkedIn Media Registration Error', [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-    
-            return response()->json([
-                'status' => 500,
-                'error' => 'Internal Server Error: ' . $e->getMessage()
-            ], 500);
+                'error' => 'Failed to register media with LinkedIn API',
+                'details' => $responseData
+            ], $httpCode ?: 400);
         }
+
+    } catch (\Exception $e) {
+        Log::error('LinkedIn Media Registration Error', [
+            'message' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ]);
+
+        return response()->json([
+            'status' => 500,
+            'error' => 'Internal Server Error: ' . $e->getMessage()
+        ], 500);
     }
+}
 
 
     // Function to Upload Binary File Before Posting Media
