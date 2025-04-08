@@ -10,6 +10,3 @@ use App\Console\Commands\PublishScheduledLinkedinPosts;
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
-
-// Ensure the PublishScheduledLinkedinPosts class exists and is implemented correctly
-Schedule::command(PublishScheduledLinkedinPosts::class)->everyMinute();

@@ -48,7 +48,7 @@ class LinkedInController extends Controller
             case 'video':
                 $request->validate([
                     'content.asset' => 'required|string',
-                    'content.caption' => 'nullable|string|max:3000',
+                    'content.caption' => 'nullable|string',
                 ]);
                 break;
             case 'article':
@@ -236,8 +236,7 @@ class LinkedInController extends Controller
     {
         $postUrl = "https://api.linkedin.com/v2/ugcPosts";
 
-        $validated = $data;
-        $authorUrn = 'urn:li:person:' . $validated['linkedin_id'];
+        $authorUrn = 'urn:li:person:' . $data['linkedin_id'];
         
         $postData = [
             "author" => $authorUrn,
@@ -245,7 +244,7 @@ class LinkedInController extends Controller
             "specificContent" => [
                 "com.linkedin.ugc.ShareContent" => [
                     "shareCommentary" => [
-                        "text" => $validated['caption']
+                        "text" => $data['caption']
                     ],
                     "shareMediaCategory" => "NONE"
                 ]
@@ -256,7 +255,7 @@ class LinkedInController extends Controller
         ];
 
         $headers = [
-            "Authorization: Bearer " . $validated['token'],
+            "Authorization: Bearer " . $data['token'],
             "Content-Type: application/json",
             "X-Restli-Protocol-Version: 2.0.0"
         ];
@@ -291,7 +290,7 @@ class LinkedInController extends Controller
                 'linkedin_id' => 'required|string',
                 'type' => 'required|in:image,video',
                 'media' => 'required|file|max:20480', // 20MB max file size
-                'caption' => 'nullable|string|max:3000'
+                'caption' => 'nullable|string'
             ]);
     
             // WE CAN DELETE THIS 
@@ -460,19 +459,19 @@ class LinkedInController extends Controller
 
 
     // Function To Share Media on LinkedIn
-    public function shareMedia(Request $request) {
+    public function shareMedia(array $data) {
         try {
-            $validated = $request->validate([
-                'token' => 'required|string',
-                'linkedin_id' => 'required|string',
-                'asset' => 'required|string',
-                'caption' => 'nullable|string',
-                'media_type' => 'required|in:IMAGE,VIDEO'
-            ]);
+            // $data = $request->validate([
+            //     'token' => 'required|string',
+            //     'linkedin_id' => 'required|string',
+            //     'asset' => 'required|string',
+            //     'caption' => 'nullable|string',
+            //     'media_type' => 'required|in:IMAGE,VIDEO'
+            // ]);
     
             $postUrl = "https://api.linkedin.com/v2/ugcPosts";
     
-            $authorUrn = 'urn:li:person:' . $validated['linkedin_id'];
+            $authorUrn = 'urn:li:person:' . $data['linkedin_id'];
             
             $postData = [
                 "author" => $authorUrn,
@@ -480,16 +479,16 @@ class LinkedInController extends Controller
                 "specificContent" => [
                     "com.linkedin.ugc.ShareContent" => [
                         "shareCommentary" => [
-                            "text" => $validated['caption'] ?? ''
+                            "text" => $data['caption'] ?? ''
                         ],
-                        "shareMediaCategory" => $validated['media_type'],
+                        "shareMediaCategory" => $data['media_type'],
                         "media" => [
                             [
                                 "status" => "READY",
                                 "description" => [
-                                    "text" => $validated['caption'] ?? ''
+                                    "text" => $data['caption'] ?? ''
                                 ],
-                                "media" => $validated['asset'],
+                                "media" => $data['asset'],
                                 "title" => [
                                     "text" => "Shared Media" // FIX THIS ASAP
                                 ]
@@ -503,7 +502,7 @@ class LinkedInController extends Controller
             ];
     
             $headers = [
-                "Authorization: Bearer " . $validated['token'],
+                "Authorization: Bearer " . $data['token'],
                 "Content-Type: application/json",
                 "X-Restli-Protocol-Version: 2.0.0"
             ];

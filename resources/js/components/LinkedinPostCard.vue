@@ -1,5 +1,5 @@
 <template>
-    <div class="bg-white wh-100 vh-100 relative mt-8">
+    <div class="bg-white vh-100 relative">
         <!-- Heart Sticker -->
         <div class="absolute top-[-40px] left-[40px] flex items-center">
             <img
@@ -571,7 +571,7 @@ export default {
 
                         case "image":
                         case "video":
-                            const asset = await this.uploadMedia(post);
+                            const asset = await this.submitMediaPost(post);
                             formData = {
                                 linkedin_id: this.selectedAccount.id,
                                 type: post.type,
@@ -603,17 +603,15 @@ export default {
 
                     await axios.post("/linkedin/schedule-post", formData, {
                         headers: {
-                            "X-CSRF-TOKEN": document
-                                .querySelector('meta[name="csrf-token"]')
-                                .getAttribute("content"),
+                            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
                         },
                     });
                 }
 
                 this.showSuccessPopup = true;
-                this.successMessage =
-                    "Tous vos posts ont été programmés avec succès!";
+                this.successMessage = "Tous vos posts ont été programmés avec succès!";
                 this.resetForm();
+
             } catch (error) {
                 console.error("Error submitting posts:", error);
                 this.submissionError =
@@ -622,37 +620,6 @@ export default {
                     "Une erreur s'est produite lors de la publication des posts";
             } finally {
                 this.isSubmitting = false;
-            }
-        },
-
-        async uploadMedia(post) {
-            try {
-                const formData = new FormData();
-                formData.append("media", post.content.file);
-                formData.append("type", post.type);
-                formData.append("caption", post.content.caption.trim());
-
-                const response = await axios.post(
-                    "/linkedin/registermedia",
-                    formData,
-                    {
-                        headers: {
-                            "Content-Type": "multipart/form-data",
-                            "X-CSRF-TOKEN": document
-                                .querySelector('meta[name="csrf-token"]')
-                                .getAttribute("content"),
-                        },
-                    }
-                );
-
-                if (response.data.status === 200) {
-                    return response.data.asset; // Ensure this matches the response structure
-                } else {
-                    throw new Error("Media upload failed");
-                }
-            } catch (error) {
-                console.error("Error uploading media:", error);
-                throw error;
             }
         },
 
@@ -666,9 +633,7 @@ export default {
 
             await axios.post("/linkedin/publish", postData, {
                 headers: {
-                    "X-CSRF-TOKEN": document
-                        .querySelector('meta[name="csrf-token"]')
-                        .getAttribute("content"),
+                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
                 },
             });
         },
@@ -682,50 +647,30 @@ export default {
             formData.append("caption", post.content.caption.trim());
             formData.append("scheduled_date", post.scheduledDateTime);
 
-            const registerResponse = await axios.post(
-                "/linkedin/registermedia",
-                formData,
-                {
+            const registerResponse = await axios.post("/linkedin/registermedia", formData, {
                     headers: {
                         "Content-Type": "multipart/form-data",
-                        "X-CSRF-TOKEN": document
-                            .querySelector('meta[name="csrf-token"]')
-                            .getAttribute("content"),
+                        "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
                     },
                 }
             );
 
             if (registerResponse.data.status === 200) {
                 const binaryUploadFormData = new FormData();
-                binaryUploadFormData.append(
-                    "token",
-                    this.selectedAccount.linkedin_token
-                );
-                binaryUploadFormData.append(
-                    "upload_url",
-                    registerResponse.data.uploadUrl
-                );
+                binaryUploadFormData.append("token", this.selectedAccount.linkedin_token);
+                binaryUploadFormData.append("upload_url", registerResponse.data.uploadUrl);
                 binaryUploadFormData.append("media", post.content.file);
 
-                await axios.post(
-                    "/linkedin/upload-media-binary",
-                    binaryUploadFormData,
-                    {
+                await axios.post("/linkedin/upload-media-binary", binaryUploadFormData, {
                         headers: {
                             "Content-Type": "multipart/form-data",
-                            "X-CSRF-TOKEN": document
-                                .querySelector('meta[name="csrf-token"]')
-                                .getAttribute("content"),
+                            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
                         },
                     }
                 );
 
-                await this.shareMediaPost(
-                    registerResponse.data.asset,
-                    post.content.caption.trim(),
-                    post.type === "image" ? "IMAGE" : "VIDEO",
-                    post.scheduledDateTime
-                );
+                return registerResponse.data.asset;
+
             } else {
                 throw new Error(
                     registerResponse.data.error || "Media registration failed"
@@ -743,14 +688,9 @@ export default {
                 scheduled_date: scheduledDateTime,
             };
 
-            const response = await axios.post(
-                "/linkedin/share-media",
-                shareData,
-                {
+            const response = await axios.post("/linkedin/share-media", shareData, {
                     headers: {
-                        "X-CSRF-TOKEN": document
-                            .querySelector('meta[name="csrf-token"]')
-                            .getAttribute("content"),
+                        "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
                     },
                 }
             );
@@ -771,9 +711,7 @@ export default {
 
             await axios.post("/linkedin/share-article", articleData, {
                 headers: {
-                    "X-CSRF-TOKEN": document
-                        .querySelector('meta[name="csrf-token"]')
-                        .getAttribute("content"),
+                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
                 },
             });
         },
@@ -863,11 +801,6 @@ input[type="datetime-local"] {
     }
 }
 
-/* Ensure the container doesn't overflow */
-.wh-100 {
-    width: 100%;
-    overflow-x: hidden;
-}
 
 /* Button styling adjustments */
 button {
