@@ -9,10 +9,8 @@ class ScheduledLinkedinPost extends Model
 {
     use HasFactory;
 
-    // Define the table name (optional, Laravel assumes the plural of the model name)
     protected $table = 'scheduled_linkedin_posts';
 
-    // Define the fillable properties (to allow mass assignment)
     protected $fillable = [
         'user_id',
         'linkedin_user_id',

@@ -68,6 +68,8 @@ Route::post('/linkedin/schedule-post', [LinkedInController::class, 'publish']);
 // Routes for "Linkedin Post" Page
 Route::middleware(['auth', 'verified', 'linkedin.valid', 'linkedin.account.exist'])->group(function() {
     Route::get('/linkedin-post', [App\Http\Controllers\LinkedinPostController::class, 'index'])->name('linkedin-post');
+    Route::post('/linkedin/post-text', [App\Http\Controllers\LinkedInController::class, 'postTextOnly']);
+    Route::post('/linkedin/schedule', [App\Http\Controllers\LinkedInController::class, 'schedulePost']);
     Route::post('/linkedin/registermedia', [App\Http\Controllers\LinkedInController::class, 'registerMedia']);
     Route::post('/linkedin/upload-media-binary', [App\Http\Controllers\LinkedInController::class, 'uploadMediaBinary']);
     Route::post('/linkedin/share-media', [App\Http\Controllers\LinkedInController::class, 'shareMedia']);

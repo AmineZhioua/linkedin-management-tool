@@ -1,5 +1,5 @@
 <template>
-    <div class="bg-white wh-100 vh-100 relative mt-8 plateforme-card">
+    <div class="bg-white w-full vh-100 relative mt-8 plateforme-card">
         <!-- Heart Sticker -->
         <div class="absolute top-[-40px] left-[40px] flex align-items-center">
             <img
@@ -58,23 +58,24 @@
                 v-else
                 class="w-full h-[80%] flex align-items-center justify-content-center"
             >
-                <div v-if="currentQuestionIndex < questions.length" class="h-full flex flex-col justify-evenly">
-                    <div>
+                <div v-if="currentQuestionIndex < questions.length" class="h-full w-full flex flex-col justify-evenly relative px-4">
+                    <div class="flex justify-center">
                         <!-- Progress Indicator -->
-                        <div class="mb-4 w-full flex justify-center">
+                        <div class="w-full flex justify-center absolute top-[30px]">
                             <progress-indicator :total-steps="questions.length" :current-step="currentQuestionIndex + 1" />
                         </div>
                         
                         <!-- Questions Header -->
-                        <div
-                            class="flex flex-col gap-4 text-center align-items-center"
-                        >
-                            <h2 class="text-black">
+                        <div class="flex flex-col gap-4 absolute top-[15%]">
+                            <h1 class="text-black fw-bold">Question {{ currentQuestionIndex +1 }}</h1>
+                            <div class="flex align-items-center gap-2">
+                                <h2 class="text-black">
                                 {{ questions[currentQuestionIndex].title }}
-                            </h2>
-                            <p class="text-muted">
-                                {{ questions[currentQuestionIndex].paragraph }}
-                            </p>
+                                </h2>
+                                <p class="text-muted mb-0">
+                                    {{ questions[currentQuestionIndex].paragraph }}
+                                </p>
+                            </div>
                         </div>
                     </div>
 
@@ -85,9 +86,7 @@
                         <!-- Question Choices -->
                         <div v-if="questions[currentQuestionIndex].choices">
                             <div
-                                v-for="(choice, index) in questions[
-                                    currentQuestionIndex
-                                ].choices"
+                                v-for="(choice, index) in questions[currentQuestionIndex].choices"
                                 :key="index"
                                 class="choix-btns"
                             >
@@ -95,10 +94,7 @@
                                     style="color: #374957"
                                     class="text-lg fw-semibold"
                                 >
-                                    {{
-                                        questions[currentQuestionIndex]
-                                            .choicesTitle[index]
-                                    }}
+                                    {{ questions[currentQuestionIndex].choicesTitle[index] }}
                                 </p>
                                 <button
                                     @click="selectAndNext(choice)"
@@ -116,10 +112,7 @@
                                 id="textInput"
                                 v-model="inputValue"
                                 type="text"
-                                :placeholder="
-                                    questions[currentQuestionIndex]
-                                        .placeholder || 'Entrez votre texte ici'
-                                "
+                                :placeholder="questions[currentQuestionIndex].placeholder || 'Entrez votre texte ici'"
                                 class="p-2 border border-gray-300 rounded-md w-[300px] h-[40px]"
                             />
                         </div>
@@ -132,9 +125,7 @@
                                     Sélectionner une option
                                 </option>
                                 <option
-                                    v-for="option in questions[
-                                        currentQuestionIndex
-                                    ].selectOptions"
+                                    v-for="option in questions[currentQuestionIndex].selectOptions"
                                     :key="option"
                                 >
                                     {{ option }}
@@ -668,7 +659,7 @@ export default {
 
 .rocket-div {
     position: absolute;
-    top: 15%;
+    top: 5%;
     right: 0;
     z-index: 10;
 }

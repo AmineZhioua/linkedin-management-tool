@@ -631,11 +631,6 @@ export default {
                 formData.append("media", post.content.file);
                 formData.append("type", post.type);
                 formData.append("caption", post.content.caption.trim());
-                formData.append("token", this.selectedAccount.linkedin_token);
-                formData.append(
-                    "linkedin_id",
-                    this.selectedAccount.linkedin_id
-                );
 
                 const response = await axios.post(
                     "/linkedin/registermedia",
@@ -651,7 +646,7 @@ export default {
                 );
 
                 if (response.data.status === 200) {
-                    return response.data.asset;
+                    return response.data.asset; // Ensure this matches the response structure
                 } else {
                     throw new Error("Media upload failed");
                 }
