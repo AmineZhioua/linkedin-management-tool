@@ -9,8 +9,6 @@ use Illuminate\Queue\SerializesModels;
 use App\Models\ScheduledLinkedInPost;
 use App\Http\Controllers\LinkedInController;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Http\Request;
-
 
 class ScheduleLinkedInPost implements ShouldQueue
 {
@@ -43,22 +41,27 @@ class ScheduleLinkedInPost implements ShouldQueue
                 'linkedin_id' => $linkedinUser->linkedin_id,
             ];
 
-        switch ($post->type) {
-            case 'text':
-                $response = $linkedinController->postTextOnly(array_merge($payload, [
-                    'caption' => $content['text'],
-                ]));
-                break;
-
-                case 'image':
-                case 'video':                    
-                    $response = $linkedinController->shareMedia(array_merge($payload, [
-                        'asset' => $content['asset'],
-                        'caption' => $content['caption'] ?? '',
-                        'media_type' => strtoupper($post->type),
+            switch ($post->type) {
+                case 'text':
+                    $response = $linkedinController->postTextOnly(array_merge($payload, [
+                        'caption' => $content['text'],
                     ]));
                     break;
 
+                case 'image':
+                case 'video':
+                    $reflection = new \ReflectionMethod($linkedinController, 'shareMedia');
+                    Log::info('shareMedia parameters:', array_map(function ($param) {
+                        return $param->getName() . ': ' . ($param->getType() ? $param->getType()->getName() : 'no type');
+                    }, $reflection->getParameters()));
+                        $response = $linkedinController->shareMedia([
+                            'token' => $payload['token'],
+                            'linkedin_id' => $payload['linkedin_id'],
+                            'asset' => $content['asset'],
+                            'caption' => $content['caption'] ?? null,
+                            'media_type' => strtoupper($post->type),
+                        ]);
+                    break;
                 case 'article':
                     $response = $linkedinController->shareArticle(array_merge($payload, [
                         'caption' => $content['caption'],
@@ -67,14 +70,12 @@ class ScheduleLinkedInPost implements ShouldQueue
                         'article_description' => $content['description'],
                     ]));
                     break;
-
-                default:
                     throw new \Exception("Invalid post type: {$post->type}");
             }
 
             // Check the response status using the callable methods on our object
-            $responseData = $response->getData(true); // Convert JsonResponse to array
-            $httpCode = $response->getStatusCode();
+            $httpCode = $response['status'];
+            $responseData = $response['data'] ?? [];
             $errorMsg = $response['error'] ?? 'Unknown error';
 
             if ($httpCode >= 200 && $httpCode < 300) {

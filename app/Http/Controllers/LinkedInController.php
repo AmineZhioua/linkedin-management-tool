@@ -1,6 +1,8 @@
 <?php
 
 namespace App\Http\Controllers;
+
+
 use Illuminate\Http\Request;
 use App\Models\LinkedinUser;
 use Illuminate\Support\Facades\Auth;
@@ -13,8 +15,7 @@ use Carbon\Carbon;
 
 class LinkedInController extends Controller
 {
-    public function index()
-    {
+    public function index() {
         $user = Auth::user();
         if (!$user) {
             return redirect()->route('login');
@@ -48,7 +49,7 @@ class LinkedInController extends Controller
             case 'video':
                 $request->validate([
                     'content.asset' => 'required|string',
-                    'content.caption' => 'nullable|string',
+                    'content.caption' => 'nullable|string|max:3000',
                 ]);
                 break;
             case 'article':
@@ -236,7 +237,8 @@ class LinkedInController extends Controller
     {
         $postUrl = "https://api.linkedin.com/v2/ugcPosts";
 
-        $authorUrn = 'urn:li:person:' . $data['linkedin_id'];
+        $validated = $data;
+        $authorUrn = 'urn:li:person:' . $validated['linkedin_id'];
         
         $postData = [
             "author" => $authorUrn,
@@ -244,7 +246,7 @@ class LinkedInController extends Controller
             "specificContent" => [
                 "com.linkedin.ugc.ShareContent" => [
                     "shareCommentary" => [
-                        "text" => $data['caption']
+                        "text" => $validated['caption']
                     ],
                     "shareMediaCategory" => "NONE"
                 ]
@@ -255,7 +257,7 @@ class LinkedInController extends Controller
         ];
 
         $headers = [
-            "Authorization: Bearer " . $data['token'],
+            "Authorization: Bearer " . $validated['token'],
             "Content-Type: application/json",
             "X-Restli-Protocol-Version: 2.0.0"
         ];
@@ -290,7 +292,7 @@ class LinkedInController extends Controller
                 'linkedin_id' => 'required|string',
                 'type' => 'required|in:image,video',
                 'media' => 'required|file|max:20480', // 20MB max file size
-                'caption' => 'nullable|string'
+                'caption' => 'nullable|string|max:3000'
             ]);
     
             // WE CAN DELETE THIS 
@@ -459,248 +461,193 @@ class LinkedInController extends Controller
 
 
     // Function To Share Media on LinkedIn
-    public function shareMedia(array $data) {
-        try {
-            // $data = $request->validate([
-            //     'token' => 'required|string',
-            //     'linkedin_id' => 'required|string',
-            //     'asset' => 'required|string',
-            //     'caption' => 'nullable|string',
-            //     'media_type' => 'required|in:IMAGE,VIDEO'
-            // ]);
-    
-            $postUrl = "https://api.linkedin.com/v2/ugcPosts";
-    
-            $authorUrn = 'urn:li:person:' . $data['linkedin_id'];
-            
-            $postData = [
-                "author" => $authorUrn,
-                "lifecycleState" => "PUBLISHED",
-                "specificContent" => [
-                    "com.linkedin.ugc.ShareContent" => [
-                        "shareCommentary" => [
-                            "text" => $data['caption'] ?? ''
-                        ],
-                        "shareMediaCategory" => $data['media_type'],
-                        "media" => [
-                            [
-                                "status" => "READY",
-                                "description" => [
-                                    "text" => $data['caption'] ?? ''
-                                ],
-                                "media" => $data['asset'],
-                                "title" => [
-                                    "text" => "Shared Media" // FIX THIS ASAP
-                                ]
+    public function shareMedia(array $data)
+    {
+        // Validate only if called from an HTTP POST request
+        if (request()->isMethod('post')) {
+            $validated = validator($data, [
+                'token' => 'required|string',
+                'linkedin_id' => 'required|string',
+                'asset' => 'required|string',
+                'caption' => 'nullable|string',
+                'media_type' => 'required|in:IMAGE,VIDEO'
+            ])->validate();
+        } else {
+            // Use the provided data directly (e.g., from a job)
+            $validated = $data;
+        }
+
+        // LinkedIn API endpoint
+        $postUrl = "https://api.linkedin.com/v2/ugcPosts";
+        $authorUrn = 'urn:li:person:' . $validated['linkedin_id'];
+
+        // Construct the post data
+        $postData = [
+            "author" => $authorUrn,
+            "lifecycleState" => "PUBLISHED",
+            "specificContent" => [
+                "com.linkedin.ugc.ShareContent" => [
+                    "shareCommentary" => [
+                        "text" => $validated['caption'] ?? ''
+                    ],
+                    "shareMediaCategory" => $validated['media_type'],
+                    "media" => [
+                        [
+                            "status" => "READY",
+                            "description" => [
+                                "text" => $validated['caption'] ?? ''
+                            ],
+                            "media" => $validated['asset'],
+                            "title" => [
+                                "text" => "Shared Media" // You can make this dynamic if needed
                             ]
                         ]
                     ]
-                ],
-                "visibility" => [
-                    "com.linkedin.ugc.MemberNetworkVisibility" => "PUBLIC"
                 ]
-            ];
-    
-            $headers = [
-                "Authorization: Bearer " . $data['token'],
-                "Content-Type: application/json",
-                "X-Restli-Protocol-Version: 2.0.0"
-            ];
-    
-            $curl = curl_init();
-            curl_setopt_array($curl, [
-                CURLOPT_URL => $postUrl,
-                CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_POST => true,
-                CURLOPT_POSTFIELDS => json_encode($postData),
-                CURLOPT_HTTPHEADER => $headers,
-                CURLOPT_TIMEOUT => 30
-            ]);
-    
-            $response = curl_exec($curl);
-            $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-            $responseData = json_decode($response, true);
-            
-            curl_close($curl);
-    
-            Log::info('LinkedIn Share Media Response', [
+            ],
+            "visibility" => [
+                "com.linkedin.ugc.MemberNetworkVisibility" => "PUBLIC"
+            ]
+        ];
+
+        // Set up headers
+        $headers = [
+            "Authorization: Bearer " . $validated['token'],
+            "Content-Type: application/json",
+            "X-Restli-Protocol-Version: 2.0.0"
+        ];
+
+        // Make the API call using cURL
+        $curl = curl_init();
+        curl_setopt_array($curl, [
+            CURLOPT_URL => $postUrl,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => json_encode($postData),
+            CURLOPT_HTTPHEADER => $headers,
+            CURLOPT_TIMEOUT => 30
+        ]);
+
+        $response = curl_exec($curl);
+        $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        $responseData = json_decode($response, true);
+        curl_close($curl);
+
+        // Handle the response
+        if ($httpCode >= 200 && $httpCode < 300) {
+            return [
+                'status' => 'success',
                 'http_code' => $httpCode,
-                'response' => $responseData
-            ]);
-    
-            // Successful response handling
-            if ($httpCode >= 200 && $httpCode < 300) {
-                return response()->json([
-                    'status' => 'success',
-                    'http_code' => $httpCode,
-                    'message' => 'Media shared successfully on LinkedIn',
-                    'post_id' => $responseData['id'] ?? null
-                ], 200);
-            }
-    
-            // Error handling for unsuccessful responses
-            $errorMessage = 'Failed to share media on LinkedIn';
-            if(isset($responseData['message'])) {
-                $errorMessage = $responseData['message'];
-            } elseif(isset($responseData['error'])) {
-                $errorMessage = $responseData['error'];
-            }
-    
+                'data' => $responseData,
+            ];
+        } else {
             Log::error('LinkedIn Share Media Error', [
                 'http_code' => $httpCode,
-                'error_message' => $errorMessage,
-                'full_response' => $responseData
+                'response' => $responseData,
             ]);
-    
-            return response()->json([
+            return [
                 'status' => 'error',
                 'http_code' => $httpCode,
-                'message' => $errorMessage,
-                'details' => $responseData
-            ], $httpCode);
-    
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            return response()->json([
-                'status' => 'validation_error',
-                'message' => 'Validation failed',
-                'errors' => $e->errors()
-            ], 422);
-    
-        } catch (\Exception $e) {
-            Log::error('Unexpected LinkedIn Share Media Error', [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-    
-            return response()->json([
-                'status' => 'server_error',
-                'message' => 'An unexpected error occurred',
-                'error_details' => $e->getMessage()
-            ], 500);
+                'error' => $responseData['message'] ?? 'Unknown error',
+            ];
         }
     }
 
 
     // Function to Share Article on LinkedIn
-    public function shareArticle(Request $request) {
-        try {
-            $validated = $request->validate([
+    public function shareArticle(array $data)
+    {
+        // Validate only if called from an HTTP POST request
+        if (request()->isMethod('post')) {
+            $validated = validator($data, [
                 'token' => 'required|string',
                 'linkedin_id' => 'required|string',
-                'caption' => 'nullable|string',
+                'caption' => 'nullable|string|max:3000',
                 'article_url' => 'required|url',
-                'article_title' => 'required|string',
-                'article_description' => 'required|string',
-            ]);
+                'article_title' => 'required|string|max:200',
+                'article_description' => 'required|string|max:500',
+            ])->validate();
+        } else {
+            // Use the provided data directly (e.g., from the job)
+            $validated = $data;
+        }
 
-            $postUrl = "https://api.linkedin.com/v2/ugcPosts";
+        $postUrl = "https://api.linkedin.com/v2/ugcPosts";
+        $authorUrn = 'urn:li:person:' . $validated['linkedin_id'];
 
-            $authorUrn = 'urn:li:person:' . $validated['linkedin_id'];
-
-            $postData = [
-                "author" => $authorUrn,
-                "lifecycleState" => "PUBLISHED",
-                "specificContent" => [
-                    "com.linkedin.ugc.ShareContent" => [
-                        "shareCommentary" => [
-                            "text" => $validated['caption'] ?? ''
-                        ],
-                        "shareMediaCategory" => "ARTICLE",
-                        "media" => [
-                            [
-                                "status" => "READY",
-                                "description" => [
-                                    "text" => $validated['article_description'] ?? ''
-                                ],
-                                "originalUrl" => $validated['article_url'],
-                                "title" => [
-                                    "text" => $validated['article_title'] ?? ''
-                                ],
-                            ]
+        $postData = [
+            "author" => $authorUrn,
+            "lifecycleState" => "PUBLISHED",
+            "specificContent" => [
+                "com.linkedin.ugc.ShareContent" => [
+                    "shareCommentary" => [
+                        "text" => $validated['caption'] ?? ''
+                    ],
+                    "shareMediaCategory" => "ARTICLE",
+                    "media" => [
+                        [
+                            "status" => "READY",
+                            "description" => [
+                                "text" => $validated['article_description'] ?? ''
+                            ],
+                            "originalUrl" => $validated['article_url'],
+                            "title" => [
+                                "text" => $validated['article_title'] ?? ''
+                            ],
                         ]
                     ]
-                ],
-                "visibility" => [
-                    "com.linkedin.ugc.MemberNetworkVisibility" => "PUBLIC"
                 ]
-            ];
+            ],
+            "visibility" => [
+                "com.linkedin.ugc.MemberNetworkVisibility" => "PUBLIC"
+            ]
+        ];
 
-            $headers = [
-                "Authorization: Bearer " . $validated['token'],
-                "Content-Type: application/json",
-                "X-Restli-Protocol-Version: 2.0.0"
-            ];
+        $headers = [
+            "Authorization: Bearer " . $validated['token'],
+            "Content-Type: application/json",
+            "X-Restli-Protocol-Version: 2.0.0"
+        ];
 
-            $curl = curl_init();
-            curl_setopt_array($curl, [
-                CURLOPT_URL => $postUrl,
-                CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_POST => true,
-                CURLOPT_POSTFIELDS => json_encode($postData),
-                CURLOPT_HTTPHEADER => $headers,
-                CURLOPT_TIMEOUT => 30
-            ]);
+        $curl = curl_init();
+        curl_setopt_array($curl, [
+            CURLOPT_URL => $postUrl,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => json_encode($postData),
+            CURLOPT_HTTPHEADER => $headers,
+            CURLOPT_TIMEOUT => 30
+        ]);
 
-            $response = curl_exec($curl);
-            $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-            $responseData = json_decode($response, true);
+        $response = curl_exec($curl);
+        $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        $responseData = json_decode($response, true);
+        curl_close($curl);
 
-            curl_close($curl);
-
-            Log::info('LinkedIn Share Article Response', [
+        if ($httpCode >= 200 && $httpCode < 300) {
+            $result = [
+                'status' => 'success',
                 'http_code' => $httpCode,
-                'response' => $responseData
-            ]);
-
-            // Successful response handling
-            if ($httpCode >= 200 && $httpCode < 300) {
-                return response()->json([
-                    'status' => 'success',
-                    'http_code' => $httpCode,
-                    'message' => 'Article shared successfully on LinkedIn',
-                    'post_id' => $responseData['id'] ?? null
-                ], 200);
-            }
-
-            // Error handling for unsuccessful responses
-            $errorMessage = 'Failed to share article on LinkedIn';
-            if(isset($responseData['message'])) {
-                $errorMessage = $responseData['message'];
-            } elseif(isset($responseData['error'])) {
-                $errorMessage = $responseData['error'];
-            }
-
+                'data' => $responseData,
+            ];
+        } else {
             Log::error('LinkedIn Share Article Error', [
                 'http_code' => $httpCode,
-                'error_message' => $errorMessage,
-                'full_response' => $responseData
+                'response' => $responseData,
             ]);
-
-            return response()->json([
+            $result = [
                 'status' => 'error',
                 'http_code' => $httpCode,
-                'message' => $errorMessage,
-                'details' => $responseData
-            ], $httpCode);
-
-        } catch(\Illuminate\Validation\ValidationException $e) {
-            return response()->json([
-                'status' => 'validation_error',
-                'message' => 'Validation failed',
-                'errors' => $e->errors()
-            ], 422);
-
-        } catch(\Exception $e) {
-            Log::error('Unexpected LinkedIn Share Article Error', [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
-            return response()->json([
-                'status' => 'server_error',
-                'message' => 'An unexpected error occurred',
-                'error_details' => $e->getMessage()
-            ], 500);
+                'error' => $responseData['message'] ?? 'Unknown error',
+            ];
         }
+
+        // If called from an HTTP request, return a JSON response
+        if (request()->isMethod('post')) {
+            return response()->json($result, $httpCode >= 200 && $httpCode < 300 ? 200 : 400);
+        }
+
+        // Otherwise, return the array for the job to process
+        return $result;
     }
 }
