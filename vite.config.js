@@ -2,6 +2,9 @@ import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
 import vue from '@vitejs/plugin-vue'; 
 export default defineConfig({
+    optimizeDeps: {
+        include: ['@daypilot/daypilot-lite-vue'],
+    },
     plugins: [
         laravel({
             input: [
