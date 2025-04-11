@@ -1,5 +1,5 @@
 <template>
-    <div class="bg-white wh-100 vh-100 relative mt-8">
+    <div class="bg-white vh-100 relative shadow-md" style="border-top-left-radius: 15px; border-top-right-radius: 15px;">
         <!-- Heart Sticker -->
         <div class="absolute top-[-40px] left-[40px] flex items-center">
             <img
@@ -104,12 +104,17 @@
                         <span style="color: red">*</span> :
                     </label>
                     <input
-                        type="date"
+                        type="datetime-local"
                         id="startDate"
                         v-model="startDate"
-                        class="w-full border rounded-lg p-2 mb-4"
+                        class="w-full border rounded-lg p-2 mb-1"
+                        :class="{'border-red-500': startDateErrorMessage}"
                         :min="todayDate"
+                        @change="updateTodayDate"
                     />
+                    <p v-if="startDateErrorMessage" class="text-red-500 text-sm mb-2">
+                        {{ startDateErrorMessage }}
+                    </p>
                 </div>
 
                 <!-- Date de Fin -->
@@ -118,12 +123,16 @@
                         Date de Fin <span style="color: red">*</span> :
                     </label>
                     <input
-                        type="date"
+                        type="datetime-local"
                         id="endDate"
                         v-model="endDate"
-                        class="w-full border rounded-lg p-2 mb-4"
+                        class="w-full border rounded-lg p-2 mb-1"
+                        :class="{'border-red-500': endDateErrorMessage}"
                         :min="startDate"
                     />
+                    <p v-if="endDateErrorMessage" class="text-red-500 text-sm mb-2">
+                        {{ endDateErrorMessage }}
+                    </p>
                 </div>
 
                 <!-- Previous & Next Buttons -->
@@ -136,7 +145,7 @@
                     </button>
                     <button
                         @click="nextStep"
-                        :disabled="!startDate || !endDate"
+                        :disabled="!isStep2Valid"
                         class="bg-blue-500 text-white py-2 px-4 rounded-lg disabled:bg-gray-300"
                     >
                         Next
@@ -190,11 +199,7 @@
 
                     <button
                         class="bg-black text-white absolute right-0 py-2 px-3"
-                        style="
-                            border-top-right-radius: 8px;
-                            border-bottom-right-radius: 8px;
-                        "
-                        disabled
+                        style="border-top-right-radius: 8px; border-bottom-right-radius: 8px;" disabled
                     >
                         par Jour
                     </button>
@@ -222,26 +227,13 @@
 
             <!-- Step 5: Calendar View of Posts -->
             <div v-if="currentStep === 5" class="w-full max-w-6xl">
-                <h2 class="text-xl font-bold mb-4">Planification des Posts</h2>
+                <h2 class="text-xl text-center font-bold mb-4">Calendrier des Posts</h2>
                 
-                <!-- Calendar Navigation -->
-                <div class="flex justify-between items-center mb-4">
-                    <button 
-                        @click="prevMonth" 
-                        class="bg-gray-200 hover:bg-gray-300 py-2 px-4 rounded-lg"
-                    >
-                        &larr; Mois précédent
-                    </button>
-                    
-                    <h3 class="text-lg font-semibold month">{{ formatMonth() }}</h3>
-                    
-                    <button 
-                        @click="nextMonth" 
-                        class="bg-gray-200 hover:bg-gray-300 py-2 px-4 rounded-lg"
-                    >
-                        Mois suivant &rarr;
-                    </button>
-                </div>
+                <!-- Calendar Navigation Component -->
+                <calendar-navigation 
+                    v-model:currentMonth="currentMonth" 
+                    v-model:currentYear="currentYear" 
+                />
                 
                 <!-- Legend -->
                 <div class="flex gap-4 mb-4 text-sm">
@@ -280,6 +272,7 @@
                     :isOpen="isPostModalOpen"
                     :onClose="closePostModal"
                     :onSave="savePostChanges"
+                    :errorMessage="postModalError"
                     :campaignStartDateTime="campaignStartDateTime"
                     :campaignEndDateTime="campaignEndDateTime"
                 />
@@ -341,9 +334,9 @@ export default {
             submissionError: null,
             showSuccessPopup: false,
             successMessage: "",
-            todayDate: today.toISOString().split("T")[0],
-            startDate: today.toISOString().split("T")[0],
-            endDate: tomorrow.toISOString().split("T")[0],
+            todayDate: this.formatDateTime(today),
+            startDate: this.formatDateTime(today),
+            endDate: this.formatDateTime(tomorrow),
             frequenceParJour: 1,
             descriptionCampagne: "",
             campaignStartDateTime: "",
@@ -376,15 +369,65 @@ export default {
             currentYear: new Date().getFullYear(),
             selectedPost: null,
             isPostModalOpen: false,
+            postModalError: "",
             addingNewPost: false,
-            selectedDate: null,
         };
-
     },
     computed: {
+        isStartDateValid() {
+            if (!this.startDate) return false;
+            
+            const selectedStart = new Date(this.startDate);
+            const now = new Date();
+            
+            const minStartTime = new Date(now);
+            minStartTime.setHours(minStartTime.getHours() + 1);
+            
+            return selectedStart >= minStartTime;
+        },
+        
+        isEndDateValid() {
+            if (!this.endDate || !this.startDate) return false;
+            
+            const selectedStart = new Date(this.startDate);
+            const selectedEnd = new Date(this.endDate);
+            
+            const minEndTime = new Date(selectedStart);
+            minEndTime.setHours(minEndTime.getHours() + 2);
+            
+            return selectedEnd >= minEndTime;
+        },
+        
+        // Generate validation error messages
+        startDateErrorMessage() {
+            if (!this.startDate) return "Date de début requise";
+            if (!this.isStartDateValid) {
+            const now = new Date();
+            const minStartTime = new Date(now);
+            minStartTime.setHours(minStartTime.getHours() + 1);
+            return `La date de début doit être au moins 1 heure après maintenant (${this.formatReadableDateTime(minStartTime)})`;
+            }
+            return "";
+        },
+        
+        endDateErrorMessage() {
+            if (!this.endDate) return "Date de fin requise";
+            if (!this.isEndDateValid) {
+            const selectedStart = new Date(this.startDate);
+            const minEndTime = new Date(selectedStart);
+            minEndTime.setHours(minEndTime.getHours() + 2);
+            return `La date de fin doit être au moins 2 heures après la date de début (${this.formatReadableDateTime(minEndTime)})`;
+            }
+            return "";
+        },
+        
+        // Check if step 2 is valid and can proceed
+        isStep2Valid() {
+            return this.isStartDateValid && this.isEndDateValid;
+        },
+
         areAllPostsValid() {
             return this.postCards.every((post) => {
-                // Validate datetime
                 if (!post.scheduledDateTime) {
                     return false;
                 }
@@ -397,7 +440,6 @@ export default {
                     return false;
                 }
 
-                // Validate content based on type
                 switch (post.type) {
                     case "text":
                         return post.content.text.trim() !== "";
@@ -412,12 +454,18 @@ export default {
             });
         },
     },
+
     methods: {
         selectAccount(account) {
             this.selectedAccount = account;
         },
 
         nextStep() {
+            if(this.currentStep === 2) {
+                if(!this.isStep2Valid) {
+                    return;
+                }
+            }
             if (this.currentStep < 4) {
                 this.currentStep++;
             }
@@ -439,33 +487,52 @@ export default {
             return `${year}-${month}-${day}T${hours}:${minutes}`;
         },
 
+        
         generatePostCards() {
-            // this.postCards = [];
             const start = new Date(this.startDate);
             const end = new Date(this.endDate);
 
-            // Set campaign datetime boundaries
-            this.campaignStartDateTime = `${this.startDate}T00:00`;
-            this.campaignEndDateTime = `${this.endDate}T23:59`;
+            this.campaignStartDateTime = `${this.startDate}`;
+            this.campaignEndDateTime = `${this.endDate}`;
 
-            // Calculate total days
-            const diffTime = Math.abs(end - start);
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+            const startDay = new Date(start);
+            startDay.setHours(0, 0, 0, 0);
+            const endDay = new Date(end);
+            endDay.setHours(0, 0, 0, 0);
+            
+            const diffTime = Math.abs(endDay - startDay);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            const daysToProcess = diffDays + 1;
 
             // Generate posts for each day
-            for (let i = 0; i < diffDays; i++) {
+            for (let i = 0; i < daysToProcess; i++) {
                 const currentDate = new Date(start);
                 currentDate.setDate(start.getDate() + i);
+                
+                // Check if this day is after the end date - if so, skip it
+                if (currentDate.setHours(0, 0, 0, 0) > end.setHours(0, 0, 0, 0)) {
+                    continue;
+                }
 
                 // Generate posts for each frequency per day
                 for (let j = 0; j < this.frequenceParJour; j++) {
-                    // Calculate time slot (distribute posts evenly throughout the day)
-                    const timeSlot = Math.floor((24 / this.frequenceParJour) * j);
-                    const hours = Math.min(timeSlot, 23);
-                    const minutes = Math.floor((timeSlot % 1) * 60) || 0;
+                    let postDateTime;
+                    
+                    if (i === 0 && j === 0) {
+                        postDateTime = new Date(this.campaignStartDateTime);
+                    } else {
+                        const timeSlot = Math.floor((24 / this.frequenceParJour) * j);
+                        const hours = Math.min(timeSlot, 23);
+                        const minutes = Math.floor((timeSlot % 1) * 60) || 0;
 
-                    const postDateTime = new Date(currentDate);
-                    postDateTime.setHours(hours, minutes, 0, 0);
+                        postDateTime = new Date(currentDate);
+                        postDateTime.setHours(hours, minutes, 0, 0);
+                        
+                        if (postDateTime > end) {
+                            continue;
+                        }
+                    }
 
                     this.postCards.push({
                         scheduledDateTime: this.toLocalISOString(postDateTime),
@@ -482,7 +549,6 @@ export default {
                 }
             }
 
-            // After posts are generated, set the calendar to the start month of the campaign
             this.currentMonth = start.getMonth();
             this.currentYear = start.getFullYear();
             
@@ -493,58 +559,71 @@ export default {
             post.content.file = event.target.files[0];
         },
 
-        resetPostContent(post) {
-            post.content = {
-                text: "",
-                file: null,
-                caption: "",
-                url: "",
-                title: "",
-                description: "",
+        formatReadableDateTime(date) {
+            const options = {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
             };
+            return date.toLocaleDateString('fr-FR', options).replace(',', ' à');
         },
 
-        // Methods for calendar functionality
-        // Navigation between months
-        prevMonth() {
-            if (this.currentMonth === 0) {
-                this.currentMonth = 11;
-                this.currentYear--;
-            } else {
-                this.currentMonth--;
+        updateTodayDate() {
+            const now = new Date();
+            this.todayDate = this.formatDateTime(now);
+            
+            // Optional: If user hasn't selected a date yet, update the start date suggestion
+            if (!this.startDate) {
+            const suggestedStart = new Date(now);
+            suggestedStart.setHours(suggestedStart.getHours() + 1);
+            this.startDate = this.formatDateTime(suggestedStart);
             }
-        },
-        
-        nextMonth() {
-            if (this.currentMonth === 11) {
-                this.currentMonth = 0;
-                this.currentYear++;
-            } else {
-                this.currentMonth++;
+            
+            // Optional: If user hasn't selected an end date yet, update the end date suggestion
+            if (!this.endDate && this.startDate) {
+            const suggestedStart = new Date(this.startDate);
+            const suggestedEnd = new Date(suggestedStart);
+            suggestedEnd.setHours(suggestedEnd.getHours() + 2);
+            this.endDate = this.formatDateTime(suggestedEnd);
             }
-        },
-        
-        // Format date for display
-        formatMonth() {
-            const date = new Date(this.currentYear, this.currentMonth, 1);
-            return date.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
         },
 
-        // Open the modal to edit a post
+        formatDateTime(date) {
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            return `${date.toISOString().split('T')[0]}T${hours}:${minutes}`;
+        },
+
         editPost(post) {
             this.selectedPost = post;
             this.isPostModalOpen = true;
-            this.addingNewPost = false;
         },
         
-        // Close the post modal
         closePostModal() {
             this.isPostModalOpen = false;
             this.selectedPost = null;
         },
-        
-        // Save changes made to a post
+
+        // Refine the date output for the campaign start & end dates
+        campaignDateTimeOutput(date) {
+            const dateTime = new Date(date);
+            
+            const year = dateTime.getFullYear();
+            const month = String(dateTime.getMonth() + 1).padStart(2, '0');
+            const day = String(dateTime.getDate()).padStart(2, '0');
+            const hours = String(dateTime.getHours()).padStart(2, '0');
+            const minutes = String(dateTime.getMinutes()).padStart(2, '0');
+            
+            return `${month}/${day}/${year} ${hours}:${minutes}`;
+        },
+
         savePostChanges(updatedPost) {
+            const scheduled = new Date(updatedPost.scheduledDateTime);
+            const start = new Date(this.campaignStartDateTime);
+            const end = new Date(this.campaignEndDateTime);
+
             if (this.addingNewPost) {
                 this.postCards.push(updatedPost);
             } else {
@@ -557,7 +636,31 @@ export default {
                     this.postCards[index] = updatedPost;
                 }
             }
-            
+
+            if (scheduled < start || scheduled > end) {
+                this.postModalError = `La date de publication doit être comprise entre ${this.campaignDateTimeOutput(this.campaignStartDateTime)} et ${this.campaignDateTimeOutput(this.campaignEndDateTime)} !`;
+                return;
+            }
+
+            if (updatedPost.type === "text" && updatedPost.content.text.trim() === "") {
+                this.postModalError = "Le contenu du post ne peut pas être vide !";
+                return;
+            }
+
+            if ((updatedPost.type === "image" || updatedPost.type === "video") && !updatedPost.content.file) {
+                this.postModalError = "Veuillez sélectionner un fichier pour le publier !";
+                return;
+            }
+
+            if (updatedPost.type === "article") {
+                const { url, title } = updatedPost.content;
+                if (!url.trim() || !title.trim()) {
+                    this.postModalError = "Veuillez remplir au moins l'URL et le titre de l'article.";
+                    return;
+                }
+            }
+
+            this.postModalError = "";
             this.closePostModal();
         },
 
@@ -685,24 +788,6 @@ export default {
             }
         },
 
-        async submitArticlePost(post) {
-            const articleData = {
-                token: this.selectedAccount.linkedin_token,
-                linkedin_id: this.selectedAccount.linkedin_id,
-                article_url: post.content.url,
-                article_title: post.content.title,
-                article_description: post.content.description,
-                caption: post.content.caption.trim(),
-                scheduled_date: post.scheduledDateTime,
-            };
-
-            await axios.post("/linkedin/share-article", articleData, {
-                headers: {
-                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
-                },
-            });
-        },
-
         closeSuccessPopup() {
             this.showSuccessPopup = false;
             this.successMessage = "";
@@ -737,19 +822,17 @@ export default {
     z-index: 10;
     height: 100%;
     padding: 2% 5%;
-    margin-top: 10%;
+    margin-top: 50px;
 }
 
 .month::first-letter {
     text-transform: uppercase;
 }
 
-
-/* Responsive adjustments */
 @media (max-width: 768px) {
     .card-main {
-        margin-top: 15%; /* More margin on smaller screens */
-        padding: 5%; /* More padding on smaller screens */
+        margin-top: 15%;
+        padding: 5%;
     }
 
     .flex.justify-between {
@@ -762,16 +845,12 @@ export default {
     }
 }
 
-
-/* Button styling adjustments */
 button {
     padding: 0.75em 1.5em;
     font-size: 1em;
-    border-radius: 0.5em;
     transition: all 0.2s ease;
 }
 
-/* Textarea styling */
 textarea {
     width: 100%;
     box-sizing: border-box;
@@ -781,7 +860,6 @@ textarea {
     border: 1px solid #e2e8f0;
 }
 
-/* Input field styling */
 input[type="text"],
 input[type="date"],
 input[type="number"] {

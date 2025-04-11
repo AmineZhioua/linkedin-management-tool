@@ -15,19 +15,19 @@
             </template>
             <template v-for="day in getDaysInMonth(month, year)">
                 <div 
-                    class="h-24 border rounded overflow-hidden relative p-1 cursor-pointer hover:bg-gray-50"
-                    :class="{'bg-blue-50': getPostsForDate(day).length > 0}"
+                    class="h-24 border rounded overflow-hidden relative p-1"
+                    :class="{'bg-blue-50 hover:bg-blue-300 cursor-pointer': getPostsForDate(day).length > 0}"
                 >
                     <div class="text-right text-xs">{{ day }}</div>
                     <div class="overflow-y-auto" style="max-height: 80px;">
                         <div 
                             v-for="post in getPostsForDate(day)"
-                            class="text-xs p-1 mb-1 rounded truncate cursor-pointer hover:bg-blue-100"
+                            class="text-xs p-1 mb-1 rounded truncate cursor-pointer"
                             :class="{
-                                'bg-green-100': post.type === 'text',
-                                'bg-yellow-100': post.type === 'image',
-                                'bg-red-100': post.type === 'video',
-                                'bg-purple-100': post.type === 'article'
+                                'bg-green-200 hover:bg-green-400': post.type === 'text',
+                                'bg-yellow-200 hover:bg-yellow-400': post.type === 'image',
+                                'bg-red-200 hover:bg-red-400': post.type === 'video',
+                                'bg-purple-300 hover:bg-purple-400': post.type === 'article'
                             }"
                             @click.stop="onEditPost(post)"
                         >

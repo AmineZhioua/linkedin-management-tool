@@ -11,6 +11,7 @@ import PlateformeStart from "./components/PlateformeStart.vue";
 import MarqueComponent from "./components/Marque.vue";
 import MonthCalendar from "./components/MonthCalendar.vue";
 import PostModal from "./components/PostModal.vue";
+import CalendarNavigation from "./components/CalendarNavigation.vue";
 
 
 const app = createApp();
@@ -25,5 +26,6 @@ app.component("plateforme-start", PlateformeStart);
 app.component("marque-component", MarqueComponent);
 app.component("month-calendar", MonthCalendar);
 app.component("post-modal", PostModal);
+app.component("calendar-navigation", CalendarNavigation);
 
 app.mount("#app");
