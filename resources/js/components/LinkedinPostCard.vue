@@ -25,10 +25,7 @@
         />
 
         <!-- Loading Overlay -->
-        <loading-overlay
-            :isLoading="isSubmitting"
-            message="Traitement en cours..."
-        />
+        <loading-overlay :isLoading="isSubmitting" message="Traitement en cours..." />
 
         <!-- Success Popup -->
         <Popup
@@ -53,35 +50,21 @@
                         @click="selectAccount(linkedinUser)"
                         class="py-4 rounded-xl border mb-4 cursor-pointer max-w-[250px]"
                         :class="{
-                            'bg-blue-500 text-white':
-                                selectedAccount &&
-                                selectedAccount.id === linkedinUser.id,
-                            'bg-white': !(
-                                selectedAccount &&
-                                selectedAccount.id === linkedinUser.id
-                            ),
-                        }"
+                            'bg-blue-500 text-white': selectedAccount && selectedAccount.id === linkedinUser.id,
+                            'bg-white': !( selectedAccount && selectedAccount.id === linkedinUser.id)}"
                     >
-                        <div
-                            class="flex flex-col align-items-center px-2 gap-2"
-                        >
+                        <div class="flex flex-col align-items-center px-2 gap-2">
                             <img
-                                :src="
-                                    linkedinUser.linkedin_picture
-                                        ? linkedinUser.linkedin_picture
-                                        : '/build/assets/images/default-profile.png'
-                                "
+                                :src="linkedinUser.linkedin_picture ? linkedinUser.linkedin_picture : '/build/assets/images/default-profile.png'"
                                 alt="Profile Picture"
                                 class="rounded-full"
                                 width="100"
                             />
-                            <p class="mb-0">
-                                {{ linkedinUser.linkedin_firstname }}
-                                {{ linkedinUser.linkedin_lastname }}
-                            </p>
+                            <p class="mb-0">{{ linkedinUser.linkedin_firstname }} {{ linkedinUser.linkedin_lastname }} </p>
                         </div>
                     </div>
                 </div>
+
 
                 <!-- Slot for the "Ajouter" Button in the Blade Template -->
                 <slot></slot>
@@ -94,146 +77,37 @@
                 </button>
             </div>
 
-            <!-- Step 2 : Date Debut & Date de Fin -->
-            <div v-if="currentStep === 2" class="w-full max-w-md">
-                <h2 class="text-xl font-bold mb-4">Durée du Campagne</h2>
-                <!-- Date de Debut -->
-                <div>
-                    <label for="startDate" class="text-md mb-2">
-                        Date de Début
-                        <span style="color: red">*</span> :
-                    </label>
-                    <input
-                        type="datetime-local"
-                        id="startDate"
-                        v-model="startDate"
-                        class="w-full border rounded-lg p-2 mb-1"
-                        :class="{'border-red-500': startDateErrorMessage}"
-                        :min="todayDate"
-                        @change="updateTodayDate"
-                    />
-                    <p v-if="startDateErrorMessage" class="text-red-500 text-sm mb-2">
-                        {{ startDateErrorMessage }}
-                    </p>
-                </div>
+            <!-- Integrated Campaign Form Component -->
+            <div v-if="currentStep === 2" class="w-full flex flex-col align-items-center">
+                <campaign-form
+                    :initial-start-date="startDate"
+                    :initial-end-date="endDate"
+                    :initial-cible="selectedCible"
+                    :initial-frequence="frequenceParJour"
+                    :initial-description="descriptionCampagne"
+                    :cibles="cibles"
+                    @update:form-data="updateFormData"
+                    @validate="isFormValid = $event"
+                    @dates-updated="updateCampaignDates"
+                />
 
-                <!-- Date de Fin -->
-                <div>
-                    <label for="endDate" class="text-md mb-2">
-                        Date de Fin <span style="color: red">*</span> :
-                    </label>
-                    <input
-                        type="datetime-local"
-                        id="endDate"
-                        v-model="endDate"
-                        class="w-full border rounded-lg p-2 mb-1"
-                        :class="{'border-red-500': endDateErrorMessage}"
-                        :min="startDate"
-                    />
-                    <p v-if="endDateErrorMessage" class="text-red-500 text-sm mb-2">
-                        {{ endDateErrorMessage }}
-                    </p>
-                </div>
-
-                <!-- Previous & Next Buttons -->
-                <div class="flex justify-between mt-4">
-                    <button
-                        @click="prevStep"
-                        class="bg-gray-300 text-black py-2 px-4 rounded-lg"
-                    >
-                        Back
-                    </button>
-                    <button
-                        @click="nextStep"
-                        :disabled="!isStep2Valid"
-                        class="bg-blue-500 text-white py-2 px-4 rounded-lg disabled:bg-gray-300"
-                    >
-                        Next
-                    </button>
-                </div>
+                <button
+                    @click="generatePostCards"
+                    :disabled="!isFormValid"
+                    class="bg-blue-500 text-white py-2 rounded-lg mt-4 disabled:bg-gray-300"
+                >
+                    Génerer les Posts
+                </button>
             </div>
 
-            <!-- Step 3 : Description du Campagne -->
-            <div v-if="currentStep === 3" class="w-full max-w-md">
-                <h2 class="text-xl font-bold mb-4">
-                    Description du Campagne :
-                </h2>
-                <textarea
-                    name="descriptionCampagne"
-                    id="descriptionCampagne"
-                    v-model="descriptionCampagne"
-                    class="w-full border rounded-lg p-3 h-32 mb-2"
-                    placeholder="Décrivez votre Campagne ici..."
-                ></textarea>
-
-                <!-- Previous & Next Buttons -->
-                <div class="flex justify-between mt-4">
-                    <button
-                        @click="prevStep"
-                        class="bg-gray-300 text-black py-2 px-4 rounded-lg"
-                    >
-                        Back
-                    </button>
-                    <button
-                        @click="nextStep"
-                        :disabled="!descriptionCampagne.trim()"
-                        class="bg-blue-500 text-white py-2 px-4 rounded-lg disabled:bg-gray-300"
-                    >
-                        Next
-                    </button>
-                </div>
-            </div>
-
-            <!-- Step 4 : Frequence des Posts -->
-            <div v-if="currentStep === 4" class="w-full max-w-md">
-                <h2 class="text-xl font-bold mb-4">Fréquence des Posts :</h2>
-                <div class="flex align-items-center relative">
-                    <input
-                        type="number"
-                        v-model="frequenceParJour"
-                        class="w-full border rounded-lg p-2 px-4"
-                        placeholder="Nombre de Posts"
-                        min="1"
-                        max="10"
-                    />
-
-                    <button
-                        class="bg-black text-white absolute right-0 py-2 px-3"
-                        style="border-top-right-radius: 8px; border-bottom-right-radius: 8px;" disabled
-                    >
-                        par Jour
-                    </button>
-                </div>
-
-                <!-- Previous & Next Buttons -->
-                <div class="flex justify-between mt-4">
-                    <button
-                        @click="prevStep"
-                        class="bg-gray-300 text-black py-2 px-4 rounded-lg"
-                    >
-                        Back
-                    </button>
-                    <button
-                        @click="generatePostCards"
-                        :disabled="
-                            frequenceParJour < 1 || frequenceParJour > 10
-                        "
-                        class="bg-blue-500 text-white py-2 px-4 rounded-lg disabled:bg-gray-300"
-                    >
-                        Générer les Posts
-                    </button>
-                </div>
-            </div>
+            
 
             <!-- Step 5: Calendar View of Posts -->
-            <div v-if="currentStep === 5" class="w-full max-w-6xl">
+            <div v-if="currentStep === 3" class="w-full max-w-6xl">
                 <h2 class="text-xl text-center font-bold mb-4">Calendrier des Posts</h2>
                 
                 <!-- Calendar Navigation Component -->
-                <calendar-navigation 
-                    v-model:currentMonth="currentMonth" 
-                    v-model:currentYear="currentYear" 
-                />
+                <calendar-navigation v-model:currentMonth="currentMonth" v-model:currentYear="currentYear" />
                 
                 <!-- Legend -->
                 <div class="flex gap-4 mb-4 text-sm">
@@ -330,6 +204,7 @@ export default {
         return {
             currentStep: 1,
             selectedAccount: null,
+            isFormValid: false,
             isSubmitting: false,
             submissionError: null,
             showSuccessPopup: false,
@@ -337,34 +212,24 @@ export default {
             todayDate: this.formatDateTime(today),
             startDate: this.formatDateTime(today),
             endDate: this.formatDateTime(tomorrow),
+            selectedCible: "",
             frequenceParJour: 1,
             descriptionCampagne: "",
             campaignStartDateTime: "",
             campaignEndDateTime: "",
             postTypes: [
-                {
-                    value: "text",
-                    label: "Text",
-                    icon: "fas fa-align-left",
-                },
-                {
-                    value: "image",
-                    label: "Image",
-                    icon: "fas fa-image",
-                },
-                {
-                    value: "video",
-                    label: "Video",
-                    icon: "fas fa-video",
-                },
-                {
-                    value: "article",
-                    label: "Article",
-                    icon: "fas fa-file-alt",
-                },
+                { value: "text", label: "Text", icon: "fas fa-align-left" },
+                { value: "image", label: "Image", icon: "fas fa-image" },
+                { value: "video", label: "Video", icon: "fas fa-video" },
+                { value: "article", label: "Article", icon: "fas fa-file-alt" },
+            ],
+            cibles: [
+                { id: '1', name: 'Audience 1' },
+                { id: '2', name: 'Audience 2' },
+                { id: '3', name: 'Audience 3' }
             ],
             postCards: [],
-            // New data properties for the calendar
+            // Calendar properties
             currentMonth: new Date().getMonth(),
             currentYear: new Date().getFullYear(),
             selectedPost: null,
@@ -374,58 +239,6 @@ export default {
         };
     },
     computed: {
-        isStartDateValid() {
-            if (!this.startDate) return false;
-            
-            const selectedStart = new Date(this.startDate);
-            const now = new Date();
-            
-            const minStartTime = new Date(now);
-            minStartTime.setHours(minStartTime.getHours() + 1);
-            
-            return selectedStart >= minStartTime;
-        },
-        
-        isEndDateValid() {
-            if (!this.endDate || !this.startDate) return false;
-            
-            const selectedStart = new Date(this.startDate);
-            const selectedEnd = new Date(this.endDate);
-            
-            const minEndTime = new Date(selectedStart);
-            minEndTime.setHours(minEndTime.getHours() + 2);
-            
-            return selectedEnd >= minEndTime;
-        },
-        
-        // Generate validation error messages
-        startDateErrorMessage() {
-            if (!this.startDate) return "Date de début requise";
-            if (!this.isStartDateValid) {
-            const now = new Date();
-            const minStartTime = new Date(now);
-            minStartTime.setHours(minStartTime.getHours() + 1);
-            return `La date de début doit être au moins 1 heure après maintenant (${this.formatReadableDateTime(minStartTime)})`;
-            }
-            return "";
-        },
-        
-        endDateErrorMessage() {
-            if (!this.endDate) return "Date de fin requise";
-            if (!this.isEndDateValid) {
-            const selectedStart = new Date(this.startDate);
-            const minEndTime = new Date(selectedStart);
-            minEndTime.setHours(minEndTime.getHours() + 2);
-            return `La date de fin doit être au moins 2 heures après la date de début (${this.formatReadableDateTime(minEndTime)})`;
-            }
-            return "";
-        },
-        
-        // Check if step 2 is valid and can proceed
-        isStep2Valid() {
-            return this.isStartDateValid && this.isEndDateValid;
-        },
-
         areAllPostsValid() {
             return this.postCards.every((post) => {
                 if (!post.scheduledDateTime) {
@@ -460,13 +273,26 @@ export default {
             this.selectedAccount = account;
         },
 
+        updateFormData(formData) {
+            this.startDate = formData.startDate;
+            this.endDate = formData.endDate;
+            this.selectedCible = formData.selectedCible;
+            this.frequenceParJour = formData.frequenceParJour;
+            this.descriptionCampagne = formData.descriptionCampagne;
+        },
+
+        updateCampaignDates({ startDate, endDate }) {
+            this.startDate = startDate;
+            this.endDate = endDate;
+        },
+
         nextStep() {
             if(this.currentStep === 2) {
                 if(!this.isStep2Valid) {
                     return;
                 }
             }
-            if (this.currentStep < 4) {
+            if (this.currentStep < 3) {
                 this.currentStep++;
             }
         },
@@ -487,7 +313,6 @@ export default {
             return `${year}-${month}-${day}T${hours}:${minutes}`;
         },
 
-        
         generatePostCards() {
             const start = new Date(this.startDate);
             const end = new Date(this.endDate);
@@ -505,32 +330,49 @@ export default {
             
             const daysToProcess = diffDays + 1;
 
-            // Generate posts for each day
+            this.postCards = [];
+
             for (let i = 0; i < daysToProcess; i++) {
                 const currentDate = new Date(start);
                 currentDate.setDate(start.getDate() + i);
                 
-                // Check if this day is after the end date - if so, skip it
-                if (currentDate.setHours(0, 0, 0, 0) > end.setHours(0, 0, 0, 0)) {
+                const endCopy = new Date(end);
+                const currentDayCopy = new Date(currentDate);
+                
+                currentDayCopy.setHours(0, 0, 0, 0);
+                endCopy.setHours(0, 0, 0, 0);
+                
+                if (currentDayCopy > endCopy) {
                     continue;
                 }
 
-                // Generate posts for each frequency per day
                 for (let j = 0; j < this.frequenceParJour; j++) {
                     let postDateTime;
                     
                     if (i === 0 && j === 0) {
                         postDateTime = new Date(this.campaignStartDateTime);
                     } else {
-                        const timeSlot = Math.floor((24 / this.frequenceParJour) * j);
-                        const hours = Math.min(timeSlot, 23);
-                        const minutes = Math.floor((timeSlot % 1) * 60) || 0;
+                        const businessHours = 8;
+                        const startHour = 9;
+                        
+                        let timeSlot;
+                        if (this.frequenceParJour === 1) {
+                            timeSlot = 12;
+                        } else {
+                            timeSlot = startHour + (businessHours / (this.frequenceParJour - 1)) * j;
+                        }
+                        
+                        const hours = Math.floor(timeSlot);
+                        const minutes = Math.floor((timeSlot % 1) * 60);
 
                         postDateTime = new Date(currentDate);
                         postDateTime.setHours(hours, minutes, 0, 0);
                         
-                        if (postDateTime > end) {
-                            continue;
+                        if (currentDayCopy.getTime() === endCopy.getTime()) {
+                            const endDateTime = new Date(end);
+                            if (postDateTime > endDateTime) {
+                                continue;
+                            }
                         }
                     }
 
@@ -552,42 +394,7 @@ export default {
             this.currentMonth = start.getMonth();
             this.currentYear = start.getFullYear();
             
-            this.currentStep = 5;
-        },
-
-        handleFileUpload(event, post) {
-            post.content.file = event.target.files[0];
-        },
-
-        formatReadableDateTime(date) {
-            const options = {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-            };
-            return date.toLocaleDateString('fr-FR', options).replace(',', ' à');
-        },
-
-        updateTodayDate() {
-            const now = new Date();
-            this.todayDate = this.formatDateTime(now);
-            
-            // Optional: If user hasn't selected a date yet, update the start date suggestion
-            if (!this.startDate) {
-            const suggestedStart = new Date(now);
-            suggestedStart.setHours(suggestedStart.getHours() + 1);
-            this.startDate = this.formatDateTime(suggestedStart);
-            }
-            
-            // Optional: If user hasn't selected an end date yet, update the end date suggestion
-            if (!this.endDate && this.startDate) {
-            const suggestedStart = new Date(this.startDate);
-            const suggestedEnd = new Date(suggestedStart);
-            suggestedEnd.setHours(suggestedEnd.getHours() + 2);
-            this.endDate = this.formatDateTime(suggestedEnd);
-            }
+            this.currentStep = 3;
         },
 
         formatDateTime(date) {
