@@ -114,7 +114,7 @@ export default {
             type: String,
         },
         initialFrequence: {
-            type: Number,
+            type: String,
         },
         initialDescription: {
             type: String,

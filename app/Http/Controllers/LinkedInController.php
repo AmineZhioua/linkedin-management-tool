@@ -291,7 +291,7 @@ class LinkedInController extends Controller
                 'token' => 'required|string',
                 'linkedin_id' => 'required|string',
                 'type' => 'required|in:image,video',
-                'media' => 'required|file|max:20480', // 20MB max file size
+                'media' => 'required|file|max:50000', // 50MB max file size
                 'caption' => 'nullable|string|max:3000'
             ]);
     
@@ -303,7 +303,7 @@ class LinkedInController extends Controller
             // Validate file type
             $allowedMimeTypes = [
                 'image' => ['image/jpeg', 'image/png', 'image/gif'],
-                'video' => ['video/mp4', 'video/mpeg', 'video/quicktime']
+                'video' => ['video/mp4', 'video/mpeg', 'video/quicktime', 'video/webm']
             ];
     
             if (!in_array($mimeType, $allowedMimeTypes[$validated['type']])) {
@@ -402,7 +402,7 @@ class LinkedInController extends Controller
             $validated = $request->validate([
                 'token' => 'required|string',
                 'upload_url' => 'required|url',
-                'media' => 'required|file|max:20480' // 20MB max file size
+                'media' => 'required|file|max:50000' // 50MB max file size
             ]);
     
             $file = $request->file('media');

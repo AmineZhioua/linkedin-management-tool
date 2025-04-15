@@ -146,6 +146,7 @@
                     :isOpen="isPostModalOpen"
                     :onClose="closePostModal"
                     :onSave="savePostChanges"
+                    :onDelete="deletePost"
                     :errorMessage="postModalError"
                     :campaignStartDateTime="campaignStartDateTime"
                     :campaignEndDateTime="campaignEndDateTime"
@@ -235,6 +236,7 @@ export default {
             selectedPost: null,
             isPostModalOpen: false,
             postModalError: "",
+            showDeleteSuccessPopup: false,
             addingNewPost: false,
         };
     },
@@ -320,63 +322,69 @@ export default {
             this.campaignStartDateTime = `${this.startDate}`;
             this.campaignEndDateTime = `${this.endDate}`;
 
+            if (end < start) {
+                console.error("End date is before start date");
+                return;
+            }
+
+            // Calculate number of days
             const startDay = new Date(start);
             startDay.setHours(0, 0, 0, 0);
             const endDay = new Date(end);
             endDay.setHours(0, 0, 0, 0);
-            
             const diffTime = Math.abs(endDay - startDay);
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            
             const daysToProcess = diffDays + 1;
 
             this.postCards = [];
 
+            // Generate posts for each day
             for (let i = 0; i < daysToProcess; i++) {
                 const currentDate = new Date(start);
                 currentDate.setDate(start.getDate() + i);
-                
-                const endCopy = new Date(end);
-                const currentDayCopy = new Date(currentDate);
-                
-                currentDayCopy.setHours(0, 0, 0, 0);
-                endCopy.setHours(0, 0, 0, 0);
-                
-                if (currentDayCopy > endCopy) {
+                currentDate.setHours(0, 0, 0, 0);
+
+                // Skip if the current date is after the end date
+                if (currentDate > endDay) {
                     continue;
                 }
 
+                // Determine the time window for this day
+                let dayStart, dayEnd;
+                if (i === 0) {
+                    dayStart = new Date(start);
+                } else {
+                    dayStart = new Date(currentDate);
+                }
+
+                if (currentDate.getTime() === endDay.getTime()) {
+                    dayEnd = new Date(end);
+                } else {
+                    dayEnd = new Date(currentDate);
+                    dayEnd.setHours(23, 59, 59, 999);
+                }
+
+                if (dayEnd <= dayStart) {
+                    continue;
+                }
+
+                const durationMs = dayEnd - dayStart;
+                const intervalMs = durationMs / Math.max(this.frequenceParJour, 1);
+
                 for (let j = 0; j < this.frequenceParJour; j++) {
                     let postDateTime;
-                    
                     if (i === 0 && j === 0) {
-                        postDateTime = new Date(this.campaignStartDateTime);
+                        postDateTime = new Date(start);
                     } else {
-                        const businessHours = 8;
-                        const startHour = 9;
-                        
-                        let timeSlot;
-                        if (this.frequenceParJour === 1) {
-                            timeSlot = 12;
-                        } else {
-                            timeSlot = startHour + (businessHours / (this.frequenceParJour - 1)) * j;
-                        }
-                        
-                        const hours = Math.floor(timeSlot);
-                        const minutes = Math.floor((timeSlot % 1) * 60);
+                        postDateTime = new Date(dayStart.getTime() + j * intervalMs);
+                    }
 
-                        postDateTime = new Date(currentDate);
-                        postDateTime.setHours(hours, minutes, 0, 0);
-                        
-                        if (currentDayCopy.getTime() === endCopy.getTime()) {
-                            const endDateTime = new Date(end);
-                            if (postDateTime > endDateTime) {
-                                continue;
-                            }
-                        }
+                    if (postDateTime > end) {
+                        continue;
                     }
 
                     this.postCards.push({
+                        tempId: `post-${i}-${j}-${Date.now()}`,
                         scheduledDateTime: this.toLocalISOString(postDateTime),
                         type: "text",
                         content: {
@@ -397,6 +405,7 @@ export default {
             this.currentStep = 3;
         },
 
+
         formatDateTime(date) {
             const hours = String(date.getHours()).padStart(2, '0');
             const minutes = String(date.getMinutes()).padStart(2, '0');
@@ -404,8 +413,16 @@ export default {
         },
 
         editPost(post) {
-            this.selectedPost = post;
+            this.selectedPost = { ...post };
+            // Preserve the content object and file reference
+            if (post.content) {
+                this.selectedPost.content = { ...post.content };
+                if (post.content.file) {
+                    this.selectedPost.content.file = post.content.file;
+                }
+            }
             this.isPostModalOpen = true;
+            this.addingNewPost = false;
         },
         
         closePostModal() {
@@ -427,21 +444,14 @@ export default {
         },
 
         savePostChanges(updatedPost) {
+            const now = new Date();
             const scheduled = new Date(updatedPost.scheduledDateTime);
             const start = new Date(this.campaignStartDateTime);
             const end = new Date(this.campaignEndDateTime);
 
-            if (this.addingNewPost) {
-                this.postCards.push(updatedPost);
-            } else {
-                const index = this.postCards.findIndex(p => 
-                    p.scheduledDateTime === this.selectedPost.scheduledDateTime &&
-                    p.type === this.selectedPost.type
-                );
-                
-                if (index !== -1) {
-                    this.postCards[index] = updatedPost;
-                }
+            if (scheduled < now) {
+                this.postModalError = "La date de publication ne peut pas être dans le passé!";
+                return;
             }
 
             if (scheduled < start || scheduled > end) {
@@ -467,8 +477,45 @@ export default {
                 }
             }
 
+            // Create a shallow copy while preserving the file reference
+            const postToSave = { ...updatedPost };
+            if (updatedPost.content) {
+                postToSave.content = { ...updatedPost.content };
+                if (updatedPost.content.file) {
+                    postToSave.content.file = updatedPost.content.file;
+                }
+            }
+
+            if (this.addingNewPost) {
+                if (!postToSave.tempId) {
+                    postToSave.tempId = `post-new-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+                }
+                this.postCards.push(postToSave);
+                this.addingNewPost = false;
+            } else {
+                const index = this.postCards.findIndex(p => {
+                    if (postToSave.id && p.id === postToSave.id) {
+                        return true;
+                    }
+                    if (postToSave.tempId && p.tempId === postToSave.tempId) {
+                        return true;
+                    }
+                    return false;
+                });
+
+                if (index !== -1) {
+                    this.postCards.splice(index, 1, postToSave);
+                } else {
+                    console.error("Could not find post to update:", postToSave);
+                }
+            }
+
             this.postModalError = "";
             this.closePostModal();
+        },
+
+        deletePost(id) {
+            this.postCards = this.postCards.filter(post => post.id !== id && post.tempId !== id);
         },
 
         async submitAllPosts() {
@@ -573,6 +620,10 @@ export default {
                     binaryFormData.append("upload_url", response.data.uploadUrl);
                     binaryFormData.append("media", post.content.file);
 
+                    console.log(this.selectedAccount.linkedin_token)
+                    console.log(response.data.uploadUrl);
+                    console.log(post.content.file);
+
                     const binaryResponse = await axios.post("/linkedin/upload-media-binary", binaryFormData, {
                             headers: {
                                 "Content-Type": "multipart/form-data",
@@ -594,6 +645,7 @@ export default {
                 throw error;
             }
         },
+
 
         closeSuccessPopup() {
             this.showSuccessPopup = false;

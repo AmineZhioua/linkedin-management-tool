@@ -4,7 +4,7 @@
             <div class="flex justify-between align-items-center mb-4">
                 <h3 class="text-lg font-semibold mb-0">Modifier le Post</h3>
                 <button 
-                    @click="onClose" 
+                    @click="closeModal" 
                     class="text-gray-500 text-3xl"
                 >
                     &times;
@@ -16,7 +16,6 @@
                 <i class="fa-solid fa-circle-exclamation mr-3 text-xl" style="color: red;"></i>
                 <p class="text-red-500 text-sm mb-0">{{ errorMessage }}</p>
             </div>
-
 
             <div v-if="editedPost" class="mb-4">
                 <div class="flex items-center gap-2 mb-4">
@@ -61,12 +60,13 @@
                 <div v-if="editedPost.type === 'image' || editedPost.type === 'video'">
                     <input
                         type="file"
-                        @change="(e) => handleFileUpload(e)"
+                        @change="handleFileUpload"
                         :accept="editedPost.type === 'image' ? 'image/*' : 'video/*'"
                         class="w-full border rounded-lg p-2 mb-2"
+                        ref="fileInput"
                     />
                     <p v-if="editedPost.content.file" class="mt-2 mb-0 text-sm text-gray-600">
-                        Fichier sélectionné : {{ editedPost.content.fileName || editedPost.content.file.name }}
+                        Fichier sélectionné : {{ editedPost.content.fileName || (editedPost.content.file && editedPost.content.file.name) }}
                     </p>
                     <textarea
                         v-model="editedPost.content.caption"
@@ -106,16 +106,22 @@
                 </div>
             </div>
 
-            <div class="flex justify-end gap-2">
+            <div class="flex justify-between gap-2">
                 <button 
-                    @click="onClose" 
+                    @click="closeModal" 
                     class="bg-gray-300 text-black py-2 px-4 rounded-lg"
                 >
                     Annuler
                 </button>
-                <button @click="saveChanges" class="bg-blue-500 text-white py-2 px-4 rounded-lg">
-                    Enregistrer
-                </button>
+                <div class="flex gap-2">
+                    <button class="bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-400" @click="deletePost">
+                        Supprimer
+                    </button>
+
+                    <button @click="saveChanges" class="bg-blue-500 text-white py-2 px-4 rounded-lg">
+                        Enregistrer
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -131,51 +137,100 @@ export default {
         isOpen: Boolean,
         onClose: Function,
         onSave: Function,
+        onDelete: Function,
         errorMessage: String,
         campaignStartDateTime: String,
-        campaignEndDateTime: String
+        campaignEndDateTime: String,
     },
 
     data() {
         return {
-            editedPost: null
+            editedPost: null,
         };
     },
 
     watch: {
-        post: {
-            immediate: true,
-            handler(newPost) {
-                if (newPost) {
-                    this.editedPost = this.deepCopyPost(newPost);
-                }
+        post(newPost) {
+            if (newPost) {
+                this.editedPost = this.deepCopyPost(newPost);
+            } else {
+                this.editedPost = null;
             }
+        },
+        
+        isOpen(newVal) {
+            if (newVal && this.post) {
+                // When modal opens, create a fresh copy of the post
+                this.editedPost = this.deepCopyPost(this.post);
+                
+                // Reset file input when opening modal
+                this.$nextTick(() => {
+                    if (this.$refs.fileInput) {
+                        this.$refs.fileInput.value = '';
+                    }
+                });
+            }
+        }
+    },
+    
+    mounted() {
+        if (this.post) {
+            this.editedPost = this.deepCopyPost(this.post);
         }
     },
 
     methods: {
         deepCopyPost(post) {
-            const copy = { ...post };
-            
-            copy.content = { ...post.content };
-            
-            if (post.content.file) {
-                copy.content.file = post.content.file;
-                copy.content.fileName = post.content.file.name;
-            }
-            
-            return copy;
-        },
+    if (!post) return null;
+    
+    // Log the file object and check if it's a File instance
+    console.log("deepCopyPost: post.content.file =", post.content.file);
+    if (post.content?.file) {
+        console.log("Is File:", post.content.file instanceof File);
+        console.log("File name:", post.content.file.name);
+    }
+    
+    const copy = {
+        id: post.id,
+        tempId: post.tempId,
+        scheduledDateTime: post.scheduledDateTime,
+        type: post.type,
+        content: {
+            text: post.content?.text || "",
+            caption: post.content?.caption || "",
+            url: post.content?.url || "",
+            title: post.content?.title || "",
+            description: post.content?.description || "",
+        }
+    };
+    
+    // Handle file separately since it can't be deep copied with JSON methods
+    if (post.content?.file) {
+        copy.content.file = post.content.file;
+        copy.content.fileName = post.content.fileName || post.content.file.name;
+    } else {
+        copy.content.file = null;
+        copy.content.fileName = null;
+    }
+    
+    return copy;
+},
 
         handleFileUpload(event) {
-            if (event.target.files && event.target.files[0]) {
-                const file = event.target.files[0];
-                this.editedPost.content.file = file;
-                this.editedPost.content.fileName = file.name;
+            const file = event.target.files && event.target.files[0];
+            if (file) {
+                this.editedPost.content.file = file; // Set to the File object
+                this.editedPost.content.fileName = file.name; // Optional: store the name
+            } else {
+                this.editedPost.content.file = null; // Reset if no file is selected
             }
+            // Debug to confirm
+            console.log("Selected file:", this.editedPost.content.file);
         },
 
         resetPostContent() {
+            const currentType = this.editedPost.type;
+            
             this.editedPost.content = {
                 text: "",
                 file: null,
@@ -185,10 +240,39 @@ export default {
                 title: "",
                 description: "",
             };
+            
+            this.$nextTick(() => {
+                if (this.$refs.fileInput) {
+                    this.$refs.fileInput.value = '';
+                }
+            });
         },
 
+        deletePost() {
+            if (this.editedPost.id || this.editedPost.tempId) {
+                this.onDelete(this.editedPost.id || this.editedPost.tempId);
+                this.closeModal();
+            } else {
+                console.error("No ID or tempId for post to delete");
+            }
+        },
+        
         saveChanges() {
-            this.onSave(this.editedPost);
+            // Create a clean copy of the post to save
+            const postToSave = this.deepCopyPost(this.editedPost);
+            
+            // Call the parent's save function with the clean copy
+            this.onSave(postToSave);
+        },
+        
+        closeModal() {
+            // Reset everything before closing
+            if (this.$refs.fileInput) {
+                this.$refs.fileInput.value = '';
+            }
+            
+            // Call the parent's close function
+            this.onClose();
         }
     },
 }
