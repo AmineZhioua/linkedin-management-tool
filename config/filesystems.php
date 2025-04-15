@@ -37,6 +37,12 @@ return [
             'throw' => false,
             'report' => false,
         ],
+        
+        'linkedin_media' => [
+            'driver' => 'local',
+            'root' => storage_path('app/linkedin_temp'),
+            'throw' => false,
+        ],
 
         'public' => [
             'driver' => 'local',

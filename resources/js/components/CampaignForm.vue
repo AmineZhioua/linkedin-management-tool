@@ -149,7 +149,7 @@ export default {
             const now = new Date();
             
             const minStartTime = new Date(now);
-            minStartTime.setHours(minStartTime.getHours() + 1);
+            minStartTime.setHours(minStartTime.getHours());
             
             return selectedStart >= minStartTime;
         },

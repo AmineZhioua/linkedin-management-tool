@@ -31,8 +31,9 @@
                                 'bg-red-200 hover:bg-red-400': post.type === 'video',
                                 'bg-purple-300 hover:bg-purple-400': post.type === 'article'
                             }"
-                            @click.stop="onEditPost(post)"
+                            @click="showPostsPopover(day)"
                         >
+                        <!-- @click.stop="onEditPost(post)" -->
                             {{ getPostTypeIcon(post.type) }} {{ formatTime(post.scheduledDateTime) }}
                         </div>
                     </div>

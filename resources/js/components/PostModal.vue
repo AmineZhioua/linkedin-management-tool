@@ -181,51 +181,42 @@ export default {
 
     methods: {
         deepCopyPost(post) {
-    if (!post) return null;
-    
-    // Log the file object and check if it's a File instance
-    console.log("deepCopyPost: post.content.file =", post.content.file);
-    if (post.content?.file) {
-        console.log("Is File:", post.content.file instanceof File);
-        console.log("File name:", post.content.file.name);
-    }
-    
-    const copy = {
-        id: post.id,
-        tempId: post.tempId,
-        scheduledDateTime: post.scheduledDateTime,
-        type: post.type,
-        content: {
-            text: post.content?.text || "",
-            caption: post.content?.caption || "",
-            url: post.content?.url || "",
-            title: post.content?.title || "",
-            description: post.content?.description || "",
-        }
-    };
-    
-    // Handle file separately since it can't be deep copied with JSON methods
-    if (post.content?.file) {
-        copy.content.file = post.content.file;
-        copy.content.fileName = post.content.fileName || post.content.file.name;
-    } else {
-        copy.content.file = null;
-        copy.content.fileName = null;
-    }
-    
-    return copy;
-},
+            if (!post) return null;
+            
+            const copy = {
+                id: post.id,
+                tempId: post.tempId,
+                scheduledDateTime: post.scheduledDateTime,
+                type: post.type,
+                content: {
+                    text: post.content?.text || "",
+                    caption: post.content?.caption || "",
+                    url: post.content?.url || "",
+                    title: post.content?.title || "",
+                    description: post.content?.description || "",
+                }
+            };
+            
+            // Handle file separately since it can't be deep copied with JSON methods
+            if (post.content?.file) {
+                copy.content.file = post.content.file;
+                copy.content.fileName = post.content.fileName || post.content.file.name;
+            } else {
+                copy.content.file = null;
+                copy.content.fileName = null;
+            }
+            
+            return copy;
+        },
 
         handleFileUpload(event) {
             const file = event.target.files && event.target.files[0];
             if (file) {
-                this.editedPost.content.file = file; // Set to the File object
-                this.editedPost.content.fileName = file.name; // Optional: store the name
+                this.editedPost.content.file = file;
+                this.editedPost.content.fileName = file.name;
             } else {
-                this.editedPost.content.file = null; // Reset if no file is selected
+                this.editedPost.content.file = null;
             }
-            // Debug to confirm
-            console.log("Selected file:", this.editedPost.content.file);
         },
 
         resetPostContent() {
@@ -266,12 +257,10 @@ export default {
         },
         
         closeModal() {
-            // Reset everything before closing
             if (this.$refs.fileInput) {
                 this.$refs.fileInput.value = '';
             }
             
-            // Call the parent's close function
             this.onClose();
         }
     },

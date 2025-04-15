@@ -524,53 +524,33 @@ export default {
 
             try {
                 const sortedPosts = [...this.postCards].sort((a, b) => {
-                    return (
-                        new Date(a.scheduledDateTime) -
-                        new Date(b.scheduledDateTime)
-                    );
+                    return new Date(a.scheduledDateTime) - new Date(b.scheduledDateTime);
                 });
 
                 for (const post of sortedPosts) {
-                    let formData;
+                    let formData = new FormData();
+                    formData.append("linkedin_id", this.selectedAccount.id);
+                    formData.append("type", post.type);
+                    formData.append("scheduled_date", post.scheduledDateTime);
 
                     switch (post.type) {
                         case "text":
-                            formData = {
-                                linkedin_id: this.selectedAccount.id,
-                                type: "text",
-                                content: {
-                                    text: post.content.text.trim(),
-                                },
-                                scheduled_date: post.scheduledDateTime,
-                            };
+                            formData.append("content[text]", post.content.text.trim());
                             break;
 
                         case "image":
                         case "video":
-                            const asset = await this.uploadMedia(post);
-                            formData = {
-                                linkedin_id: this.selectedAccount.id,
-                                type: post.type,
-                                content: {
-                                    asset: asset,
-                                    caption: post.content.caption.trim(),
-                                },
-                                scheduled_date: post.scheduledDateTime,
-                            };
+                            // Store the file and metadata instead of uploading
+                            formData.append("content[file]", post.content.file);
+                            formData.append("content[caption]", post.content.caption.trim());
+                            formData.append("content[original_filename]", post.content.file.name);
                             break;
 
                         case "article":
-                            formData = {
-                                linkedin_id: this.selectedAccount.id,
-                                type: "article",
-                                content: {
-                                    url: post.content.url,
-                                    title: post.content.title,
-                                    description: post.content.description,
-                                    caption: post.content.caption.trim(),
-                                },
-                                scheduled_date: post.scheduledDateTime,
-                            };
+                            formData.append("content[url]", post.content.url);
+                            formData.append("content[title]", post.content.title);
+                            formData.append("content[description]", post.content.description);
+                            formData.append("content[caption]", post.content.caption.trim());
                             break;
 
                         default:
@@ -579,6 +559,7 @@ export default {
 
                     await axios.post("/linkedin/schedule-post", formData, {
                         headers: {
+                            "Content-Type": "multipart/form-data",
                             "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
                         },
                     });
@@ -587,11 +568,9 @@ export default {
                 this.showSuccessPopup = true;
                 this.successMessage = "Tous vos posts ont été programmés avec succès!";
                 this.resetForm();
-
             } catch (error) {
                 console.error("Error submitting posts:", error);
                 this.submissionError = error.response?.data?.message || error.message || "Une erreur s'est produite lors de la publication des posts";
-
             } finally {
                 this.isSubmitting = false;
             }
@@ -617,12 +596,8 @@ export default {
                 if (response.data.status === 200) {
                     const binaryFormData = new FormData();
                     binaryFormData.append("token", this.selectedAccount.linkedin_token);
-                    binaryFormData.append("upload_url", response.data.uploadUrl);
+                    binaryFormData.append("upload_url", response.data.uploadUrl); // Expires in 15 minutes
                     binaryFormData.append("media", post.content.file);
-
-                    console.log(this.selectedAccount.linkedin_token)
-                    console.log(response.data.uploadUrl);
-                    console.log(post.content.file);
 
                     const binaryResponse = await axios.post("/linkedin/upload-media-binary", binaryFormData, {
                             headers: {

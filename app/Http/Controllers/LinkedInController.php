@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Log;
 use App\Models\ScheduledLinkedinPost;
 use App\Jobs\ScheduleLinkedInPost;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Storage;
+
 
 
 class LinkedInController extends Controller
@@ -34,47 +36,62 @@ class LinkedInController extends Controller
         $validated = $request->validate([
             'linkedin_id' => 'required|exists:linkedin_users,id',
             'type' => 'required|in:text,image,video,article',
+            'scheduled_date' => 'required|date|after:now',
             'content' => 'required|array',
-            'scheduled_date' => 'required|date|after:now'
         ]);
 
-        // Additional validation based on post type
         switch ($validated['type']) {
             case 'text':
-                $request->validate([
-                    'content.text' => 'required|string|max:3000',
-                ]);
+                $request->validate(['content.text' => 'required|string|max:3000']);
+                $content = ['text' => $validated['content']['text']];
                 break;
             case 'image':
             case 'video':
                 $request->validate([
-                    'content.asset' => 'required|string',
+                    'content.file' => 'required|file|max:50000',
                     'content.caption' => 'nullable|string|max:3000',
+                    'content.original_filename' => 'required|string',
                 ]);
+                // Store the file temporarily
+                $file = $request->file('content.file');
+                $path = $file->store('', 'linkedin_media');
+                Log::info('Stored LinkedIn media', [
+                    'path' => $path,
+                    'full_path' => Storage::disk('linkedin_media')->path($path)
+                ]); $path = $file->store('', 'linkedin_media');
+                $content = [
+                    'file_path' => $path,
+                    'caption' => $validated['content']['caption'] ?? '',
+                    'original_filename' => $validated['content']['original_filename'],
+                ];
                 break;
             case 'article':
                 $request->validate([
-                    'content.url' => 'required|url',  // Article URL for article posts
-                    'content.title' => 'required|string|max:200',  // Article title
-                    'content.description' => 'required|string|max:500',  // Article description
-                    'content.caption' => 'nullable|string|max:3000',  // Optional caption for article
+                    'content.url' => 'required|url',
+                    'content.title' => 'required|string|max:200',
+                    'content.description' => 'required|string|max:500',
+                    'content.caption' => 'nullable|string|max:3000',
                 ]);
+                $content = [
+                    'url' => $validated['content']['url'],
+                    'title' => $validated['content']['title'],
+                    'description' => $validated['content']['description'],
+                    'caption' => $validated['content']['caption'] ?? '',
+                ];
                 break;
             default:
                 abort(400, 'Invalid post type');
         }
 
-        // Create the scheduled post
         $post = ScheduledLinkedinPost::create([
             'user_id' => Auth::id(),
             'linkedin_user_id' => $validated['linkedin_id'],
             'type' => $validated['type'],
-            'content' => json_encode($validated['content']),
+            'content' => json_encode($content),
             'scheduled_time' => $validated['scheduled_date'],
-            'status' => 'queued'
+            'status' => 'queued',
         ]);
 
-        // Dispatch the job to post it at the scheduled time
         ScheduleLinkedInPost::dispatch($post)->delay(Carbon::parse($validated['scheduled_date']));
 
         return response()->json(['message' => 'Post scheduled successfully']);
@@ -535,18 +552,24 @@ class LinkedInController extends Controller
 
         // Handle the response
         if ($httpCode >= 200 && $httpCode < 300) {
-            return [
-                'status' => 'success',
-                'http_code' => $httpCode,
-                'data' => $responseData,
+            $responseArray = [
+                'status' => $httpCode,
+                'message' => ($httpCode >= 200 && $httpCode < 300) ? 'Post shared successfully' : ($responseData['message'] ?? 'Unknown error'),
+                'data' => $responseData
             ];
+
+            if (request()->isMethod('post')) {
+                return response()->json($responseArray);
+            } else {
+                return $responseArray;
+            }
         } else {
             Log::error('LinkedIn Share Media Error', [
                 'http_code' => $httpCode,
                 'response' => $responseData,
             ]);
             return [
-                'status' => 'error',
+                'status' => $httpCode,
                 'http_code' => $httpCode,
                 'error' => $responseData['message'] ?? 'Unknown error',
             ];
