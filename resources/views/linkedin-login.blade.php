@@ -31,7 +31,7 @@
         <div class="logo-container">
             <a href="{{ route('welcome') }}" class="d-flex align-items-center gap-2">
                 <img src="/build/assets/lemonade-logo.svg" alt="Lemonade Logo" height="40" width="40"/>
-                <img src="/build/assets/icons/lemonade-black.svg" alt="Lemonade Text" class="lemonade-text" height="40" width="100"/>
+                <img src="/build/assets/icons/Lemonade-black.svg" alt="Lemonade Text" class="lemonade-text" height="40" width="100"/>
             </a>
         </div>
 
@@ -93,7 +93,7 @@
                         <!-- "Ajouter un compte" Button -->
                         <button 
                             class="flex align-items-center px-3 py-2 rounded-full border cursor-pointer gap-2 mt-2 ajout-btn"
-                            onclick="showAddAccountPopup()"
+                            onclick="connectLink()"
                         >
                             <span class="text-decoration-none text-black flex align-items-center gap-1">
                                 <img src="/build/assets/icons/add.svg" alt="add-icon" height="25" width="25"/>
@@ -214,6 +214,21 @@
             confirmBtn.onclick = function() {
                 window.location.href = "{{ route('linkedin.delete') }}?linkedin_id=" + linkedinId;
             };
+        }
+
+        function connectLink() {
+            // Open a new tab
+            let newTab = window.open("https://www.linkedin.com/m/logout", "_blank");
+
+            // Wait a bit, then close it and redirect
+            setTimeout(() => {
+                if (newTab) {
+                    newTab.close(); // Close the new tab
+                }
+                // Redirect current page
+                window.location.href = "/linkedin/auth";
+            }, 2000); // Wait 3 seconds (adjust as needed)
+
         }
     </script>
 </body>
