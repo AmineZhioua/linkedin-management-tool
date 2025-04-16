@@ -20,6 +20,7 @@ return new class extends Migration
             $table->text('linkedin_picture')->nullable();
             $table->text('linkedin_token')->nullable();
             $table->text('linkedin_refresh_token')->nullable();
+            $table->dateTime('expire_at');
             $table->timestamps();
         });
     }

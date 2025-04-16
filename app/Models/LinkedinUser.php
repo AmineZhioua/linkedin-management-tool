@@ -14,7 +14,10 @@ class LinkedinUser extends Model
         'linkedin_picture',
         'linkedin_token',
         'linkedin_refresh_token',
+        'expire_at',
     ];
+
+    protected $dates = ['expire_at'];
 
     public function user()
     {
