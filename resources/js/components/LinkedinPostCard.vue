@@ -582,8 +582,8 @@ export default {
                 formData.append("media", post.content.file);
                 formData.append("type", post.type);
                 formData.append("caption", post.content.caption.trim());
-                formData.append("token", this.selectedAccount.linkedin_token); // Add token
-                formData.append("linkedin_id", this.selectedAccount.linkedin_id); // Add linkedin_id
+                formData.append("token", this.selectedAccount.linkedin_token);
+                formData.append("linkedin_id", this.selectedAccount.linkedin_id);
 
                 const response = await axios.post("/linkedin/registermedia", formData, {
                         headers: {

@@ -250,8 +250,7 @@ class LinkedInController extends Controller
 
 
     // Function to post only text in LinkedIn
-    public function postTextOnly(array $data)
-    {
+    public function postTextOnly(array $data) {
         $postUrl = "https://api.linkedin.com/v2/ugcPosts";
 
         $validated = $data;
@@ -553,34 +552,24 @@ class LinkedInController extends Controller
         // Handle the response
         if ($httpCode >= 200 && $httpCode < 300) {
             $responseArray = [
-                'status' => $httpCode,
-                'message' => ($httpCode >= 200 && $httpCode < 300) ? 'Post shared successfully' : ($responseData['message'] ?? 'Unknown error'),
+                'status' => 200,
+                'message' => 'Post shared successfully',
                 'data' => $responseData
             ];
-
-            if (request()->isMethod('post')) {
-                return response()->json($responseArray);
-            } else {
-                return $responseArray;
-            }
+    
+            return request()->isMethod('post') ? response()->json($responseArray) : $responseArray;
         } else {
-            Log::error('LinkedIn Share Media Error', [
-                'http_code' => $httpCode,
-                'response' => $responseData,
-            ]);
-            return [
+            $errorResponse = [
                 'status' => $httpCode,
-                'http_code' => $httpCode,
-                'error' => $responseData['message'] ?? 'Unknown error',
+                'error' => $responseData['message'] ?? 'Unknown error'
             ];
+            return request()->isMethod('post') ? response()->json($errorResponse, $httpCode) : $errorResponse;
         }
     }
 
 
     // Function to Share Article on LinkedIn
-    public function shareArticle(array $data)
-    {
-        // Validate only if called from an HTTP POST request
+    public function shareArticle(array $data) {
         if (request()->isMethod('post')) {
             $validated = validator($data, [
                 'token' => 'required|string',
@@ -591,7 +580,6 @@ class LinkedInController extends Controller
                 'article_description' => 'required|string|max:500',
             ])->validate();
         } else {
-            // Use the provided data directly (e.g., from the job)
             $validated = $data;
         }
 
@@ -648,29 +636,18 @@ class LinkedInController extends Controller
         curl_close($curl);
 
         if ($httpCode >= 200 && $httpCode < 300) {
-            $result = [
-                'status' => 'success',
-                'http_code' => $httpCode,
-                'data' => $responseData,
+            $responseArray = [
+                'status' => 200,
+                'message' => 'Post shared successfully',
+                'data' => $responseData
             ];
         } else {
-            Log::error('LinkedIn Share Article Error', [
-                'http_code' => $httpCode,
-                'response' => $responseData,
-            ]);
-            $result = [
-                'status' => 'error',
-                'http_code' => $httpCode,
-                'error' => $responseData['message'] ?? 'Unknown error',
+            $responseArray = [
+                'status' => $httpCode,
+                'error' => $responseData['message'] ?? 'Unknown error'
             ];
         }
-
-        // If called from an HTTP request, return a JSON response
-        if (request()->isMethod('post')) {
-            return response()->json($result, $httpCode >= 200 && $httpCode < 300 ? 200 : 400);
-        }
-
-        // Otherwise, return the array for the job to process
-        return $result;
+        
+        return request()->isMethod('post') ? response()->json($responseArray) : $responseArray;
     }
 }
