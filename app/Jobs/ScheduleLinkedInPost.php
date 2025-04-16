@@ -128,7 +128,8 @@ class ScheduleLinkedInPost implements ShouldQueue
                 'errorMsg' => $responseData['error'] ?? 'not_set'
             ]);
 
-            $httpCode = isset($responseData['status']) ? (int) $responseData['status'] : 500;
+            // Fix: Use 'http_code' instead of 'status' for the HTTP status code
+            $httpCode = isset($responseData['http_code']) ? (int) $responseData['http_code'] : 500;
             $errorMsg = $responseData['error'] ?? 'Unknown error';
 
             if ($httpCode >= 200 && $httpCode < 300) {
@@ -138,7 +139,7 @@ class ScheduleLinkedInPost implements ShouldQueue
                     Storage::disk('linkedin_media')->delete($content['file_path']);
                 }
             } else {
-                Log::error("Failed to post", ['code' => $httpCode, 'error' => $errorMsg]);
+                Log::error("Failed to post", ['response' => $responseData, 'error' => $errorMsg]);
                 $post->update(['status' => 'failed', 'error' => $errorMsg]);
             }
         } catch (\Exception $e) {

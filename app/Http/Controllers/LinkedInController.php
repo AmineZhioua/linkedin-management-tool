@@ -645,6 +645,7 @@ class LinkedInController extends Controller
         if ($httpCode >= 200 && $httpCode < 300) {
             $responseArray = [
                 'status' => 200,
+                'http_code' => $httpCode,
                 'message' => 'Post shared successfully',
                 'data' => $responseData
             ];
@@ -663,8 +664,7 @@ class LinkedInController extends Controller
     /**
      * Share an article on LinkedIn.
      */
-    public function shareArticle(array $data)
-    {
+    public function shareArticle(array $data) {
         if (request()->isMethod('post')) {
             $validated = validator($data, [
                 'token' => 'required|string',
@@ -748,47 +748,21 @@ class LinkedInController extends Controller
             ];
         }
 
-        if (request()->isMethod('post')) {
-            return response()->json($result, $httpCode >= 200 && $httpCode < 300 ? 200 : 400);
-        }
-
-        return $result;
-    }
-
-    /**
-     * Refresh the LinkedIn access token using the refresh token.
-     */
-    private function refreshToken($refreshToken)
-    {
-        $response = Http::post('https://www.linkedin.com/oauth/v2/accessToken', [
-            'grant_type' => 'refresh_token',
-            'refresh_token' => $refreshToken,
-            'client_id' => config('services.linkedin.client_id'),
-            'client_secret' => config('services.linkedin.client_secret'),
-        ]);
-
-        if ($response->successful()) {
-            $data = $response->json();
-            return [
-                'access_token' => $data['access_token'],
-                'expires_in' => $data['expires_in'],
-                'refresh_token' => $data['refresh_token'] ?? $refreshToken,
+        if ($httpCode >= 200 && $httpCode < 300) {
+            $responseArray = [
+                'status' => 200,
+                'http_code' => $httpCode,
+                'message' => 'Post shared successfully',
+                'data' => $responseData
             ];
+    
+            return request()->isMethod('post') ? response()->json($responseArray) : $responseArray;
+        } else {
+            $errorResponse = [
+                'status' => $httpCode,
+                'error' => $responseData['message'] ?? 'Unknown error'
+            ];
+            return request()->isMethod('post') ? response()->json($errorResponse, $httpCode) : $errorResponse;
         }
-
-        Log::error('Failed to refresh LinkedIn token', ['response' => $response->json()]);
-        return null;
-    }
-
-    /**
-     * Validate the LinkedIn access token with the API.
-     */
-    private function validateToken($token)
-    {
-        $response = Http::withHeaders([
-            'Authorization' => "Bearer $token",
-        ])->get('https://api.linkedin.com/v2/me');
-
-        return $response->successful();
     }
 }

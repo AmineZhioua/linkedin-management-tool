@@ -475,6 +475,7 @@ export default {
                     description: "",
                 },
             };
+
             this.postCards.push(newPost);
             this.editPost(newPost); // Open the edit modal for the new post
         },
