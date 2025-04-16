@@ -33,7 +33,6 @@
                             }"
                             @click="showPostsPopover(day)"
                         >
-                        <!-- @click.stop="onEditPost(post)" -->
                             {{ getPostTypeIcon(post.type) }} {{ formatTime(post.scheduledDateTime) }}
                         </div>
                     </div>
@@ -42,17 +41,17 @@
 
             <!-- Posts List Element Popover -->
             <div v-if="showPopover" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click="closePopover">
-                <div class="bg-white shadow-lg rounded-lg p-4 z-10 max-w-md w-full" @click.stop>
+                <div class="bg-white shadow-lg flex flex-col rounded-lg p-4 z-10 max-w-md w-full min-h-[400px]" @click.stop>
                     <div class="flex justify-between align-items-center">
                         <h3 class="font-semibold text-lg">Posts du {{ selectedDay }} {{ getMonthName(month) }} {{ year }}</h3>
                         <button 
                             class="text-black text-3xl"
                             @click="closePopover"
                         >
-                            &times;
+                            ×
                         </button>
                     </div>
-                    <div class="mt-4">
+                    <div class="mt-4 flex-1">
                         <div v-if="getPostsForDate(selectedDay).length === 0" class="text-center text-gray-500 py-4">
                             Aucun post prévu
                         </div>
@@ -76,12 +75,19 @@
                             </div>
                         </div>
                     </div>
-                    <div class="mt-4 flex justify-end">
+                    <div class="mt-4 flex justify-between">
                         <button 
-                            class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                            class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
                             @click="closePopover"
                         >
                             Fermer
+                        </button>
+                        <button 
+                            class="bg-blue-500 flex gap-2 text-white px-4 py-2 rounded hover:bg-blue-600"
+                            @click="addPostForDay"
+                        >
+                            <img src="/build/assets/icons/add-white.svg" alt="Add Icon">
+                            <span>Ajouter un post</span>
                         </button>
                     </div>
                 </div>
@@ -140,10 +146,8 @@ export default {
         },
         
         showPostsPopover(day) {
-            if (this.getPostsForDate(day).length > 0) {
-                this.selectedDay = day;
-                this.showPopover = true;
-            }
+            this.selectedDay = day;
+            this.showPopover = true;
         },
         
         closePopover() {
@@ -156,6 +160,10 @@ export default {
                 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
             ];
             return months[monthIndex];
+        },
+
+        addPostForDay() {
+            this.$emit('add-post', this.selectedDay);
         },
     }
 }

@@ -120,6 +120,7 @@ class ScheduleLinkedInPost implements ShouldQueue
 
             // Uniform response parsing
             Log::info("Raw Response Before Parsing", ['response' => $response]);
+            
             $responseData = is_array($response) ? $response : $response->getData(true);
             Log::info("Parsed Response Data", [
                 'responseData' => $responseData,

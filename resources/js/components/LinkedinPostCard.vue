@@ -136,6 +136,7 @@
                         :month="currentMonth"
                         :year="currentYear"
                         :onEditPost="editPost"
+                        @add-post="handleAddPost"
                     />
                 </div>
                 
@@ -275,19 +276,6 @@ export default {
             this.selectedAccount = account;
         },
 
-        updateFormData(formData) {
-            this.startDate = formData.startDate;
-            this.endDate = formData.endDate;
-            this.selectedCible = formData.selectedCible;
-            this.frequenceParJour = formData.frequenceParJour;
-            this.descriptionCampagne = formData.descriptionCampagne;
-        },
-
-        updateCampaignDates({ startDate, endDate }) {
-            this.startDate = startDate;
-            this.endDate = endDate;
-        },
-
         nextStep() {
             if(this.currentStep === 2) {
                 if(!this.isStep2Valid) {
@@ -305,16 +293,7 @@ export default {
             }
         },
 
-        toLocalISOString(date) { // THIS FUNCTION WAS CREATED TO FIX THE 'toISOString()' ERROR
-            const pad = (num) => String(num).padStart(2, "0");
-            const year = date.getFullYear();
-            const month = pad(date.getMonth() + 1);
-            const day = pad(date.getDate());
-            const hours = pad(date.getHours());
-            const minutes = pad(date.getMinutes());
-            return `${year}-${month}-${day}T${hours}:${minutes}`;
-        },
-
+        // GENERATE, DELETE & SAVE POST CARDS METHODS
         generatePostCards() {
             const start = new Date(this.startDate);
             const end = new Date(this.endDate);
@@ -405,44 +384,6 @@ export default {
             this.currentStep = 3;
         },
 
-
-        formatDateTime(date) {
-            const hours = String(date.getHours()).padStart(2, '0');
-            const minutes = String(date.getMinutes()).padStart(2, '0');
-            return `${date.toISOString().split('T')[0]}T${hours}:${minutes}`;
-        },
-
-        editPost(post) {
-            this.selectedPost = { ...post };
-            // Preserve the content object and file reference
-            if (post.content) {
-                this.selectedPost.content = { ...post.content };
-                if (post.content.file) {
-                    this.selectedPost.content.file = post.content.file;
-                }
-            }
-            this.isPostModalOpen = true;
-            this.addingNewPost = false;
-        },
-        
-        closePostModal() {
-            this.isPostModalOpen = false;
-            this.selectedPost = null;
-        },
-
-        // Refine the date output for the campaign start & end dates
-        campaignDateTimeOutput(date) {
-            const dateTime = new Date(date);
-            
-            const year = dateTime.getFullYear();
-            const month = String(dateTime.getMonth() + 1).padStart(2, '0');
-            const day = String(dateTime.getDate()).padStart(2, '0');
-            const hours = String(dateTime.getHours()).padStart(2, '0');
-            const minutes = String(dateTime.getMinutes()).padStart(2, '0');
-            
-            return `${month}/${day}/${year} ${hours}:${minutes}`;
-        },
-
         savePostChanges(updatedPost) {
             const now = new Date();
             const scheduled = new Date(updatedPost.scheduledDateTime);
@@ -518,15 +459,98 @@ export default {
             this.postCards = this.postCards.filter(post => post.id !== id && post.tempId !== id);
         },
 
+        // POSTMODAL.VUE RELATED METHODS
+        handleAddPost(day) {
+            const selectedDate = new Date(this.currentYear, this.currentMonth, day);
+            const newPost = {
+                tempId: `post-new-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                scheduledDateTime: this.toLocalISOString(selectedDate),
+                type: "text",
+                content: {
+                    text: "",
+                    file: null,
+                    caption: "",
+                    url: "",
+                    title: "",
+                    description: "",
+                },
+            };
+            this.postCards.push(newPost);
+            this.editPost(newPost); // Open the edit modal for the new post
+        },
+
+        editPost(post) {
+            this.selectedPost = { ...post };
+            // Preserve the content object and file reference
+            if (post.content) {
+                this.selectedPost.content = { ...post.content };
+                if (post.content.file) {
+                    this.selectedPost.content.file = post.content.file;
+                }
+            }
+            this.isPostModalOpen = true;
+            this.addingNewPost = false;
+        },
+        
+        closePostModal() {
+            this.isPostModalOpen = false;
+            this.selectedPost = null;
+        },
+
+        // SUBMIT, VALIDATE & SCHEDULE MEDIA METHODS
         async submitAllPosts() {
             this.isSubmitting = true;
             this.submissionError = null;
+            this.errorPosts = [];
 
             try {
+                // Check token validity first before proceeding with any operations
+                if (!this.isTokenValid()) {
+                    this.submissionError = "Votre jeton d'accès LinkedIn a expiré. Veuillez reconnecter votre compte.";
+                    this.isSubmitting = false;
+                    return;
+                }
+
                 const sortedPosts = [...this.postCards].sort((a, b) => {
                     return new Date(a.scheduledDateTime) - new Date(b.scheduledDateTime);
                 });
 
+                // Pre-validate all media posts
+                const mediaValidationResults = [];
+                for (const post of sortedPosts) {
+                    if (post.type === 'image' || post.type === 'video') {
+                        const validationResult = await this.validateAndUploadMedia(post);
+                        mediaValidationResults.push(validationResult);
+                        
+                        // Check for token expiration immediately if encountered during validation
+                        if (!validationResult.success && validationResult.tokenExpired) {
+                            this.submissionError = validationResult.error;
+                            this.isSubmitting = false;
+                            return;
+                        }
+                    }
+                }
+
+                // Check if any media validations failed
+                const failedMedia = mediaValidationResults.filter(result => !result.success);
+                if (failedMedia.length > 0) {
+                    this.errorPosts = failedMedia.map(result => ({
+                        type: result.post.type,
+                        scheduledTime: result.post.scheduledDateTime,
+                        error: result.error
+                    }));
+                    
+                    // Provide more detailed error summary
+                    if (failedMedia.length === 1) {
+                        this.submissionError = `1 publication n'a pas pu être programmée: ${failedMedia[0].error}`;
+                    } else {
+                        this.submissionError = `${failedMedia.length} publications n'ont pas pu être programmées. Veuillez consulter les détails de l'erreur ci-dessous.`;
+                    }
+                    this.isSubmitting = false;
+                    return;
+                }
+
+                // Schedule all posts since everything passed validation
                 for (const post of sortedPosts) {
                     let formData = new FormData();
                     formData.append("linkedin_id", this.selectedAccount.id);
@@ -540,10 +564,12 @@ export default {
 
                         case "image":
                         case "video":
-                            // Store the file and metadata instead of uploading
                             formData.append("content[file]", post.content.file);
                             formData.append("content[caption]", post.content.caption.trim());
                             formData.append("content[original_filename]", post.content.file.name);
+                            if (post.content.asset) {
+                                formData.append("content[asset]", post.content.asset);
+                            }
                             break;
 
                         case "article":
@@ -554,7 +580,7 @@ export default {
                             break;
 
                         default:
-                            throw new Error("Invalid post type");
+                            throw new Error("Type de publication invalide");
                     }
 
                     await axios.post("/linkedin/schedule-post", formData, {
@@ -570,14 +596,42 @@ export default {
                 this.resetForm();
             } catch (error) {
                 console.error("Error submitting posts:", error);
-                this.submissionError = error.response?.data?.message || error.message || "Une erreur s'est produite lors de la publication des posts";
+                
+                // Check if the error is related to token expiration
+                if (error.response?.status === 401 || 
+                    (error.response?.data?.error && error.response?.data?.error.toLowerCase().includes("token")) ||
+                    (error.message && error.message.toLowerCase().includes("token"))) {
+                    this.submissionError = "Votre jeton d'accès LinkedIn a expiré. Veuillez reconnecter votre compte.";
+                } else if (error.response?.data?.error) {
+                    this.submissionError = error.response.data.error;
+                } else if (error.response?.data?.message) {
+                    this.submissionError = error.response.data.message;
+                } else if (error.message) {
+                    this.submissionError = error.message;
+                } else {
+                    this.submissionError = "Une erreur s'est produite lors de la publication des posts";
+                }
             } finally {
                 this.isSubmitting = false;
             }
         },
 
-        async uploadMedia(post) {
+        async validateAndUploadMedia(post) {
             try {
+                if (post.type !== 'image' && post.type !== 'video') {
+                    return { success: true, post };
+                }
+                
+                // Check token validity before proceeding with media upload
+                if (!this.isTokenValid()) {
+                    return {
+                        success: false,
+                        post,
+                        error: "Votre jeton d'accès LinkedIn a expiré. Veuillez reconnecter votre compte.",
+                        tokenExpired: true
+                    };
+                }
+
                 const formData = new FormData();
                 formData.append("media", post.content.file);
                 formData.append("type", post.type);
@@ -585,46 +639,147 @@ export default {
                 formData.append("token", this.selectedAccount.linkedin_token);
                 formData.append("linkedin_id", this.selectedAccount.linkedin_id);
 
-                const response = await axios.post("/linkedin/registermedia", formData, {
-                        headers: {
-                            "Content-Type": "multipart/form-data",
-                            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
-                        },
+                // Register media
+                const registerResponse = await axios.post("/linkedin/registermedia", formData, {
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                        "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
+                    },
+                });
+
+                if (registerResponse.data.status !== 200) {
+                    if (registerResponse.data.status === 401 || registerResponse.data.token_expired) {
+                        return {
+                            success: false,
+                            post,
+                            error: "Votre jeton d'accès LinkedIn a expiré. Veuillez reconnecter votre compte.",
+                            tokenExpired: true
+                        };
                     }
-                );
-
-                if (response.data.status === 200) {
-                    const binaryFormData = new FormData();
-                    binaryFormData.append("token", this.selectedAccount.linkedin_token);
-                    binaryFormData.append("upload_url", response.data.uploadUrl); // Expires in 15 minutes
-                    binaryFormData.append("media", post.content.file);
-
-                    const binaryResponse = await axios.post("/linkedin/upload-media-binary", binaryFormData, {
-                            headers: {
-                                "Content-Type": "multipart/form-data",
-                                "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
-                            },
-                        }
-                    );
-
-                    if (binaryResponse.data.status === 200) {
-                        return response.data.asset;
-                    } else {
-                        throw new Error("Binary upload failed");
-                    }
-                } else {
-                    throw new Error("Media registration failed");
+                    
+                    const errorDetail = registerResponse.data.error || "Échec de l'enregistrement du média";
+                    return {
+                        success: false,
+                        post,
+                        error: `${errorDetail}`,
+                        errorDetails: registerResponse.data
+                    };
                 }
+
+                // Upload media binary
+                const binaryFormData = new FormData();
+                binaryFormData.append("token", this.selectedAccount.linkedin_token);
+                binaryFormData.append("upload_url", registerResponse.data.uploadUrl);
+                binaryFormData.append("media", post.content.file);
+
+                const binaryResponse = await axios.post("/linkedin/upload-media-binary", binaryFormData, {
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                        "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
+                    },
+                });
+
+                if (binaryResponse.data.status !== 200) {
+                    const errorDetail = binaryResponse.data.error || "Échec du téléchargement du média";
+                    return {
+                        success: false,
+                        post,
+                        error: `Erreur lors du téléchargement du fichier ${post.type}: ${errorDetail}`,
+                        errorDetails: binaryResponse.data
+                    };
+                }
+
+                post.content.asset = registerResponse.data.asset;
+                return { success: true, post };
             } catch (error) {
-                console.error("Error uploading media:", error);
-                throw error;
+                // Handle network errors and other exceptions
+                if (error.response?.status === 401 || 
+                    (error.response?.data?.error && error.response?.data?.error.includes("token")) ||
+                    error.message.includes("token") || 
+                    error.message.includes("unauthorized")) {
+                    return {
+                        success: false,
+                        post,
+                        error: "Votre jeton d'accès LinkedIn a expiré. Veuillez reconnecter votre compte.",
+                        tokenExpired: true
+                    };
+                }
+                
+                // Handle file size errors specifically
+                if (error.response?.status === 413 || 
+                    (error.response?.data?.error && error.response?.data?.error.includes("size"))) {
+                    const fileSize = (post.content.file.size / (1024 * 1024)).toFixed(2);
+                    return {
+                        success: false,
+                        post,
+                        error: `Le fichier ${post.type} (${fileSize}Mo) dépasse la taille limite de LinkedIn. Les images doivent peser moins de 10 Mo et les vidéos moins de 50 Mo.`,
+                        errorDetails: error.response?.data
+                    };
+                }
+
+                // Format other errors in a user-friendly way
+                const errorMessage = error.response?.data?.error || error.message || `Échec du téléchargement ${post.type}`;
+                return {
+                    success: false,
+                    post,
+                    error: `Erreur avec le fichier ${post.type} : ${errorMessage}`,
+                    errorDetails: error.response?.data
+                };
             }
         },
 
+        isTokenValid() {
+            if(!this.selectedAccount) {
+                return false;
+            }
+            const tokenExpirationDate = new Date(this.selectedAccount.expire_at);
+            const now = new Date();
+            
+            return tokenExpirationDate > now;
+        },
 
-        closeSuccessPopup() {
-            this.showSuccessPopup = false;
-            this.successMessage = "";
+        // CAMPAIGNFORM.VUE RELATED METHODS
+        updateFormData(formData) {
+            this.startDate = formData.startDate;
+            this.endDate = formData.endDate;
+            this.selectedCible = formData.selectedCible;
+            this.frequenceParJour = formData.frequenceParJour;
+            this.descriptionCampagne = formData.descriptionCampagne;
+        },
+
+        updateCampaignDates({ startDate, endDate }) {
+            this.startDate = startDate;
+            this.endDate = endDate;
+        },
+
+        // OTHER USED METHODS
+        // Refine the date output for the campaign start & end dates
+        campaignDateTimeOutput(date) {
+            const dateTime = new Date(date);
+            
+            const year = dateTime.getFullYear();
+            const month = String(dateTime.getMonth() + 1).padStart(2, '0');
+            const day = String(dateTime.getDate()).padStart(2, '0');
+            const hours = String(dateTime.getHours()).padStart(2, '0');
+            const minutes = String(dateTime.getMinutes()).padStart(2, '0');
+            
+            return `${month}/${day}/${year} ${hours}:${minutes}`;
+        },
+
+        formatDateTime(date) {
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            return `${date.toISOString().split('T')[0]}T${hours}:${minutes}`;
+        },
+
+        toLocalISOString(date) { // THIS FUNCTION WAS CREATED TO FIX THE 'toISOString()' ERROR
+            const pad = (num) => String(num).padStart(2, "0");
+            const year = date.getFullYear();
+            const month = pad(date.getMonth() + 1);
+            const day = pad(date.getDate());
+            const hours = pad(date.getHours());
+            const minutes = pad(date.getMinutes());
+            return `${year}-${month}-${day}T${hours}:${minutes}`;
         },
 
         resetForm() {
@@ -637,6 +792,11 @@ export default {
             this.frequenceParJour = 1;
             this.descriptionCampagne = "";
             this.postCards = [];
+        },
+
+        closeSuccessPopup() {
+            this.showSuccessPopup = false;
+            this.successMessage = "";
         },
     },
 };

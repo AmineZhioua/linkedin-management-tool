@@ -123,122 +123,119 @@ class LinkedInController extends Controller
      * Handle the callback from LinkedIn and link the account.
      */
 
-public function callback(Request $request)
-{
-    try {
-        $code = $request->query('code');
-        $state = $request->query('state');
+    public function callback(Request $request) {
+        try {
+            $code = $request->query('code');
+            $state = $request->query('state');
 
-        if (!$code || !$state) {
-            return redirect()->route('login-linkedin')
-                ->with('linkedin_error', "Réponse d'autorisation LinkedIn non valide");
-        }
+            if (!$code || !$state) {
+                return redirect()->route('login-linkedin')
+                    ->with('linkedin_error', "Réponse d'autorisation LinkedIn non valide");
+            }
 
-        $client_id = config('services.linkedin.client_id');
-        $client_secret = config('services.linkedin.client_secret');
-        $redirect_uri = route('linkedin.callback');
+            $client_id = config('services.linkedin.client_id');
+            $client_secret = config('services.linkedin.client_secret');
+            $redirect_uri = route('linkedin.callback');
 
-        $response = Http::asForm()->post('https://www.linkedin.com/oauth/v2/accessToken', [
-            'grant_type' => 'authorization_code',
-            'code' => $code,
-            'redirect_uri' => $redirect_uri,
-            'client_id' => $client_id,
-            'client_secret' => $client_secret,
-        ]);
-
-        if ($response->failed()) {
-            return redirect()->route('login-linkedin')
-                ->with('linkedin_error', 'Une erreur s\'est produite! Réessayer plus tard.');
-        }
-
-        $data = $response->json();
-        $access_token = $data['access_token'] ?? null;
-        $refresh_token = $data['refresh_token'] ?? null;
-
-        if (!$access_token) {
-            return redirect()->route('login-linkedin')
-                ->with('linkedin_error', 'Une erreur s\'est produite! Veuillez réessayer plus tard.');
-        }
-
-        $profileResponse = Http::withHeaders([
-            'Authorization' => "Bearer $access_token",
-        ])->get('https://api.linkedin.com/v2/me?projection=(id,localizedFirstName,localizedLastName,profilePicture(displayImage~:playableStreams))');
-
-        if ($profileResponse->failed()) {
-            return redirect()->route('login-linkedin')
-                ->with('linkedin_error', 'Une erreur s\'est produite lors de la récupération des données.');
-        }
-
-        $linkedinUser = $profileResponse->json();
-        $linkedin_id = $linkedinUser['id'] ?? null;
-        $linkedin_firstname = $linkedinUser['localizedFirstName'] ?? null;
-        $linkedin_lastname = $linkedinUser['localizedLastName'] ?? null;
-        $linkedin_picture = $linkedinUser['profilePicture']['displayImage~']['elements'][0]['identifiers'][0]['identifier'] ?? null;
-
-        if (!$linkedin_id || !$linkedin_firstname || !$linkedin_lastname) {
-            return redirect()->route('login-linkedin')
-                ->with('linkedin_error', 'Une erreur s\'est produite lors de la récupération des données.');
-        }
-
-        $userId = Auth::id();
-        if (!$userId) {
-            return redirect()->route('login');
-        }
-
-        $existingLinkedinUser = LinkedinUser::where('linkedin_id', $linkedin_id)->first();
-
-        if ($existingLinkedinUser && $existingLinkedinUser->user_id !== $userId) {
-            return redirect()->route('login-linkedin')
-                ->with('linkedin_error', 'Ce compte LinkedIn est déjà lié à un autre utilisateur.');
-        }
-
-        // Set expire_at to two months from now using Carbon
-        $expireAt = Carbon::now()->addMonths(2);
-
-        if ($existingLinkedinUser) {
-            $existingLinkedinUser->update([
-                'linkedin_firstname' => $linkedin_firstname,
-                'linkedin_lastname' => $linkedin_lastname,
-                'linkedin_picture' => $linkedin_picture,
-                'linkedin_token' => $access_token,
-                'linkedin_refresh_token' => $refresh_token,
-                'expire_at' => $expireAt,
+            $response = Http::asForm()->post('https://www.linkedin.com/oauth/v2/accessToken', [
+                'grant_type' => 'authorization_code',
+                'code' => $code,
+                'redirect_uri' => $redirect_uri,
+                'client_id' => $client_id,
+                'client_secret' => $client_secret,
             ]);
-        } else {
-            LinkedinUser::create([
-                'user_id' => $userId,
-                'linkedin_id' => $linkedin_id,
-                'linkedin_firstname' => $linkedin_firstname,
-                'linkedin_lastname' => $linkedin_lastname,
-                'linkedin_picture' => $linkedin_picture,
-                'linkedin_token' => $access_token,
-                'linkedin_refresh_token' => $refresh_token,
-                'expire_at' => $expireAt,
-            ]);
-        }
 
-        return redirect()->route('login-linkedin')
-            ->with('linkedin_success', 'Votre compte LinkedIn a été lié avec succès !');
-    } catch (\Exception $e) {
-        return redirect()->route('login-linkedin')
-            ->with('linkedin_error', 'Une erreur s\'est produite!');
+            if ($response->failed()) {
+                return redirect()->route('login-linkedin')
+                    ->with('linkedin_error', 'Une erreur s\'est produite! Réessayer plus tard.');
+            }
+
+            $data = $response->json();
+            $access_token = $data['access_token'] ?? null;
+            $refresh_token = $data['refresh_token'] ?? null;
+
+            if (!$access_token) {
+                return redirect()->route('login-linkedin')
+                    ->with('linkedin_error', 'Une erreur s\'est produite! Veuillez réessayer plus tard.');
+            }
+
+            $profileResponse = Http::withHeaders([
+                'Authorization' => "Bearer $access_token",
+            ])->get('https://api.linkedin.com/v2/me?projection=(id,localizedFirstName,localizedLastName,profilePicture(displayImage~:playableStreams))');
+
+            if ($profileResponse->failed()) {
+                return redirect()->route('login-linkedin')
+                    ->with('linkedin_error', 'Une erreur s\'est produite lors de la récupération des données.');
+            }
+
+            $linkedinUser = $profileResponse->json();
+            $linkedin_id = $linkedinUser['id'] ?? null;
+            $linkedin_firstname = $linkedinUser['localizedFirstName'] ?? null;
+            $linkedin_lastname = $linkedinUser['localizedLastName'] ?? null;
+            $linkedin_picture = $linkedinUser['profilePicture']['displayImage~']['elements'][0]['identifiers'][0]['identifier'] ?? null;
+
+            if (!$linkedin_id || !$linkedin_firstname || !$linkedin_lastname) {
+                return redirect()->route('login-linkedin')
+                    ->with('linkedin_error', 'Une erreur s\'est produite lors de la récupération des données.');
+            }
+
+            $userId = Auth::id();
+            if (!$userId) {
+                return redirect()->route('login');
+            }
+
+            $existingLinkedinUser = LinkedinUser::where('linkedin_id', $linkedin_id)->first();
+
+            if ($existingLinkedinUser && $existingLinkedinUser->user_id !== $userId) {
+                return redirect()->route('login-linkedin')
+                    ->with('linkedin_error', 'Ce compte LinkedIn est déjà lié à un autre utilisateur.');
+            }
+
+            // Set expire_at to two months from now using Carbon
+            $expireAt = Carbon::now()->addMonths(2);
+
+            if ($existingLinkedinUser) {
+                $existingLinkedinUser->update([
+                    'linkedin_firstname' => $linkedin_firstname,
+                    'linkedin_lastname' => $linkedin_lastname,
+                    'linkedin_picture' => $linkedin_picture,
+                    'linkedin_token' => $access_token,
+                    'linkedin_refresh_token' => $refresh_token,
+                    'expire_at' => $expireAt,
+                ]);
+            } else {
+                LinkedinUser::create([
+                    'user_id' => $userId,
+                    'linkedin_id' => $linkedin_id,
+                    'linkedin_firstname' => $linkedin_firstname,
+                    'linkedin_lastname' => $linkedin_lastname,
+                    'linkedin_picture' => $linkedin_picture,
+                    'linkedin_token' => $access_token,
+                    'linkedin_refresh_token' => $refresh_token,
+                    'expire_at' => $expireAt,
+                ]);
+            }
+
+            return redirect()->route('login-linkedin')
+                ->with('linkedin_success', 'Votre compte LinkedIn a été lié avec succès !');
+        } catch (\Exception $e) {
+            return redirect()->route('login-linkedin')
+                ->with('linkedin_error', 'Une erreur s\'est produite!');
+        }
     }
-}
 
 
     /**
      * Log out from LinkedIn.
      */
-    public function logout()
-    {
+    public function logout() {
         return redirect('https://www.linkedin.com/m/logout');
     }
 
     /**
      * Delete a linked LinkedIn account.
      */
-    public function delete(Request $request)
-    {
+    public function delete(Request $request) {
         $linkedinId = $request->query('linkedin_id');
         $userId = Auth::id();
 
@@ -259,8 +256,7 @@ public function callback(Request $request)
     /**
      * Post text-only content to LinkedIn.
      */
-    public function postTextOnly(array $data)
-    {
+    public function postTextOnly(array $data) {
         $postUrl = "https://api.linkedin.com/v2/ugcPosts";
         $authorUrn = 'urn:li:person:' . $data['linkedin_id'];
 
@@ -308,24 +304,52 @@ public function callback(Request $request)
         ];
     }
 
-    /**
-     * Register media (image/video) with LinkedIn.
-     */
-    public function registerMedia(Request $request)
-    {
+    // Updated registerMedia method in LinkedInController.php
+    public function registerMedia(Request $request) {
         try {
             $validated = $request->validate([
                 'token' => 'required|string',
                 'linkedin_id' => 'required|string',
                 'type' => 'required|in:image,video',
-                'media' => 'required|file|max:50000',
+                'media' => 'required|file|max:50000', // 50MB max file size
                 'caption' => 'nullable|string|max:3000'
             ]);
 
+            $file = $request->file('media');
+            $mimeType = $file->getMimeType();
+            $fileSize = $file->getSize();
+
+            // Validate file type
+            $allowedMimeTypes = [
+                'image' => ['image/jpeg', 'image/png', 'image/gif'],
+                'video' => ['video/mp4', 'video/mpeg', 'video/quicktime', 'video/webm']
+            ];
+
+            if (!in_array($mimeType, $allowedMimeTypes[$validated['type']])) {
+                return response()->json([
+                    'status' => 400,
+                    'error' => "Type du fichier invalide: {$mimeType}. Pour {$validated['type']} posts, seulement " . implode(", ", $allowedMimeTypes[$validated['type']]) . " sont acceptés."
+                ], 400);
+            }
+
+            // Check LinkedIn's specific size limits
+            $maxSizes = [
+                'image' => 10 * 1024 * 1024, // 5MB for images
+                'video' => 50 * 1024 * 1024 // 50MB for videos
+            ];
+
+            if ($fileSize > $maxSizes[$validated['type']]) {
+                $maxSizeMB = $maxSizes[$validated['type']] / (1024 * 1024);
+                return response()->json([
+                    'status' => 400,
+                    'error' => "La taille du fichier ({$fileSize} octets) dépasse la limite de LinkedIn pour le téléchargement de {$validated['type']} ({$maxSizeMB}MB)."
+                ], 400);
+            }
+
             $authorUrn = 'urn:li:person:' . $validated['linkedin_id'];
-            $recipe = $validated['type'] === 'image'
-                ? "urn:li:digitalmediaRecipe:feedshare-image"
-                : "urn:li:digitalmediaRecipe:feedshare-video";
+
+            // Determine recipe based on media type
+            $recipe = $validated['type'] === 'image' ? "urn:li:digitalmediaRecipe:feedshare-image" : "urn:li:digitalmediaRecipe:feedshare-video";
 
             $registerData = [
                 "registerUploadRequest" => [
@@ -359,6 +383,7 @@ public function callback(Request $request)
             $response = curl_exec($curl);
             $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
             $responseData = json_decode($response, true);
+
             curl_close($curl);
 
             Log::info('LinkedIn Asset Registration Response', [
@@ -366,9 +391,28 @@ public function callback(Request $request)
                 'response' => $responseData
             ]);
 
+            // Handle specific API error responses
+            if ($httpCode == 401) {
+                return response()->json([
+                    'status' => 401,
+                    'error' => 'Échec de l\'authentification LinkedIn. Votre jeton d\'accès a peut-être expiré. Veuillez reconnecter votre compte.',
+                    'token_expired' => true
+                ], 401);
+            }
+
+            // Handle rate limiting
+            if ($httpCode == 429) {
+                return response()->json([
+                    'status' => 429,
+                    'error' => 'Limite de débit de l\'API LinkedIn dépassée. Veuillez réessayer ultérieurement.',
+                    'raw_response' => $responseData
+                ], 429);
+            }
+
+            // Validate successful response
             if ($httpCode == 200 && isset($responseData['value'])) {
                 $uploadMechanism = $responseData['value']['uploadMechanism']['com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest'] ?? null;
-
+                
                 if ($uploadMechanism && isset($uploadMechanism['uploadUrl'])) {
                     return response()->json([
                         'status' => 200,
@@ -379,11 +423,30 @@ public function callback(Request $request)
                 }
             }
 
+            // Handle LinkedIn API specific errors if available
+            $apiErrorMessage = $responseData['message'] ?? 'Échec de l\'enregistrement du média sur LinkedIn';
+            $apiErrorDescription = $responseData['serviceErrorCode'] ?? 'Erreur Inconnue';
+
+            // Handle unsuccessful response with more detail
             return response()->json([
                 'status' => $httpCode,
-                'error' => 'Failed to register media',
+                'error' => "Erreur de LinkedIn API : {$apiErrorMessage} ({$apiErrorDescription})",
                 'raw_response' => $responseData
-            ], 400);
+            ], $httpCode !== 200 ? $httpCode : 400);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            $errors = $e->validator->errors()->all();
+            $errorMessage = implode(', ', $errors);
+            
+            Log::error('LinkedIn Media Registration Validation Error', [
+                'message' => $errorMessage,
+                'errors' => $errors
+            ]);
+
+            return response()->json([
+                'status' => 422,
+                'error' => 'Erreur de Validation: ' . $errorMessage
+            ], 422);
         } catch (\Exception $e) {
             Log::error('LinkedIn Media Registration Error', [
                 'message' => $e->getMessage(),
@@ -400,18 +463,18 @@ public function callback(Request $request)
     /**
      * Upload the binary file for media posts.
      */
-    public function uploadMediaBinary(Request $request)
-    {
+    public function uploadMediaBinary(Request $request) {
         try {
             $validated = $request->validate([
                 'token' => 'required|string',
                 'upload_url' => 'required|url',
-                'media' => 'required|file|max:50000'
+                'media' => 'required|file|max:50000' // 50MB max file size
             ]);
 
             $file = $request->file('media');
 
             $curl = curl_init();
+
             curl_setopt_array($curl, [
                 CURLOPT_URL => $validated['upload_url'],
                 CURLOPT_RETURNTRANSFER => true,
@@ -427,10 +490,36 @@ public function callback(Request $request)
 
             $response = curl_exec($curl);
             $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+            $curlError = curl_error($curl);
+            $curlErrno = curl_errno($curl);
+            
             $headerSize = curl_getinfo($curl, CURLINFO_HEADER_SIZE);
             $headers = substr($response, 0, $headerSize);
             $body = substr($response, $headerSize);
+
             curl_close($curl);
+
+            // Handle cURL errors
+            if ($curlErrno) {
+                Log::error('LinkedIn cURL Error during media upload', [
+                    'error' => $curlError,
+                    'errno' => $curlErrno
+                ]);
+                
+                // Map common cURL errors to user-friendly messages
+                $errorMessage = match ($curlErrno) {
+                    CURLE_OPERATION_TIMEDOUT => 'La connexion a expiré lors du téléchargement. Votre fichier est peut-être trop volumineux ou votre connexion réseau est instable.',
+                    CURLE_COULDNT_CONNECT => 'Impossible de se connecter aux serveurs LinkedIn. Veuillez vérifier votre connexion Internet.',
+                    default => "Erreur du connexion lors du téléchargement : {$curlError}"
+                };
+                
+                return response()->json([
+                    'status' => 500,
+                    'error' => $errorMessage,
+                    'curl_error' => $curlError,
+                    'curl_errno' => $curlErrno
+                ], 500);
+            }
 
             if ($httpCode >= 200 && $httpCode < 300) {
                 return response()->json([
@@ -440,11 +529,35 @@ public function callback(Request $request)
                 ]);
             }
 
+            // Handle specific HTTP errors
+            $errorMessage = match ($httpCode) {
+                401 => 'Échec de l\'authentification LinkedIn. Votre jeton d\'accès a peut-être expiré. Veuillez reconnecter votre compte.',
+                403 => 'LinkedIn a refusé la publication de ce média. Veuillez vérifier les autorisations de votre compte.',
+                413 => 'Le fichier est trop volumineux pour être accepté par LinkedIn.',
+                429 => 'Limite de débit de l\'API LinkedIn dépassée. Veuillez réessayer ultérieurement.',
+                default => "Le téléchargement du média a échoué avec le code HTTP {$httpCode}."
+            };
+
+            // Handle upload failure
             return response()->json([
                 'status' => $httpCode,
-                'error' => 'Media upload failed',
+                'error' => $errorMessage,
                 'response' => $body
             ], $httpCode);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            $errors = $e->validator->errors()->all();
+            $errorMessage = implode(', ', $errors);
+            
+            Log::error('LinkedIn Media Binary Upload Validation Error', [
+                'message' => $errorMessage,
+                'errors' => $errors
+            ]);
+
+            return response()->json([
+                'status' => 422,
+                'error' => 'Erreur de Validation: ' . $errorMessage
+            ], 422);
         } catch (\Exception $e) {
             Log::error('LinkedIn Media Binary Upload Error', [
                 'message' => $e->getMessage(),
@@ -457,6 +570,7 @@ public function callback(Request $request)
             ], 500);
         }
     }
+
 
     /**
      * Share media (image/video) on LinkedIn.
@@ -495,7 +609,7 @@ public function callback(Request $request)
                             ],
                             "media" => $validated['asset'],
                             "title" => [
-                                "text" => "Shared Media"
+                                "text" => ""
                             ]
                         ]
                     ]
@@ -527,23 +641,23 @@ public function callback(Request $request)
         $responseData = json_decode($response, true);
         curl_close($curl);
 
+        // Handle the response
         if ($httpCode >= 200 && $httpCode < 300) {
-            return [
-                'status' => 'success',
-                'http_code' => $httpCode,
-                'data' => $responseData,
+            $responseArray = [
+                'status' => 200,
+                'message' => 'Post shared successfully',
+                'data' => $responseData
             ];
+    
+            return request()->isMethod('post') ? response()->json($responseArray) : $responseArray;
         } else {
-            Log::error('LinkedIn Share Media Error', [
-                'http_code' => $httpCode,
-                'response' => $responseData,
-            ]);
-            return [
-                'status' => 'error',
-                'http_code' => $httpCode,
-                'error' => $responseData['message'] ?? 'Unknown error',
+            $errorResponse = [
+                'status' => $httpCode,
+                'error' => $responseData['message'] ?? 'Unknown error'
             ];
+            return request()->isMethod('post') ? response()->json($errorResponse, $httpCode) : $errorResponse;
         }
+
     }
 
     /**
