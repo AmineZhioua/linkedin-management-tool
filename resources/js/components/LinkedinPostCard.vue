@@ -499,123 +499,87 @@ export default {
         },
 
         // SUBMIT, VALIDATE & SCHEDULE MEDIA METHODS
-        async submitAllPosts() {
-            this.isSubmitting = true;
-            this.submissionError = null;
-            this.errorPosts = [];
+async submitAllPosts() {
+    this.isSubmitting = true;
+    this.submissionError = null;
+    this.errorPosts = [];
 
-            try {
-                // Check token validity first before proceeding with any operations
-                if (!this.isTokenValid()) {
-                    this.submissionError = "Votre jeton d'accès LinkedIn a expiré. Veuillez reconnecter votre compte.";
-                    this.isSubmitting = false;
-                    return;
-                }
+    try {
+        if (!this.isTokenValid()) {
+            this.submissionError = "Votre jeton d'accès LinkedIn a expiré. Veuillez reconnecter votre compte.";
+            this.isSubmitting = false;
+            return;
+        }
 
-                const sortedPosts = [...this.postCards].sort((a, b) => {
-                    return new Date(a.scheduledDateTime) - new Date(b.scheduledDateTime);
-                });
+        const sortedPosts = [...this.postCards].sort((a, b) => {
+            return new Date(a.scheduledDateTime) - new Date(b.scheduledDateTime);
+        });
 
-                // Pre-validate all media posts
-                const mediaValidationResults = [];
-                for (const post of sortedPosts) {
-                    if (post.type === 'image' || post.type === 'video') {
-                        const validationResult = await this.validateAndUploadMedia(post);
-                        mediaValidationResults.push(validationResult);
-                        
-                        // Check for token expiration immediately if encountered during validation
-                        if (!validationResult.success && validationResult.tokenExpired) {
-                            this.submissionError = validationResult.error;
-                            this.isSubmitting = false;
-                            return;
-                        }
-                    }
-                }
+        // Submit each post with campaign data
+        for (const post of sortedPosts) {
+            let formData = new FormData();
+            formData.append("linkedin_id", this.selectedAccount.id);
+            formData.append("type", post.type);
+            formData.append("scheduled_date", post.scheduledDateTime);
 
-                // Check if any media validations failed
-                const failedMedia = mediaValidationResults.filter(result => !result.success);
-                if (failedMedia.length > 0) {
-                    this.errorPosts = failedMedia.map(result => ({
-                        type: result.post.type,
-                        scheduledTime: result.post.scheduledDateTime,
-                        error: result.error
-                    }));
-                    
-                    // Provide more detailed error summary
-                    if (failedMedia.length === 1) {
-                        this.submissionError = `1 publication n'a pas pu être programmée: ${failedMedia[0].error}`;
-                    } else {
-                        this.submissionError = `${failedMedia.length} publications n'ont pas pu être programmées. Veuillez consulter les détails de l'erreur ci-dessous.`;
-                    }
-                    this.isSubmitting = false;
-                    return;
-                }
+            // Add campaign data (sent with each post)
+            formData.append("campaign[name]", `Campaign ${new Date().toISOString()}`);
+            formData.append("campaign[description]", this.descriptionCampagne || '');
+            formData.append("campaign[target_audience]", this.selectedCible || '');
+            formData.append("campaign[frequency_per_day]", this.frequenceParJour);
+            formData.append("campaign[start_date]", this.startDate);
+            formData.append("campaign[end_date]", this.endDate);
 
-                // Schedule all posts since everything passed validation
-                for (const post of sortedPosts) {
-                    let formData = new FormData();
-                    formData.append("linkedin_id", this.selectedAccount.id);
-                    formData.append("type", post.type);
-                    formData.append("scheduled_date", post.scheduledDateTime);
-
-                    switch (post.type) {
-                        case "text":
-                            formData.append("content[text]", post.content.text.trim());
-                            break;
-
-                        case "image":
-                        case "video":
-                            formData.append("content[file]", post.content.file);
-                            formData.append("content[caption]", post.content.caption.trim());
-                            formData.append("content[original_filename]", post.content.file.name);
-                            if (post.content.asset) {
-                                formData.append("content[asset]", post.content.asset);
-                            }
-                            break;
-
-                        case "article":
-                            formData.append("content[url]", post.content.url);
-                            formData.append("content[title]", post.content.title);
-                            formData.append("content[description]", post.content.description);
-                            formData.append("content[caption]", post.content.caption.trim());
-                            break;
-
-                        default:
-                            throw new Error("Type de publication invalide");
-                    }
-
-                    await axios.post("/linkedin/schedule-post", formData, {
-                        headers: {
-                            "Content-Type": "multipart/form-data",
-                            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
-                        },
-                    });
-                }
-
-                this.showSuccessPopup = true;
-                this.successMessage = "Tous vos posts ont été programmés avec succès!";
-                this.resetForm();
-            } catch (error) {
-                console.error("Error submitting posts:", error);
-                
-                // Check if the error is related to token expiration
-                if (error.response?.status === 401 || 
-                    (error.response?.data?.error && error.response?.data?.error.toLowerCase().includes("token")) ||
-                    (error.message && error.message.toLowerCase().includes("token"))) {
-                    this.submissionError = "Votre jeton d'accès LinkedIn a expiré. Veuillez reconnecter votre compte.";
-                } else if (error.response?.data?.error) {
-                    this.submissionError = error.response.data.error;
-                } else if (error.response?.data?.message) {
-                    this.submissionError = error.response.data.message;
-                } else if (error.message) {
-                    this.submissionError = error.message;
-                } else {
-                    this.submissionError = "Une erreur s'est produite lors de la publication des posts";
-                }
-            } finally {
-                this.isSubmitting = false;
+            switch (post.type) {
+                case "text":
+                    formData.append("content[text]", post.content.text.trim());
+                    break;
+                case "image":
+                case "video":
+                    formData.append("content[file]", post.content.file);
+                    formData.append("content[caption]", post.content.caption.trim());
+                    formData.append("content[original_filename]", post.content.file.name);
+                    break;
+                case "article":
+                    formData.append("content[url]", post.content.url);
+                    formData.append("content[title]", post.content.title);
+                    formData.append("content[description]", post.content.description);
+                    formData.append("content[caption]", post.content.caption.trim());
+                    break;
+                default:
+                    throw new Error("Type de publication invalide");
             }
-        },
+
+            await axios.post("/linkedin/schedule-post", formData, {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
+                },
+            });
+        }
+
+        this.showSuccessPopup = true;
+        this.successMessage = "Tous vos posts ont été programmés avec succès!";
+        this.resetForm();
+    } catch (error) {
+        console.error("Error submitting posts:", error);
+        if (error.response?.status === 401 || 
+            (error.response?.data?.error && error.response?.data?.error.toLowerCase().includes("token")) ||
+            (error.message && error.message.toLowerCase().includes("token"))) {
+            this.submissionError = "Votre jeton d'accès LinkedIn a expiré. Veuillez reconnecter votre compte.";
+        } else if (error.response?.data?.error) {
+            this.submissionError = error.response.data.error;
+        } else if (error.response?.data?.message) {
+            this.submissionError = error.response.data.message;
+        } else if (error.message) {
+            this.submissionError = error.message;
+        } else {
+            this.submissionError = "Une erreur s'est produite lors de la publication des posts";
+        }
+    } finally {
+        this.isSubmitting = false;
+    }
+},
 
         async validateAndUploadMedia(post) {
             try {

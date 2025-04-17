@@ -14,6 +14,7 @@ class ScheduledLinkedinPost extends Model
     protected $fillable = [
         'user_id',
         'linkedin_user_id',
+        'campaign_id',
         'type',
         'content',
         'scheduled_time',

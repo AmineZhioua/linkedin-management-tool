@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use App\Models\ScheduledLinkedinPost;
 use App\Jobs\ScheduleLinkedInPost;
+use App\Models\LinkedinCampaign;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
 
@@ -35,14 +36,39 @@ class LinkedInController extends Controller
     /**
      * Schedule a LinkedIn post with token expiration and validation.
      */
-    public function publish(Request $request)
+   public function publish(Request $request)
     {
         $validated = $request->validate([
             'linkedin_id' => 'required|exists:linkedin_users,id',
             'type' => 'required|in:text,image,video,article',
             'scheduled_date' => 'required|date|after:now',
             'content' => 'required|array',
+            // Campaign-related fields
+            'campaign' => 'required|array',
+            'campaign.name' => 'nullable|string',
+            'campaign.description' => 'nullable|string',
+            'campaign.target_audience' => 'nullable|string',
+            'campaign.frequency_per_day' => 'required|integer|min:1',
+            'campaign.start_date' => 'required|date|after:now',
+            'campaign.end_date' => 'required|date|after:campaign.start_date',
         ]);
+
+        // Create or find the campaign to avoid duplicates for the same user and time
+        $campaign = LinkedinCampaign::firstOrCreate(
+            [
+                'user_id' => Auth::id(),
+                'linkedin_user_id' => $validated['linkedin_id'],
+                'name' => $validated['campaign']['name'] ?? 'Campaign ' . now()->toDateTimeString(),
+                'start_date' => $validated['campaign']['start_date'],
+                'end_date' => $validated['campaign']['end_date'],
+            ],
+            [
+                'description' => $validated['campaign']['description'] ?? null,
+                'target_audience' => $validated['campaign']['target_audience'] ?? null,
+                'frequency_per_day' => $validated['campaign']['frequency_per_day'],
+                'status' => 'scheduled',
+            ]
+        );
 
         switch ($validated['type']) {
             case 'text':
@@ -56,13 +82,13 @@ class LinkedInController extends Controller
                     'content.caption' => 'nullable|string|max:3000',
                     'content.original_filename' => 'required|string',
                 ]);
-                // Store the file temporarily
+                // Store the file temporarily (unchanged from original)
                 $file = $request->file('content.file');
                 $path = $file->store('', 'linkedin_media');
                 Log::info('Stored LinkedIn media', [
                     'path' => $path,
                     'full_path' => Storage::disk('linkedin_media')->path($path)
-                ]); $path = $file->store('', 'linkedin_media');
+                ]);
                 $content = [
                     'file_path' => $path,
                     'caption' => $validated['content']['caption'] ?? '',
@@ -84,12 +110,13 @@ class LinkedInController extends Controller
                 ];
                 break;
             default:
-                abort(400, 'Invalid post type');
+                return response()->json(['error' => 'Invalid post type'], 400);
         }
 
         $post = ScheduledLinkedinPost::create([
             'user_id' => Auth::id(),
             'linkedin_user_id' => $validated['linkedin_id'],
+            'campaign_id' => $campaign->id, // Link to the campaign
             'type' => $validated['type'],
             'content' => json_encode($content),
             'scheduled_time' => $validated['scheduled_date'],
@@ -98,7 +125,7 @@ class LinkedInController extends Controller
 
         ScheduleLinkedInPost::dispatch($post)->delay(Carbon::parse($validated['scheduled_date']));
 
-        return response()->json(['message' => 'Post scheduled successfully']);
+        return response()->json(['message' => 'Post scheduled successfully with campaign']);
     }
     /**
      * Redirect the user to LinkedIn for authorization.
