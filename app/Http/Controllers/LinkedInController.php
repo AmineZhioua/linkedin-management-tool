@@ -46,7 +46,7 @@ class LinkedInController extends Controller
             // Campaign-related fields
             'campaign' => 'required|array',
             'campaign.name' => 'nullable|string',
-            'campaign.description' => 'nullable|string',
+            'campaign.description' => 'required|string',
             'campaign.target_audience' => 'nullable|string',
             'campaign.frequency_per_day' => 'required|integer|min:1',
             'campaign.start_date' => 'required|date|after:now',
@@ -79,7 +79,7 @@ class LinkedInController extends Controller
             case 'video':
                 $request->validate([
                     'content.file' => 'required|file|max:50000',
-                    'content.caption' => 'nullable|string|max:3000',
+                    'content.caption' => 'nullable|string',
                     'content.original_filename' => 'required|string',
                 ]);
                 // Store the file temporarily (unchanged from original)
@@ -99,8 +99,8 @@ class LinkedInController extends Controller
                 $request->validate([
                     'content.url' => 'required|url',
                     'content.title' => 'required|string|max:200',
-                    'content.description' => 'required|string|max:500',
-                    'content.caption' => 'nullable|string|max:3000',
+                    'content.description' => 'nullable|string|max:500',
+                    'content.caption' => 'nullable|string',
                 ]);
                 $content = [
                     'url' => $validated['content']['url'],

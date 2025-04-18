@@ -16,10 +16,10 @@
             <template v-for="day in getDaysInMonth(month, year)">
                 <div 
                     class="h-24 border rounded overflow-hidden relative p-1"
-                    :class="{'bg-blue-50 hover:bg-blue-300 cursor-pointer': getPostsForDate(day).length > 0}"
+                    :class="{'bg-blue-50 hover:bg-blue-300 cursor-pointer': getPostsForDate(day).length > 0,}"
                     @click="showPostsPopover(day)"
                 >
-                    <div class="text-right text-xs">{{ day }}</div>
+                    <div class="text-right text-sm">{{ day }}</div>
                     <div class="overflow-y-auto" style="max-height: 80px;">
                         <div 
                             v-for="post in getPostsForDate(day)"
@@ -68,25 +68,24 @@
                                 }"
                                 @click="onEditPost(post)"
                             >
-                                <div>
-                                    <span class="mr-2">{{ getPostTypeIcon(post.type) }}</span>
-                                    <span>{{ formatTime(post.scheduledDateTime) }}</span>
+                                <div class="flex align-items-center w-full">
+                                    <div class="flex-1"> 
+                                        <span class="mr-2">{{ getPostTypeIcon(post.type) }}</span>
+                                        <span>{{ formatTime(post.scheduledDateTime) }}</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="mt-4 flex justify-between">
+                    <div class="flex justify-end">
                         <button 
-                            class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-                            @click="closePopover"
-                        >
-                            Fermer
-                        </button>
-                        <button 
-                            class="bg-blue-500 flex gap-2 text-white px-4 py-2 rounded hover:bg-blue-600"
+                            class="bg-blue-500 flex gap-2 text-white px-4 py-2 rounded hover:bg-blue-600 w-fit"
                             @click="addPostForDay"
                         >
-                            <img src="/build/assets/icons/add-white.svg" alt="Add Icon">
+                            <img 
+                                src="/build/assets/icons/add-white.svg" 
+                                alt="Add Icon"
+                            />
                             <span>Ajouter un post</span>
                         </button>
                     </div>
@@ -104,12 +103,17 @@ export default {
         month: Number,
         year: Number,
         onEditPost: Function,
+        campaignStartDateTime: String,
+        campaignEndDateTime: String,
     },
     
     data() {
+        const startDate = new Date(this.year, this.month, 1);
+        const endDate = new Date(this.year, this.month + 1, 0);
         return {
             selectedDay: null,
-            showPopover: false
+            showPopover: false,
+            CampaignRangeDate: startDate - endDate,
         };
     },
 

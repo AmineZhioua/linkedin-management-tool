@@ -52,8 +52,10 @@
                     <textarea
                         v-model="editedPost.content.text"
                         placeholder="Exprimez-vous !"
-                        class="w-full border rounded-lg p-2 h-32 mb-4"
-                    ></textarea>
+                        class="w-full border rounded-lg p-2 h-32">
+                    </textarea>
+
+                    <p class="text-muted">Vous avez saisi : <span class="text-black fw-semibold">{{ editedPost.content.text.length }}</span> Caractéres.</p>
                 </div>
 
                 <!-- Image or Video Post Input -->
@@ -70,28 +72,29 @@
                     </p>
                     <textarea
                         v-model="editedPost.content.caption"
-                        placeholder="Ajouter une légende... (Optionnel)"
+                        placeholder="Souhaitez-vous ajouter quelques mots ? (Optionnel)"
                         class="w-full border rounded-lg p-2 h-32 mt-2"
                     ></textarea>
                 </div>
 
                 <!-- Article Post Input -->
                 <div v-if="editedPost.type === 'article'" class="flex flex-col gap-2">
-                    <label class="text-sm text-gray-600">Article URL* :</label>
+                    <label class="text-sm text-gray-600">URL de l'Article <span style="color: red;">*</span> :</label>
                     <input
                         type="text"
                         class="w-full border rounded-lg p-2"
                         placeholder="e.g: www.example.com"
                         v-model="editedPost.content.url"
                     />
-                    <label class="text-sm text-gray-600">Article Title :</label>
+
+                    <label class="text-sm text-gray-600">Titre de l'Article <span style="color: red;">*</span> :</label>
                     <input
                         type="text"
                         class="w-full border rounded-lg p-2"
                         placeholder="Official LinkedIn Blog"
                         v-model="editedPost.content.title"
                     />
-                    <label class="text-sm text-gray-600">Article Description :</label>
+                    <label class="text-sm text-gray-600">Description de l'Article :</label>
                     <input
                         type="text"
                         class="w-full border rounded-lg p-2"
@@ -100,7 +103,7 @@
                     />
                     <textarea
                         v-model="editedPost.content.caption"
-                        placeholder="Ajouter un commentaire... (Optionnel)"
+                        placeholder="Souhaitez-vous ajouter quelques mots ? (Optionnel)"
                         class="w-full border rounded-lg p-2 h-32 mt-2"
                     ></textarea>
                 </div>
@@ -170,7 +173,7 @@ export default {
                     }
                 });
             }
-        }
+        },
     },
     
     mounted() {

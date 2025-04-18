@@ -19,7 +19,7 @@
     <header class="d-flex justify-content-between align-items-center py-3">
         <a href="{{ route('welcome') }}" class="d-flex align-items-center gap-2">
             <img src="/build/assets/lemonade-logo.svg" alt="Lemonade Logo" height="40" width="40" />
-            <img src="/build/assets/icons/lemonade-black.svg" alt="Lemonade Text" class="lemonade-text" height="40" width="100" />
+            <img src="/build/assets/icons/Lemonade-black.svg" alt="Lemonade Text" class="lemonade-text" height="40" width="100" />
         </a>
 
         <button class="nav-item dropdown bg-pink-200 px-3 py-1 rounded-2xl">

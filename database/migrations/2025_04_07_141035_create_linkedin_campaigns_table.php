@@ -12,9 +12,9 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('linkedin_user_id')->constrained('linkedin_users')->onDelete('cascade');
-            $table->string('name')->nullable();
-            $table->text('description')->nullable();
-            $table->string('target_audience')->nullable();
+            $table->string('name');
+            $table->text('description');
+            $table->string('target_audience');
             $table->integer('frequency_per_day');
             $table->dateTime('start_date');
             $table->dateTime('end_date');

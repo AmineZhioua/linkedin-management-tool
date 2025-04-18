@@ -65,7 +65,7 @@
   
         <!-- Frequence des Posts -->
         <div class="mb-4">
-            <label for="frequence" class="block text-md mb-2">Frequence :</label>
+            <label for="frequence" class="block text-md mb-2">Fréquence des Posts <span style="color: red;">*</span> :</label>
             <div class="relative">
                 <input
                     type="number"
@@ -88,13 +88,19 @@
   
         <!-- Description du Campagne -->
         <div class="mb-4">
-            <label for="descriptionCampagne" class="block text-md mb-2">Description :</label>
+            <label for="descriptionCampagne" class="block text-md mb-2">Description <span style="color: red;">*</span> :</label>
             <textarea
                 id="descriptionCampagne"
                 v-model="descriptionCampagne"
                 class="w-full border rounded-lg p-3 h-32"
                 placeholder="Décrivez votre Campagne ici..."
+                min="10"
+                max="500"
             ></textarea>
+
+            <p v-if="descriptionErrorMessage" class="text-red-500 text-sm mb-2">
+                {{ descriptionErrorMessage }}
+            </p>
         </div>
       </form>
     </div>
@@ -137,7 +143,8 @@ export default {
             selectedCible: this.initialCible || '',
             frequenceParJour: this.initialFrequence,
             descriptionCampagne: this.initialDescription,
-            cibleErrorMessage: ''
+            cibleErrorMessage: '',
+            descriptionErrorMessage: '',
         };
     },
   
@@ -149,7 +156,7 @@ export default {
             const now = new Date();
             
             const minStartTime = new Date(now);
-            minStartTime.setHours(minStartTime.getHours());
+            minStartTime.setHours(minStartTime.getHours() + 1);
             
             return selectedStart >= minStartTime;
         },
@@ -187,11 +194,28 @@ export default {
             }
             return "";
         },
+
+        isDescriptionValid() {
+            if(this.descriptionCampagne.trim() === "") {
+                this.descriptionErrorMessage = "La description ne peut pas être vide";
+                return false;
+            } else if (this.descriptionCampagne.length < 10) {
+                this.descriptionErrorMessage = "La description doit contenir au moins 10 caractères";
+                return false;
+            } else if (this.descriptionCampagne.length > 500) {
+                this.descriptionErrorMessage = "La description ne peut pas dépasser 500 caractères";
+                return false;
+            } else {
+                this.descriptionErrorMessage = "";
+                return true;
+            }
+        },
         
         isFormValid() {
             return this.isStartDateValid && 
                 this.isEndDateValid && 
                 this.selectedCible && 
+                this.isDescriptionValid &&
                 this.frequenceParJour >= 1 && 
                 this.frequenceParJour <= 10;
         },
@@ -204,7 +228,7 @@ export default {
                 frequenceParJour: this.frequenceParJour,
                 descriptionCampagne: this.descriptionCampagne
             };
-        }
+        },
     },
   
     watch: {

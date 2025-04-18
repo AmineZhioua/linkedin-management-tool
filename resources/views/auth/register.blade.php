@@ -31,7 +31,7 @@
                     width="40"
                 />
                 <img 
-                    src="/build/assets/icons/lemonade-black.svg" 
+                    src="/build/assets/icons/Lemonade-black.svg" 
                     alt="Lemonade Text"
                     class="lemonade-text"
                     height="40"

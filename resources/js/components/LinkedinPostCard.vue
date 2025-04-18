@@ -137,6 +137,8 @@
                         :year="currentYear"
                         :onEditPost="editPost"
                         @add-post="handleAddPost"
+                        :campaignStartDateTime="campaignStartDateTime"
+                        :campaignEndDateTime="campaignEndDateTime"
                     />
                 </div>
                 
@@ -400,20 +402,38 @@ export default {
                 return;
             }
 
+            // Validating the Post Content Text before saving
             if (updatedPost.type === "text" && updatedPost.content.text.trim() === "") {
                 this.postModalError = "Le contenu du post ne peut pas être vide !";
                 return;
+            } else if (updatedPost.type === "text" && updatedPost.content.text.length > 3000) {
+                this.postModalError = "Le contenu du post ne peut pas dépasser 3000 caractères !";
+                return;
+            } else if (updatedPost.type === "text" && updatedPost.content.text.length < 50) {
+                this.postModalError = "Le contenu du post doit contenir au moins 50 caractères !";
+                return;
             }
 
+            // Validating the Post Content File before saving
             if ((updatedPost.type === "image" || updatedPost.type === "video") && !updatedPost.content.file) {
                 this.postModalError = "Veuillez sélectionner un fichier pour le publier !";
                 return;
             }
 
+            // Validating the Post Content URL and Title before saving
             if (updatedPost.type === "article") {
                 const { url, title } = updatedPost.content;
                 if (!url.trim() || !title.trim()) {
                     this.postModalError = "Veuillez remplir au moins l'URL et le titre de l'article.";
+                    return;
+                } else if (!url.startsWith("https://")) {
+                    this.postModalError = "L'URL de l'article doit commencer par 'https://'";
+                    return;
+                } else if(title.length > 200) {
+                    this.postModalError = "Le titre de l'article ne peut pas dépasser 200 caractères !";
+                    return;
+                } else if (title.length < 5) {
+                    this.postModalError = "Le titre de l'article doit contenir au moins 5 caractères !";
                     return;
                 }
             }
@@ -499,87 +519,87 @@ export default {
         },
 
         // SUBMIT, VALIDATE & SCHEDULE MEDIA METHODS
-async submitAllPosts() {
-    this.isSubmitting = true;
-    this.submissionError = null;
-    this.errorPosts = [];
+        async submitAllPosts() {
+            this.isSubmitting = true;
+            this.submissionError = null;
+            this.errorPosts = [];
 
-    try {
-        if (!this.isTokenValid()) {
-            this.submissionError = "Votre jeton d'accès LinkedIn a expiré. Veuillez reconnecter votre compte.";
-            this.isSubmitting = false;
-            return;
-        }
+            try {
+                if (!this.isTokenValid()) {
+                    this.submissionError = "Votre jeton d'accès LinkedIn a expiré. Veuillez reconnecter votre compte.";
+                    this.isSubmitting = false;
+                    return;
+                }
 
-        const sortedPosts = [...this.postCards].sort((a, b) => {
-            return new Date(a.scheduledDateTime) - new Date(b.scheduledDateTime);
-        });
+                const sortedPosts = [...this.postCards].sort((a, b) => {
+                    return new Date(a.scheduledDateTime) - new Date(b.scheduledDateTime);
+                });
 
-        // Submit each post with campaign data
-        for (const post of sortedPosts) {
-            let formData = new FormData();
-            formData.append("linkedin_id", this.selectedAccount.id);
-            formData.append("type", post.type);
-            formData.append("scheduled_date", post.scheduledDateTime);
+                // Submit each post with campaign data
+                for (const post of sortedPosts) {
+                    let formData = new FormData();
+                    formData.append("linkedin_id", this.selectedAccount.id);
+                    formData.append("type", post.type);
+                    formData.append("scheduled_date", post.scheduledDateTime);
 
-            // Add campaign data (sent with each post)
-            formData.append("campaign[name]", `Campaign ${new Date().toISOString()}`);
-            formData.append("campaign[description]", this.descriptionCampagne || '');
-            formData.append("campaign[target_audience]", this.selectedCible || '');
-            formData.append("campaign[frequency_per_day]", this.frequenceParJour);
-            formData.append("campaign[start_date]", this.startDate);
-            formData.append("campaign[end_date]", this.endDate);
+                    // Add campaign data (sent with each post)
+                    formData.append("campaign[name]", `Campaign ${new Date().toISOString()}`);
+                    formData.append("campaign[description]", this.descriptionCampagne || '');
+                    formData.append("campaign[target_audience]", this.selectedCible || '');
+                    formData.append("campaign[frequency_per_day]", this.frequenceParJour);
+                    formData.append("campaign[start_date]", this.startDate);
+                    formData.append("campaign[end_date]", this.endDate);
 
-            switch (post.type) {
-                case "text":
-                    formData.append("content[text]", post.content.text.trim());
-                    break;
-                case "image":
-                case "video":
-                    formData.append("content[file]", post.content.file);
-                    formData.append("content[caption]", post.content.caption.trim());
-                    formData.append("content[original_filename]", post.content.file.name);
-                    break;
-                case "article":
-                    formData.append("content[url]", post.content.url);
-                    formData.append("content[title]", post.content.title);
-                    formData.append("content[description]", post.content.description);
-                    formData.append("content[caption]", post.content.caption.trim());
-                    break;
-                default:
-                    throw new Error("Type de publication invalide");
+                    switch (post.type) {
+                        case "text":
+                            formData.append("content[text]", post.content.text.trim());
+                            break;
+                        case "image":
+                        case "video":
+                            formData.append("content[file]", post.content.file);
+                            formData.append("content[caption]", post.content.caption.trim());
+                            formData.append("content[original_filename]", post.content.file.name);
+                            break;
+                        case "article":
+                            formData.append("content[url]", post.content.url);
+                            formData.append("content[title]", post.content.title);
+                            formData.append("content[description]", post.content.description);
+                            formData.append("content[caption]", post.content.caption.trim());
+                            break;
+                        default:
+                            throw new Error("Type de publication invalide");
+                    }
+
+                    await axios.post("/linkedin/schedule-post", formData, {
+                        headers: {
+                            "Content-Type": "multipart/form-data",
+                            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
+                        },
+                    });
+                }
+
+                this.showSuccessPopup = true;
+                this.successMessage = "Tous vos posts ont été programmés avec succès!";
+                this.resetForm();
+            } catch (error) {
+                console.error("Error submitting posts:", error);
+                if (error.response?.status === 401 || 
+                    (error.response?.data?.error && error.response?.data?.error.toLowerCase().includes("token")) ||
+                    (error.message && error.message.toLowerCase().includes("token"))) {
+                    this.submissionError = "Votre jeton d'accès LinkedIn a expiré. Veuillez reconnecter votre compte.";
+                } else if (error.response?.data?.error) {
+                    this.submissionError = error.response.data.error;
+                } else if (error.response?.data?.message) {
+                    this.submissionError = error.response.data.message;
+                } else if (error.message) {
+                    this.submissionError = error.message;
+                } else {
+                    this.submissionError = "Une erreur s'est produite lors de la publication des posts";
+                }
+            } finally {
+                this.isSubmitting = false;
             }
-
-            await axios.post("/linkedin/schedule-post", formData, {
-                headers: {
-                    "Content-Type": "multipart/form-data",
-                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
-                },
-            });
-        }
-
-        this.showSuccessPopup = true;
-        this.successMessage = "Tous vos posts ont été programmés avec succès!";
-        this.resetForm();
-    } catch (error) {
-        console.error("Error submitting posts:", error);
-        if (error.response?.status === 401 || 
-            (error.response?.data?.error && error.response?.data?.error.toLowerCase().includes("token")) ||
-            (error.message && error.message.toLowerCase().includes("token"))) {
-            this.submissionError = "Votre jeton d'accès LinkedIn a expiré. Veuillez reconnecter votre compte.";
-        } else if (error.response?.data?.error) {
-            this.submissionError = error.response.data.error;
-        } else if (error.response?.data?.message) {
-            this.submissionError = error.response.data.message;
-        } else if (error.message) {
-            this.submissionError = error.message;
-        } else {
-            this.submissionError = "Une erreur s'est produite lors de la publication des posts";
-        }
-    } finally {
-        this.isSubmitting = false;
-    }
-},
+        },
 
         async validateAndUploadMedia(post) {
             try {
