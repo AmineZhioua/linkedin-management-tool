@@ -63,8 +63,6 @@ Route::middleware(['auth', 'verified', 'check.subscriptions'])->group(function()
 });
 
 
-Route::post('/linkedin/schedule-post', [LinkedInController::class, 'publish']);
-
 
 
 // Routes for "Linkedin Post" Page
@@ -75,4 +73,6 @@ Route::middleware(['auth', 'verified', 'linkedin.valid', 'linkedin.account.exist
     Route::post('/linkedin/upload-media-binary', [App\Http\Controllers\LinkedInController::class, 'uploadMediaBinary']);
     // Route::post('/linkedin/share-media', [App\Http\Controllers\LinkedInController::class, 'shareMedia']);
     Route::post('/linkedin/share-article', [App\Http\Controllers\LinkedInController::class, 'shareArticle']);
+    Route::post('/linkedin/schedule-post', [LinkedInController::class, 'publish']);
+    Route::post('/linkedin/create-campaign', [LinkedInController::class, 'createCampaign']);
 });

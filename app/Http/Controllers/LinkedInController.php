@@ -33,42 +33,67 @@ class LinkedInController extends Controller
         ]);
     }
 
+    public function createCampaign(Request $request) {
+        try {
+            $validated = $request->validate([
+                'linkedin_id' => 'required|exists:linkedin_users,id',
+                'name' => 'nullable|string',
+                'description' => 'required|string',
+                'target_audience' => 'nullable|string',
+                'frequency_per_day' => 'required|integer|min:1',
+                'start_date' => 'required|date|after:now',
+                'end_date' => 'required|date|after:start_date',
+            ]);
+    
+            $campaign = LinkedinCampaign::firstOrCreate(
+                [
+                    'user_id' => Auth::id(),
+                    'linkedin_user_id' => $validated['linkedin_id'],
+                    'name' => $validated['name'] ?? 'Campaign ' . now()->toDateTimeString(),
+                    'start_date' => $validated['start_date'],
+                    'end_date' => $validated['end_date'],
+                ],
+                [
+                    'description' => $validated['description'],
+                    'target_audience' => $validated['target_audience'],
+                    'frequency_per_day' => $validated['frequency_per_day'],
+                    'status' => 'scheduled',
+                ]
+            );
+    
+            return response()->json([
+                'id' => $campaign->id,
+                'status' => 201,
+                'message' => 'Campaign created or retrieved successfully'
+            ], 201);
+        } catch (\Exception $e) {
+            Log::error('Error creating campaign', [
+                'error' => $e->getMessage(),
+                'data' => $request->all()
+            ]);
+            return response()->json(['error' => 'Une erreur s\'est produite lors de la création de cotre campagne !'], 500);
+        }
+    }
+
     /**
      * Schedule a LinkedIn post with token expiration and validation.
      */
-   public function publish(Request $request)
-    {
+    public function publish(Request $request) {
         $validated = $request->validate([
             'linkedin_id' => 'required|exists:linkedin_users,id',
             'type' => 'required|in:text,image,video,article',
             'scheduled_date' => 'required|date|after:now',
             'content' => 'required|array',
-            // Campaign-related fields
-            'campaign' => 'required|array',
-            'campaign.name' => 'nullable|string',
-            'campaign.description' => 'required|string',
-            'campaign.target_audience' => 'nullable|string',
-            'campaign.frequency_per_day' => 'required|integer|min:1',
-            'campaign.start_date' => 'required|date|after:now',
-            'campaign.end_date' => 'required|date|after:campaign.start_date',
+            'campaign_id' => 'required|exists:linkedin_campaigns,id',
         ]);
+        
+        $campaign = LinkedinCampaign::findOrFail($validated['campaign_id']);
 
-        // Create or find the campaign to avoid duplicates for the same user and time
-        $campaign = LinkedinCampaign::firstOrCreate(
-            [
-                'user_id' => Auth::id(),
-                'linkedin_user_id' => $validated['linkedin_id'],
-                'name' => $validated['campaign']['name'] ?? 'Campaign ' . now()->toDateTimeString(),
-                'start_date' => $validated['campaign']['start_date'],
-                'end_date' => $validated['campaign']['end_date'],
-            ],
-            [
-                'description' => $validated['campaign']['description'] ?? null,
-                'target_audience' => $validated['campaign']['target_audience'] ?? null,
-                'frequency_per_day' => $validated['campaign']['frequency_per_day'],
-                'status' => 'scheduled',
-            ]
-        );
+        if(!$campaign) {
+            return response()->json([
+                'error' => 'Une erreur est produite lors de la recherche de votre campagne'
+            ], 404);
+        }
 
         switch ($validated['type']) {
             case 'text':

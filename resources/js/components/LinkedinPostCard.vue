@@ -535,20 +535,36 @@ export default {
                     return new Date(a.scheduledDateTime) - new Date(b.scheduledDateTime);
                 });
 
+                const campaignFormData = new FormData();
+                campaignFormData.append("linkedin_id", this.selectedAccount.id);
+                campaignFormData.append("name", `Campaign ${new Date().toISOString()}`);
+                campaignFormData.append("description", this.descriptionCampagne || '');
+                campaignFormData.append("target_audience", this.selectedCible || '');
+                campaignFormData.append("frequency_per_day", this.frequenceParJour);
+                campaignFormData.append("start_date", this.startDate);
+                campaignFormData.append("end_date", this.endDate);
+
+                const campaignResponse = await axios.post("/linkedin/create-campaign", campaignFormData, {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
+                },
+                });
+
+                if(campaignResponse.data.status !== 201) {
+                    throw new Error("Échec de la création de la campagne");
+                }
+                    
+                const campaignId = campaignResponse.data.id;
+                
+
                 // Submit each post with campaign data
-                for (const post of sortedPosts) {
+                for(const post of sortedPosts) {
                     let formData = new FormData();
                     formData.append("linkedin_id", this.selectedAccount.id);
                     formData.append("type", post.type);
                     formData.append("scheduled_date", post.scheduledDateTime);
-
-                    // Add campaign data (sent with each post)
-                    formData.append("campaign[name]", `Campaign ${new Date().toISOString()}`);
-                    formData.append("campaign[description]", this.descriptionCampagne || '');
-                    formData.append("campaign[target_audience]", this.selectedCible || '');
-                    formData.append("campaign[frequency_per_day]", this.frequenceParJour);
-                    formData.append("campaign[start_date]", this.startDate);
-                    formData.append("campaign[end_date]", this.endDate);
+                    formData.append("campaign_id", campaignId);
 
                     switch (post.type) {
                         case "text":

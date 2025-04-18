@@ -33,6 +33,10 @@ class ScheduledLinkedinPost extends Model
         return $this->belongsTo(LinkedinUser::class, 'linkedin_user_id');
     }
 
+    public function campaign()
+    {
+        return $this->belongsTo(LinkedinCampaign::class, 'campaign_id');
+    }
     // Optionally, define mutators, accessors, or casts if needed
     protected $casts = [
         'scheduled_time' => 'datetime',

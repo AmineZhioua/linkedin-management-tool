@@ -60,9 +60,8 @@
                     class="dashboard-img d-none d-lg-block"
                 />
 
-                <div id="circle-container" class="flex absolute bottom-[-8%] left-[-120px]" style="z-index: -1;">
+                <!-- <div id="circle-container" class="flex absolute bottom-[-8%] left-[-120px]" style="z-index: -1;">
                     <span id="circle" class="bg-black h-24 w-24 rounded-full"></span>
-                    <!-- Script to Create more Circles -->
                     <script>
                         let blackCircle = document.getElementById('circle');
                         let circleContainer = document.getElementById('circle-container');
@@ -70,20 +69,97 @@
                             circleContainer.appendChild(blackCircle.cloneNode(true));
                         }
                     </script>
-                </div>
+                </div> -->
             </div>
         </main>
     </div>
 
+    <!-- LinkedIn Profiles Section -->
+    <div class="container py-2 flex flex-col gap-8 my-10">
+        <div class="flex align-items-center justify-between">
+            <h1 class="fw-bold text-3xl">Vos Profils LinkedIn</h1>
+            <button class="text-white fw-semibold bg-black rounded-full px-4 py-2">Ajouter un profil</button>
+        </div>
+
+        <div class="flex justify-content-evenly align-items-center gap-2">
+            @foreach($linkedinUserList as $linkedinUser)
+            <div class="flex flex-col align-items-center gap-4 relative">
+                <img 
+                    src="{{ $linkedinUser->linkedin_picture ?? '/build/assets/images/default-profile.png' }}"
+                    alt="profile-picture" 
+
+                    class="rounded-full"
+                />
+                <h3 class="text-xl fw-bold">{{ $linkedinUser->linkedin_firstname }} {{ $linkedinUser->linkedin_lastname }}</h3>
+
+                <img 
+                    src="/build/assets/icons/linkedin-blue.svg" 
+                    alt="LinkedIn Icon" 
+                    class="absolute bottom-[20%] right-[5%] bg-white" 
+                    style="border: 5px solid white; border-radius: 20px;"
+                />
+            </div>
+            @endforeach
+        </div>
+    </div>
+
+    <!-- KPIs Section -->
+    <div class="container py-2 flex flex-col gap-4 my-10">
+        <div class="flex justify-between align-items-center">
+            <h1 class="fw-bold text-3xl">Tes KPIs</h1>
+            <button class="text-white fw-semibold bg-black rounded-full px-4 py-2">Trier</button>
+        </div>
+        <div class="grid grid-cols-4 gap-4">
+            <div class="bg-red-500 flex flex-col align-items-center py-8 px-3 rounded-xl">
+                <h1>10K</h1>
+                <h3>Likes</h3>
+                <p class="text-muted">Hausse de XX likes</p>
+                <button class="text-white fw-semibold bg-black rounded-full px-4 py-2">En savoir plus</button>
+            </div>
+            <div class="bg-red-500 flex flex-col align-items-center py-8 px-3 rounded-xl">
+                <h1>10K</h1>
+                <h3>Likes</h3>
+                <p class="text-muted">Hausse de XX likes</p>
+                <button class="text-white fw-semibold bg-black rounded-full px-4 py-2">En savoir plus</button>
+            </div>
+            <div class="bg-red-500 flex flex-col align-items-center py-8 px-3 rounded-xl">
+                <h1>10K</h1>
+                <h3>Likes</h3>
+                <p class="text-muted">Hausse de XX likes</p>
+                <button class="text-white fw-semibold bg-black rounded-full px-4 py-2">En savoir plus</button>
+            </div>
+            <div class="bg-red-500 flex flex-col align-items-center py-8 px-3 rounded-xl">
+                <h1>10K</h1>
+                <h3>Likes</h3>
+                <p class="text-muted">Hausse de XX likes</p>
+                <button class="text-white fw-semibold bg-black rounded-full px-4 py-2">En savoir plus</button>
+            </div>
+            
+        </div>
+    </div>
+
+    <!-- Calendar Section -->
+    <div class="container py-2 my-10 flex flex-col gap-4" id="app">
+        <div class="flex justify-between align-items-center">
+            <h1 class="fw-bold text-3xl">Planning à Venir</h1>
+            <button class="text-white fw-semibold bg-black rounded-full px-4 py-2">Button</button>
+        </div>
+
+        <dashboard-calendar 
+            :campaigns="{{ json_encode($campaigns) }}" 
+            :posts="{{ json_encode($posts) }}"
+            :initial-month="{{ now()->month - 1 }}" 
+            :initial-year="{{ now()->year }}" 
+        />
+    </div>
+
     <!-- Tasks Section -->
-    <div class="container py-2">
-        <!-- Text & Button Section -->
+    <!-- <div class="container py-2">
         <div class="flex justify-content-between mt-32">
             <h1 class="text-black">Taches à Réaliser</h1>
             <button class="bg-white text-black">Ajouter</button>
         </div>
 
-        <!-- Tasks Card Section -->
         <div class="flex justify-content-between align-items-center p-4 bg-green-400 rounded-xl mt-2">
             <img 
                 src="/build/assets/icons/paint.svg" 
@@ -108,6 +184,6 @@
                 </button>
             </div>
         </div>
-    </div>
+    </div> -->
 </body>
 </html>
