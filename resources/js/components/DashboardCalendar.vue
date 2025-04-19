@@ -4,13 +4,13 @@
 
         <!-- Day Headers -->
         <div class="grid grid-cols-7 text-center font-medium mb-2">
-            <div class="py-2">Sun</div>
-            <div class="py-2">Mon</div>
-            <div class="py-2">Tue</div>
-            <div class="py-2">Wed</div>
-            <div class="py-2">Thu</div>
-            <div class="py-2">Fri</div>
-            <div class="py-2">Sat</div>
+            <div class="py-2">Dim</div>
+            <div class="py-2">Lun</div>
+            <div class="py-2">Mar</div>
+            <div class="py-2">Mer</div>
+            <div class="py-2">Jeu</div>
+            <div class="py-2">Ven</div>
+            <div class="py-2">Sam</div>
         </div>
     
         <!-- Calendar Grid -->
@@ -25,14 +25,15 @@
                 <div 
                     class="h-24 border rounded overflow-hidden relative p-1"
                     :class="{
-                    'bg-red-700': displayCampaigns(day),
-                    'cursor-pointer': getPostsForDate(day).length > 0,
-                    'cursor-not-allowed': getPostsForDate(day).length === 0,
+                    'bg-blue-500 cursor-pointer': displayCampaigns(day),
+                    'cursor-not-allowed': !displayCampaigns(day),
                     }"
                     @click="getPostsForDate(day).length > 0 ? showPostsPopover(day) : null"
                 >
-                <!-- 'bg-gray-50': !isDayInCampaign(day), -->
-                <!-- 'bg-yellow-50': isDayInCampaign(day), -->
+                    <!-- 'bg-gray-50': !isDayInCampaign(day), -->
+                    <!-- 'bg-yellow-50': isDayInCampaign(day), -->
+                    <!-- 'cursor-pointer': getPostsForDate(day).length > 0,
+                    'cursor-not-allowed': getPostsForDate(day).length === 0, -->
 
                     <div class="text-right text-sm">{{ day }}</div>
                     <div class="overflow-y-auto" style="max-height: 80px;">
@@ -47,7 +48,7 @@
                             'bg-purple-300': post.type === 'article'
                             }"
                         >
-                            {{ getPostTypeIcon(post.type) }} {{ formatTime(post.scheduledDateTime) }}
+                            {{ getPostTypeIcon(post.type) }} {{ formatTime(post.scheduled_time) }}
                         </div>
                     </div>
                 </div>
@@ -85,7 +86,7 @@
                             <div class="flex items-center w-full">
                                 <div class="flex-1"> 
                                     <span class="mr-2">{{ getPostTypeIcon(post.type) }}</span>
-                                    <span>{{ formatTime(post.scheduledDateTime) }}</span>
+                                    <span>{{ formatTime(post.scheduled_time) }}</span>
                                 </div>
                             </div>
                         </div>
@@ -119,8 +120,8 @@ export default {
   },
   
     data() {
-        console.log(this.posts);
-        console.log(this.campaigns);
+        console.log("Posts:", this.posts);
+        console.log("Campaigns: ", this.campaigns);
         return {
             selectedDay: null,
             showPopover: false,
@@ -134,12 +135,15 @@ export default {
             // Check if any campaign includes this day
             return this.campaigns.some(campaign => {
                 const startDate = new Date(campaign.start_date);
+                startDate.setHours(0, 0, 0, 0);
+                
                 const endDate = new Date(campaign.end_date);
+                endDate.setHours(0, 0, 0, 0);
                 
-                // Create a date object for the day we're checking
+                // Create a date object for the day we're checking with time set to midnight
                 const checkDate = new Date(this.currentYear, this.currentMonth, day);
+                checkDate.setHours(0, 0, 0, 0);
                 
-                // Simply check if the date falls within the campaign period
                 return checkDate >= startDate && checkDate <= endDate;
             });
         },
@@ -154,17 +158,17 @@ export default {
     
         getPostsForDate(date) {
             return this.posts.filter(post => {
-                const postDate = new Date(post.scheduledDateTime);
+                const postDate = new Date(post.scheduled_time); // Changed from scheduledDateTime to scheduled_time
                 return postDate.getDate() === date && 
                     postDate.getMonth() === this.currentMonth && 
                     postDate.getFullYear() === this.currentYear;
             });
         },
-    
+            
         formatTime(dateTime) {
             return new Date(dateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         },
-    
+            
         getPostTypeIcon(type) {
             switch(type) {
                 case 'text': return '📝';
