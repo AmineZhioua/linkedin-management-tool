@@ -76,3 +76,7 @@ Route::middleware(['auth', 'verified', 'linkedin.valid', 'linkedin.account.exist
     Route::post('/linkedin/schedule-post', [LinkedInController::class, 'publish']);
     Route::post('/linkedin/create-campaign', [LinkedInController::class, 'createCampaign']);
 });
+
+
+Route::delete('/linkedin/delete-post', [App\Http\Controllers\LinkedinPostController::class, 'deletePost'])->name('delete.post');
+Route::put('/linkedin/update-post', [App\Http\Controllers\LinkedinPostController::class, 'updatePost'])->name('update.post');

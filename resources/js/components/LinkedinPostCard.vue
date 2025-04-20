@@ -545,10 +545,10 @@ export default {
                 campaignFormData.append("end_date", this.endDate);
 
                 const campaignResponse = await axios.post("/linkedin/create-campaign", campaignFormData, {
-                headers: {
-                    "Content-Type": "multipart/form-data",
-                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
-                },
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                        "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
+                    },
                 });
 
                 if(campaignResponse.data.status !== 201) {
