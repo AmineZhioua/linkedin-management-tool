@@ -21,7 +21,7 @@ class LinkedinUserSeeder extends Seeder
             'linkedin_refresh_token' => 'your_refresh_token',
             'linkedin_firstname' => 'John',
             'linkedin_lastname' => 'Doe',
-            'linkedin_picture' => 'https://example.com/profile.jpg',
+            'linkedin_picture' => 'https://media.licdn.com/dms/image/v2/D4E03AQGJOzgSIdBqMA/profile-displayphoto-shrink_200_200/B4EZRN1VN2HAAY-/0/1736472617460?e=1750291200&v=beta&t=KTjl1VNw0YSxo_M9UBWCqZyVsCPPGL6Ff2iAf3I9YWk',
         ]);
 
         LinkedinUser::create([
@@ -32,7 +32,7 @@ class LinkedinUserSeeder extends Seeder
             'linkedin_refresh_token' => 'your_refresh_token',
             'linkedin_firstname' => 'Ahmed',
             'linkedin_lastname' => 'Omry',
-            'linkedin_picture' => 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQZbNCYpIFaH0SQOgckMP90UJkwCIOoh6AJtQ&s',
+            'linkedin_picture' => 'https://media.licdn.com/dms/image/v2/D4E03AQGJOzgSIdBqMA/profile-displayphoto-shrink_200_200/B4EZRN1VN2HAAY-/0/1736472617460?e=1750291200&v=beta&t=KTjl1VNw0YSxo_M9UBWCqZyVsCPPGL6Ff2iAf3I9YWk',
         ]);
 
         LinkedinUser::create([
@@ -43,7 +43,7 @@ class LinkedinUserSeeder extends Seeder
             'linkedin_refresh_token' => 'your_refresh_token',
             'linkedin_firstname' => 'Med',
             'linkedin_lastname' => 'Welfki',
-            'linkedin_picture' => 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRL2de_EUA1aFedrjCcpFf8FbMObTcG3BkGcQ&s',
+            'linkedin_picture' => 'https://media.licdn.com/dms/image/v2/D4E03AQGJOzgSIdBqMA/profile-displayphoto-shrink_200_200/B4EZRN1VN2HAAY-/0/1736472617460?e=1750291200&v=beta&t=KTjl1VNw0YSxo_M9UBWCqZyVsCPPGL6Ff2iAf3I9YWk',
         ]);
     }
 }
