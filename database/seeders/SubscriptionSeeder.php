@@ -11,7 +11,7 @@ class SubscriptionSeeder extends Seeder
     /**
      * Run the database seeds.
      */
-       public function run()
+    public function run()
     {
         Subscription::create([
             'name' => 'LinkedIn Plan',
