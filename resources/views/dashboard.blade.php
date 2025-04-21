@@ -84,7 +84,7 @@
         <div class="relative">
             <div class="flex justify-content-center align-items-center gap-12 min-h-[300px]" id="profiles-container">
                 @foreach($linkedinUserList as $linkedinUser)
-                <div class="flex flex-col align-items-center justify-center gap-4 relative profile transition-all duration-300">
+                <div class="flex flex-col align-items-center justify-center gap-4 cursor-pointer relative profile transition-all duration-300">
                     <img 
                         src="{{ $linkedinUser->linkedin_picture ?? '/build/assets/images/default-profile.png' }}"
                         alt="profile-picture" 
@@ -201,7 +201,7 @@
         </div>
     </div> -->
 
-    <script>
+<script>
     document.addEventListener('DOMContentLoaded', function() {
         const profilesContainer = document.getElementById('profiles-container');
         const profiles = document.querySelectorAll('.profile');
@@ -210,7 +210,7 @@
         const paginationContainer = document.getElementById('pagination-dots');
         
         const visibleProfilesCount = 3; // Show 3 profiles at a time
-        let currentIndex = 0; // Start with the first profile
+        let currentIndex = 0;
         const totalProfiles = profiles.length;
         
         // Hide navigation arrows if there are 3 or fewer profiles
@@ -226,6 +226,7 @@
             dot.classList.add(i === 0 ? 'bg-black' : 'bg-gray-300');
             dot.dataset.index = i;
             dot.addEventListener('click', () => goToProfile(i));
+            profiles[i].addEventListener('click', () => goToProfile(i));
             paginationContainer.appendChild(dot);
         }
         
@@ -290,9 +291,9 @@
         leftArrow.addEventListener('click', prevProfile);
         rightArrow.addEventListener('click', nextProfile);
     });
-    </script>
+</script>
 
-    <style>
+<style>
     .profile, .active {
         transition: all 0.3s ease-in-out;
     }
@@ -326,6 +327,6 @@
     #pagination-dots div:hover {
         transform: scale(1.2);
     }
-    </style>
+</style>
 </body>
 </html>

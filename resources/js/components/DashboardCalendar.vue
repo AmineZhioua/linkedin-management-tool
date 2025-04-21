@@ -94,6 +94,16 @@
                                     <span class="mr-2">{{ getPostTypeIcon(post.type) }}</span>
                                     <span>{{ formatTime(post.scheduled_time) }}</span>
                                 </div>
+                                <p 
+                                    class="mb-0 px-4 py-1 rounded-full fw-semibold"
+                                    :class="{
+                                        'text-green-500 bg-green-100': post.status === 'posted',
+                                        'text-red-600': post.status === 'failed',
+                                        'text-blue-600 bg-blue-300': post.status === 'queued',
+                                    }"
+                                >
+                                    {{ post.status === "posted" ? "Publié" : post.status === "failed" ? "Échoué" : "En attente" }}
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -252,6 +262,8 @@
                     <div class="flex items-center gap-2">
                         <button 
                             @click="deletePost(selectedPost.id)"
+                            :disabled="selectedPost.status === 'posted'" 
+                            :class="{'opacity-50 cursor-not-allowed': selectedPost.status === 'posted'}"
                             class="bg-red-500 text-white py-2 px-4 rounded-lg"
                         >
                             Supprimer
@@ -260,7 +272,9 @@
                         <button 
                             v-if="!isEditing"
                             @click="startEditing"
+                            :disabled="selectedPost.status === 'posted'" 
                             class="bg-blue-500 text-white py-2 px-4 rounded-lg"
+                            :class="{'opacity-50 cursor-not-allowed': selectedPost.status === 'posted'}"
                         >
                             Modifier
                         </button>
@@ -415,32 +429,32 @@ export default {
             return `${year}-${month}-${day}T${hours}:${minutes}`;
         },
 
-        localToUtc(localDateString) {
-            const localDate = new Date(localDateString);
-            return localDate.toISOString();
-        },
+        // localToUtc(localDateString) {
+        //     const localDate = new Date(localDateString);
+        //     return localDate.toISOString();
+        // },
 
         openPost(post) {
-    this.closePopover();
-    let postContent = post.content;
-    if (typeof post.content === 'string') {
-        try {
-            postContent = JSON.parse(post.content);
-        } catch (e) {
-            console.error("Failed to parse post content:", e);
-            postContent = { text: post.content };
-        }
-    }
-    this.selectedPost = {
-        ...post,
-        content: postContent,
-        scheduledDateTime: post.scheduled_time // Keep as UTC
-    };
-    this.editedPost = { ...this.selectedPost };
-    this.localScheduledDateTime = this.utcToLocalForInput(post.scheduled_time); // Convert to local
-    this.isOpen = true;
-    this.isEditing = false;
-},
+            let postContent = post.content;
+            if (typeof post.content === 'string') {
+                try {
+                    postContent = JSON.parse(post.content);
+                } catch (e) {
+                    console.error("Failed to parse post content:", e);
+                    postContent = { text: post.content };
+                }
+            }
+            this.selectedPost = {
+                ...post,
+                content: postContent,
+                scheduledDateTime: post.scheduled_time // Keep as UTC
+            };
+            console.log("url:", this.getMediaUrl(postContent.file_path));
+            this.editedPost = { ...this.selectedPost };
+            this.localScheduledDateTime = this.utcToLocalForInput(post.scheduled_time); // Convert to local
+            this.isOpen = true;
+            this.isEditing = false;
+        },
             
         closeModal() {
             this.isOpen = false;
@@ -462,51 +476,52 @@ export default {
         },
 
         async updatePost() {
-    this.isLoading = true;
-    console.log("Updating post:", this.editedPost);
-    try {
-        // Convert local time to UTC
-        this.editedPost.scheduledDateTime = this.localToUtc(this.localScheduledDateTime);
+            this.isLoading = true;
+            console.log("Updating post:", this.editedPost);
+            console.log(this.editedPost.scheduledDateTime);
+            console.log(this.localScheduledDateTime);
+            try {
+                this.editedPost.scheduledDateTime = this.localScheduledDateTime;
 
-        const formData = new FormData();
-        formData.append('post_id', this.editedPost.id);
-        formData.append('linkedin_user_id', this.editedPost.linkedin_user_id);
-        formData.append('type', this.editedPost.type);
-        formData.append('scheduled_time', this.editedPost.scheduledDateTime);
-        formData.append('content', JSON.stringify(this.editedPost.content));
-        formData.append('_method', 'PUT');
+                const formData = new FormData();
+                formData.append('post_id', this.editedPost.id);
+                formData.append('linkedin_user_id', this.editedPost.linkedin_user_id);
+                formData.append('type', this.editedPost.type);
+                formData.append('scheduled_time', this.editedPost.scheduledDateTime);
+                formData.append('content', JSON.stringify(this.editedPost.content));
+                formData.append('_method', 'PUT');
 
-        if (this.editedPost.content.file) {
-            formData.append('file', this.editedPost.content.file);
-        }
+                if (this.editedPost.content.file) {
+                    formData.append('file', this.editedPost.content.file);
+                }
 
-        for (let [key, value] of formData.entries()) {
-            console.log(`${key}: ${value}`);
-        }
-        const response = await axios.post('/linkedin/update-post', formData, {
-            headers: {
-                'Content-Type': 'multipart/form-data',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-            },
-        });
+                for (let [key, value] of formData.entries()) {
+                    console.log(`${key}: ${value}`);
+                }
+                const response = await axios.post('/linkedin/update-post', formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    },
+                });
 
-        if (response.status === 200) {
-            this.isEditing = false;
-            this.selectedPost = { ...this.editedPost };
-            window.location.reload();
-        } else {
-            console.error("Failed to update post:", response);
-            throw new Error("Failed to update post");
-        }
-    } catch (error) {
-        console.error("Error updating post:", error);
-        if (error.response && error.response.status === 422) {
-            console.log("Validation errors:", error.response.data);
-        }
-    } finally {
-        this.isLoading = false;
-    }
-},
+                if (response.status === 200) {
+                    this.isEditing = false;
+                    this.selectedPost = { ...this.editedPost };
+                    window.location.reload();
+                } else {
+                    console.error("Failed to update post:", response);
+                    throw new Error("Failed to update post");
+                }
+            } catch (error) {
+                console.error("Error updating post:", error);
+                if (error.response && error.response.status === 422) {
+                    console.log("Validation errors:", error.response.data);
+                }
+            } finally {
+                this.isLoading = false;
+            }
+        },
         
         async deletePost(postId) {
             this.isLoading = true;
