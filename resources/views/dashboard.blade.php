@@ -30,15 +30,15 @@
     </style>
 </head>
 <body>
-    <div class="bg-black">
+    <div class="bg-black mb-8 relative">
         <!-- Header Component Section -->
         <x-header />
 
         <!-- Main Content Section -->
-        <main class="container">
+        <main class="container min-h-[600px]">
 
             <!-- Landing Section -->
-            <div class="d-flex justify-content-between align-items-center py-4 relative">
+            <div class="d-flex justify-content-between align-items-center py-10 relative">
 
                 <!-- Main Text Section -->
                 <div class="text-white flex-grow-1">
@@ -59,19 +59,17 @@
                     width="420"
                     class="dashboard-img d-none d-lg-block"
                 />
-
-                <!-- <div id="circle-container" class="flex absolute bottom-[-8%] left-[-120px]" style="z-index: -1;">
-                    <span id="circle" class="bg-black h-24 w-24 rounded-full"></span>
-                    <script>
-                        let blackCircle = document.getElementById('circle');
-                        let circleContainer = document.getElementById('circle-container');
-                        for (let i = 0; i < 15; i++) {
-                            circleContainer.appendChild(blackCircle.cloneNode(true));
-                        }
-                    </script>
-                </div> -->
             </div>
         </main>
+
+        <!-- Start Waves Animation Section -->
+        <div class="waves">
+            <div class="wave" id="wave1"></div>
+            <div class="wave" id="wave2"></div>
+            <div class="wave" id="wave3"></div>
+            <div class="wave" id="wave4"></div>
+        </div>
+        <!-- End Waves Animation Section -->
     </div>
 
     <!-- LinkedIn Profiles Section -->
@@ -119,31 +117,31 @@
     </div>
 
     <!-- KPIs Section -->
-    <div class="container py-2 flex flex-col gap-4 my-10">
+    <div class="container py-4 flex flex-col gap-4 my-10">
         <div class="flex justify-between align-items-center">
             <h1 class="fw-bold text-3xl">Tes KPIs</h1>
             <button class="text-white fw-semibold bg-black rounded-full px-4 py-2">Trier</button>
         </div>
         <div class="grid grid-cols-4 gap-4">
-            <div class="bg-red-500 flex flex-col align-items-center py-8 px-3 rounded-xl">
+            <div class="flex flex-col align-items-center py-8 px-3 rounded-xl" style="background-color: #E6DFFF;">
                 <h1>10K</h1>
                 <h3>Likes</h3>
                 <p class="text-muted">Hausse de XX likes</p>
                 <button class="text-white fw-semibold bg-black rounded-full px-4 py-2">En savoir plus</button>
             </div>
-            <div class="bg-red-500 flex flex-col align-items-center py-8 px-3 rounded-xl">
+            <div class="flex flex-col align-items-center py-8 px-3 rounded-xl" style="background-color: #C4EDDB;">
                 <h1>10K</h1>
                 <h3>Likes</h3>
                 <p class="text-muted">Hausse de XX likes</p>
                 <button class="text-white fw-semibold bg-black rounded-full px-4 py-2">En savoir plus</button>
             </div>
-            <div class="bg-red-500 flex flex-col align-items-center py-8 px-3 rounded-xl">
+            <div class="flex flex-col align-items-center py-8 px-3 rounded-xl" style="background-color: #FFB0C6;">
                 <h1>10K</h1>
                 <h3>Likes</h3>
                 <p class="text-muted">Hausse de XX likes</p>
                 <button class="text-white fw-semibold bg-black rounded-full px-4 py-2">En savoir plus</button>
             </div>
-            <div class="bg-red-500 flex flex-col align-items-center py-8 px-3 rounded-xl">
+            <div class="flex flex-col align-items-center py-8 px-3 rounded-xl" style="background-color: #FFE4CF;">
                 <h1>10K</h1>
                 <h3>Likes</h3>
                 <p class="text-muted">Hausse de XX likes</p>
@@ -200,6 +198,52 @@
             </div>
         </div>
     </div> -->
+
+    <!-- Footer Section -->
+    <footer class="bg-black py-4 mt-8">
+        <div class="container flex items-center justify-between">
+            <div class="d-flex copyright flex-col text-white fw-semibold">
+                <span>Copyright 
+                    <script>
+                        document.write(new Date().getFullYear());
+                    </script>
+                    Lemonade.
+                </span>
+                <span>Tous droits réservés</span>
+            </div>
+
+            <img 
+                src="/build/assets/lemonade-logo.svg" 
+                alt="Lemonade Logo"
+                height="40"
+                width="40"
+            />
+
+            <div class="flex gap-3 flex-wrap">
+                <!-- LinkedIn Icon -->
+                <img 
+                    src="/build/assets/icons/linkedin.svg" 
+                    alt="LinkedIn Logo" 
+                    height="25"
+                    width="25" 
+                />
+                <!-- Instagram Icon -->
+                <img 
+                    src="/build/assets/icons/instagram.svg" 
+                    alt="LinkedIn Logo" 
+                    height="25"
+                    width="25" 
+                />
+                <!-- TikTok Icon -->
+                <img 
+                    src="/build/assets/icons/tiktok.svg" 
+                    alt="LinkedIn Logo" 
+                    height="25"
+                    width="25" 
+                />
+            </div>
+        </div>
+    </footer>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -327,6 +371,53 @@
     #pagination-dots div:hover {
         transform: scale(1.2);
     }
+
+    /* Waves Animation & Styling */
+    .waves>div {
+        position: absolute;
+        width: 100%;
+        min-height: 100px;
+        bottom: -10px;
+        left: 0;
+        background: url("/build/assets/images/wave.png");
+        background-size: 1000px 100px;
+    }
+
+   .waves #wave1 {
+        z-index: 10;
+        animation: waveAnimation 7s linear infinite;
+        animation-delay: -2s;
+    }
+
+   .waves #wave2 {
+        z-index: 9;
+        animation: waveAnimation 10s linear infinite;
+        animation-delay: -3s;
+        opacity: 80%;
+    }
+
+   .waves #wave3 {
+        z-index: 8;
+        animation: waveAnimation 13s linear infinite;
+        animation-delay: -4s;
+        opacity: 60%;
+    }
+
+   .waves #wave4 {
+        z-index: 7;
+        animation: waveAnimation 20s linear infinite;
+        animation-delay: -5s;
+        opacity: 40%;
+    }
+
+    @keyframes waveAnimation {
+    0% {
+        background-position-x: 0px;
+    }
+    100% {
+        background-position-x: 1000px;
+    }
+}
 </style>
 </body>
 </html>

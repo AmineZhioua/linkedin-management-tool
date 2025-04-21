@@ -1,5 +1,5 @@
 <template>
-    <div class="dashboard-calendar">
+    <div class="dashboard-calendar py-10">
         <calendar-navigation v-model:currentMonth="currentMonth" v-model:currentYear="currentYear" />
         <loading-overlay :isLoading="isLoading" message="Traitement en cours..." />
         <!-- Day Headers -->
