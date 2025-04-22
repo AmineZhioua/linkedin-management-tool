@@ -85,6 +85,7 @@
                     :initial-cible="selectedCible"
                     :initial-frequence="frequenceParJour"
                     :initial-description="descriptionCampagne"
+                    :initial-couleur="couleurCampagne"
                     :cibles="cibles"
                     @update:form-data="updateFormData"
                     @validate="isFormValid = $event"
@@ -136,6 +137,7 @@
                         :month="currentMonth"
                         :year="currentYear"
                         :onEditPost="editPost"
+                        :campaign-color="couleurCampagne"
                         @add-post="handleAddPost"
                         :campaignStartDateTime="campaignStartDateTime"
                         :campaignEndDateTime="campaignEndDateTime"
@@ -221,6 +223,7 @@ export default {
             descriptionCampagne: "",
             campaignStartDateTime: "",
             campaignEndDateTime: "",
+            couleurCampagne: "",
             postTypes: [
                 { value: "text", label: "Text", icon: "fas fa-align-left" },
                 { value: "image", label: "Image", icon: "fas fa-image" },
@@ -516,6 +519,7 @@ export default {
         closePostModal() {
             this.isPostModalOpen = false;
             this.selectedPost = null;
+            this.postModalError = "";
         },
 
         // SUBMIT, VALIDATE & SCHEDULE MEDIA METHODS
@@ -541,6 +545,7 @@ export default {
                 campaignFormData.append("description", this.descriptionCampagne || '');
                 campaignFormData.append("target_audience", this.selectedCible || '');
                 campaignFormData.append("frequency_per_day", this.frequenceParJour);
+                campaignFormData.append("couleur", this.couleurCampagne);
                 campaignFormData.append("start_date", this.startDate);
                 campaignFormData.append("end_date", this.endDate);
 
@@ -558,7 +563,6 @@ export default {
                 const campaignId = campaignResponse.data.id;
                 
 
-                // Submit each post with campaign data
                 for(const post of sortedPosts) {
                     let formData = new FormData();
                     formData.append("linkedin_id", this.selectedAccount.id);
@@ -746,6 +750,7 @@ export default {
             this.selectedCible = formData.selectedCible;
             this.frequenceParJour = formData.frequenceParJour;
             this.descriptionCampagne = formData.descriptionCampagne;
+            this.couleurCampagne = formData.couleurCampagne;
         },
 
         updateCampaignDates({ startDate, endDate }) {

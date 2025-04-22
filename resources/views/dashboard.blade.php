@@ -43,7 +43,7 @@
                 <!-- Main Text Section -->
                 <div class="text-white flex-grow-1">
                     <h1 class="fw-bold text-5xl">Bienvenue sur ton</h1>
-                    <h1 class="special-text my-2">dashboard, </h1>
+                    <h1 class="special-text my-4">dashboard, </h1>
                     <h1 class="fw-bold text-5xl">à toi de jouer !</h1>
 
                     <p class="fw-semibold mt-4 text-lg">
@@ -76,7 +76,13 @@
     <div class="container py-2 flex flex-col gap-8 my-10">
         <div class="flex align-items-center justify-between">
             <h1 class="fw-bold text-3xl">Vos Profils LinkedIn</h1>
-            <button class="text-white fw-semibold bg-black rounded-full px-4 py-2">Ajouter un profil</button>
+            <button class="bg-black rounded-full px-4 py-2 flex items-center gap-2 hover:opacity-70 transition-all duration-300">
+                <img 
+                    src="/build/assets/icons/add-white.svg" 
+                    alt="Add Icon"
+                />
+                <a href="{{ route('linkedin-post') }}" class="text-decoration-none text-white fw-semibold">Ajouter un profil</a>
+            </button>
         </div>
 
         <div class="relative">

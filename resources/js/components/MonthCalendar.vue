@@ -16,7 +16,11 @@
             <template v-for="day in getDaysInMonth(month, year)">
                 <div 
                     class="h-24 border rounded overflow-hidden relative p-1"
-                    :class="{'bg-blue-50 hover:bg-blue-300 cursor-pointer': getPostsForDate(day).length > 0,}"
+                    :class="{
+                        'hover:opacity-70 cursor-pointer': getPostsForDate(day).length > 0,
+                        [campaignColor]: getPostsForDate(day).length > 0
+                    }"
+                    :style="getPostsForDate(day).length > 0 ? { backgroundColor: campaignColor } : {}"
                     @click="showPostsPopover(day)"
                 >
                     <div class="text-right text-sm">{{ day }}</div>
@@ -92,12 +96,28 @@
                 </div>
             </div>
         </div>
+        <!-- Error Messages -->
+        <Popup
+            v-if="showErrorPopup"
+            :key="popupKey"
+            path="/build/assets/popups/sad-face.svg"
+            @close="showErrorPopup = false"
+        >
+            {{ errorMessage }}
+        </Popup>
     </div>
 </template>
 
 <script>
+import Popup from './Popup.vue';
+
 export default {
     name: 'MonthCalendar',
+
+    components: {
+        Popup,
+    },
+
     props: {
         posts: Array,
         month: Number,
@@ -105,15 +125,16 @@ export default {
         onEditPost: Function,
         campaignStartDateTime: String,
         campaignEndDateTime: String,
+        campaignColor: String,
     },
     
     data() {
-        const startDate = new Date(this.year, this.month, 1);
-        const endDate = new Date(this.year, this.month + 1, 0);
         return {
             selectedDay: null,
             showPopover: false,
-            CampaignRangeDate: startDate - endDate,
+            showErrorPopup: false,
+            errorMessage: '',
+            popupKey: 0, // Added to force re-rendering of Popup
         };
     },
 
@@ -151,6 +172,33 @@ export default {
         
         showPostsPopover(day) {
             this.selectedDay = day;
+
+            const campaignStart = new Date(this.campaignStartDateTime);
+            const campaignEnd = new Date(this.campaignEndDateTime);
+            const selectedDate = new Date(this.year, this.month, day);
+
+            if (isNaN(campaignStart.getTime()) || isNaN(campaignEnd.getTime())) {
+                console.error('Invalid campaign date range provided');
+                return;
+            }
+
+            const campaignStartDate = new Date(campaignStart);
+            campaignStartDate.setHours(0, 0, 0, 0);
+
+            const campaignEndDate = new Date(campaignEnd);
+            campaignEndDate.setHours(0, 0, 0, 0);
+
+            const normalizedSelectedDate = new Date(selectedDate);
+            normalizedSelectedDate.setHours(0, 0, 0, 0);
+
+            if (normalizedSelectedDate < campaignStartDate || normalizedSelectedDate > campaignEndDate) {
+                this.errorMessage = 'La date sélectionnée est en dehors de la plage de la campagne.';
+                this.popupKey++; // Increment key to force Popup re-render
+                this.showErrorPopup = true;
+                return;
+            }
+
+            this.showErrorPopup = false;
             this.showPopover = true;
         },
         

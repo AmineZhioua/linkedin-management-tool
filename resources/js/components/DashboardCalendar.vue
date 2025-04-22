@@ -25,10 +25,11 @@
                 <div 
                     class="h-24 border rounded overflow-hidden relative p-1"
                     :class="{
-                    'bg-blue-500 cursor-pointer': displayCampaigns(day),
-                    'cursor-not-allowed': !displayCampaigns(day),
+                        'cursor-pointer': displayCampaigns(day).isActive && getPostsForDate(day).length > 0,
+                        'cursor-not-allowed': !displayCampaigns(day).isActive
                     }"
-                    @click="getPostsForDate(day).length > 0 ? showPostsPopover(day) : null"
+                    :style="displayCampaigns(day).isActive ? { backgroundColor: displayCampaigns(day).color } : {}"
+                    @click="displayCampaigns(day).isActive && getPostsForDate(day).length > 0 ? showPostsPopover(day) : null"
                 >
                     <div class="text-right text-sm">{{ day }}</div>
 
@@ -73,19 +74,21 @@
                     </button>
                 </div>
                 <div class="mt-4 flex-1">
+                    <!-- In Case There Are Not Posts -->
                     <div v-if="getPostsForDate(selectedDay).length === 0" class="text-center text-gray-500 py-4">
                         Pas de posts prévus
                     </div>
+                    
                     <div v-else class="space-y-2">
                         <div 
                             v-for="post in getPostsForDate(selectedDay)"
                             :key="post.id || post.tempId"
                             class="p-3 rounded flex items-center cursor-pointer justify-between"
                             :class="{
-                            'bg-green-200': post.type === 'text',
-                            'bg-yellow-200': post.type === 'image',
-                            'bg-red-200': post.type === 'video',
-                            'bg-purple-200': post.type === 'article'
+                                'bg-green-200': post.type === 'text',
+                                'bg-yellow-200': post.type === 'image',
+                                'bg-red-200': post.type === 'video',
+                                'bg-purple-200': post.type === 'article'
                             }"
                             @click="openPost(post)"
                         >
@@ -94,6 +97,8 @@
                                     <span class="mr-2">{{ getPostTypeIcon(post.type) }}</span>
                                     <span>{{ formatTime(post.scheduled_time) }}</span>
                                 </div>
+
+                                <!-- Post Status -->
                                 <p 
                                     class="mb-0 px-4 py-1 rounded-full fw-semibold"
                                     :class="{
@@ -336,15 +341,28 @@ export default {
   
     methods: {
         displayCampaigns(day) {
-            return this.campaigns.some(campaign => {
+            const checkDate = new Date(this.currentYear, this.currentMonth, day);
+            checkDate.setHours(0, 0, 0, 0);
+            
+            for (const campaign of this.campaigns) {
                 const startDate = new Date(campaign.start_date);
                 startDate.setHours(0, 0, 0, 0);
+                
                 const endDate = new Date(campaign.end_date);
                 endDate.setHours(0, 0, 0, 0);
-                const checkDate = new Date(this.currentYear, this.currentMonth, day);
-                checkDate.setHours(0, 0, 0, 0);
-                return checkDate >= startDate && checkDate <= endDate;
-            });
+                
+                if (checkDate >= startDate && checkDate <= endDate) {
+                    return {
+                        isActive: true,
+                        color: campaign.color
+                    };
+                }
+            }
+            
+            return {
+                isActive: false,
+                color: null
+            };
         },
 
         isDayInCampaign(day) {
@@ -422,17 +440,12 @@ export default {
         utcToLocalForInput(utcString) {
             const date = new Date(utcString);
             const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+            const month = String(date.getMonth() + 1).padStart(2, '0');
             const day = String(date.getDate()).padStart(2, '0');
             const hours = String(date.getHours()).padStart(2, '0');
             const minutes = String(date.getMinutes()).padStart(2, '0');
             return `${year}-${month}-${day}T${hours}:${minutes}`;
         },
-
-        // localToUtc(localDateString) {
-        //     const localDate = new Date(localDateString);
-        //     return localDate.toISOString();
-        // },
 
         openPost(post) {
             let postContent = post.content;

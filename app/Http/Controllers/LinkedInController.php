@@ -19,8 +19,7 @@ class LinkedInController extends Controller
     /**
      * Display the LinkedIn login page with the user's linked accounts.
      */
-    public function index()
-    {
+    public function index() {
         $user = Auth::user();
         if (!$user) {
             return redirect()->route('login');
@@ -41,6 +40,7 @@ class LinkedInController extends Controller
                 'description' => 'required|string',
                 'target_audience' => 'nullable|string',
                 'frequency_per_day' => 'required|integer|min:1',
+                'couleur' => 'required|string',
                 'start_date' => 'required|date|after:now',
                 'end_date' => 'required|date|after:start_date',
             ]);
@@ -57,6 +57,7 @@ class LinkedInController extends Controller
                     'description' => $validated['description'],
                     'target_audience' => $validated['target_audience'],
                     'frequency_per_day' => $validated['frequency_per_day'],
+                    'color' => $validated['couleur'],
                     'status' => 'scheduled',
                 ]
             );
@@ -71,7 +72,7 @@ class LinkedInController extends Controller
                 'error' => $e->getMessage(),
                 'data' => $request->all()
             ]);
-            return response()->json(['error' => 'Une erreur s\'est produite lors de la création de cotre campagne !'], 500);
+            return response()->json(['error' => 'Une erreur s\'est produite lors de la création de cotre campagne ! ' . $e], 500);
         }
     }
 
@@ -155,8 +156,7 @@ class LinkedInController extends Controller
     /**
      * Redirect the user to LinkedIn for authorization.
      */
-    public function redirect()
-    {
+    public function redirect() {
         $client_id = config('services.linkedin.client_id');
         $url = 'https://www.linkedin.com/oauth/v2/authorization';
         $query = http_build_query([
@@ -627,8 +627,7 @@ class LinkedInController extends Controller
     /**
      * Share media (image/video) on LinkedIn.
      */
-    public function shareMedia(array $data)
-    {
+    public function shareMedia(array $data) {
         if (request()->isMethod('post')) {
             $validated = validator($data, [
                 'token' => 'required|string',
@@ -693,7 +692,7 @@ class LinkedInController extends Controller
         $responseData = json_decode($response, true);
         curl_close($curl);
 
-        // Handle the response
+        // Handling the response
         if ($httpCode >= 200 && $httpCode < 300) {
             $responseArray = [
                 'status' => 200,

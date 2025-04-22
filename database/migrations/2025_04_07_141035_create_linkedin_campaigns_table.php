@@ -16,6 +16,7 @@ return new class extends Migration
             $table->text('description');
             $table->string('target_audience');
             $table->integer('frequency_per_day');
+            $table->string('color');
             $table->dateTime('start_date');
             $table->dateTime('end_date');
             $table->enum('status', ['draft', 'scheduled', 'completed', 'failed'])->default('draft');
@@ -25,6 +26,8 @@ return new class extends Migration
 
     public function down(): void
     {
+        Schema::disableForeignKeyConstraints();
         Schema::dropIfExists('linkedin_campaigns');
+        Schema::enableForeignKeyConstraints();
     }
 };

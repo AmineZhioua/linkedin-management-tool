@@ -18,6 +18,7 @@ class LinkedinCampaign extends Model
         'description',
         'target_audience',
         'frequency_per_day',
+        'color',
         'start_date',
         'end_date',
         'status',

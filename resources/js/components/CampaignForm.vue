@@ -53,7 +53,7 @@
                 class="w-full border rounded-lg p-2 mb-1"
                 :class="{'border-red-500': cibleErrorMessage}"
             >
-                <option value="" disabled>Choisissez une audience</option>
+                <option value="" disabled>Choisissez votre audience</option>
                 <option v-for="cible in cibles" :key="cible.id" :value="cible.id">
                     {{ cible.name }}
                 </option>
@@ -84,6 +84,17 @@
                     par Jour
                 </button>
             </div>
+        </div>
+
+        <!-- Couleur du Campagne -->
+        <div class="mb-2">
+            <label for="couleurCampgne" class="block text-md mb-2">Choissisez un couleur spécial <span style="color: red;">*</span> :</label>
+            <input
+                type="color"
+                id="couleurCampgne"
+                v-model="couleurCampagne"
+                class="min-w-[300px] max-w-[500px] h-[50px] border rounded-xl p-2 bg-white mb-1"
+            />
         </div>
   
         <!-- Description du Campagne -->
@@ -120,9 +131,12 @@ export default {
             type: String,
         },
         initialFrequence: {
-            type: String,
+            type: Number,
         },
         initialDescription: {
+            type: String,
+        },
+        initialCouleur: {
             type: String,
         },
         cibles: {
@@ -145,6 +159,7 @@ export default {
             descriptionCampagne: this.initialDescription,
             cibleErrorMessage: '',
             descriptionErrorMessage: '',
+            couleurCampagne: this.initialCouleur || '#fff000',
         };
     },
   
@@ -215,6 +230,7 @@ export default {
             return this.isStartDateValid && 
                 this.isEndDateValid && 
                 this.selectedCible && 
+                this.couleurCampagne &&
                 this.isDescriptionValid &&
                 this.frequenceParJour >= 1 && 
                 this.frequenceParJour <= 10;
@@ -226,7 +242,8 @@ export default {
                 endDate: this.endDate,
                 selectedCible: this.selectedCible,
                 frequenceParJour: this.frequenceParJour,
-                descriptionCampagne: this.descriptionCampagne
+                descriptionCampagne: this.descriptionCampagne,
+                couleurCampagne: this.couleurCampagne,
             };
         },
     },
@@ -260,7 +277,6 @@ export default {
         },
       
         updateDates() {
-            // Update today's date
             const now = new Date();
             this.todayDate = this.formatDateTime(now);
             

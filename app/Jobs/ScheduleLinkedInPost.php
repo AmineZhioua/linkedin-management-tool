@@ -30,6 +30,7 @@ class ScheduleLinkedInPost implements ShouldQueue
 
         if (!$linkedinUser || !$linkedinUser->linkedin_token) {
             Log::error("LinkedIn user or token not found for scheduled post {$post->id}");
+            
             $post->update(['status' => 'failed', 'error' => 'LinkedIn user or token not found']);
             return;
         }
@@ -125,7 +126,8 @@ class ScheduleLinkedInPost implements ShouldQueue
             Log::info("Parsed Response Data", [
                 'responseData' => $responseData,
                 'httpCode' => $responseData['status'] ?? 'not_set',
-                'errorMsg' => $responseData['error'] ?? 'not_set'
+                'errorMsg' => $responseData['error'] ?? 'not_set',
+                'post_id' => $responseData['data']['id'] ?? 'not_set' // WE NEED THIS FOR LATER // WE NEED TO SAVE IT IN THE DATABASE
             ]);
 
             // Fix: Use 'http_code' instead of 'status' for the HTTP status code
