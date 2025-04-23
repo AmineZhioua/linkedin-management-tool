@@ -12,6 +12,7 @@ use App\Jobs\ScheduleLinkedInPost;
 use App\Models\LinkedinCampaign;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
 
 class LinkedInController extends Controller
@@ -88,14 +89,6 @@ class LinkedInController extends Controller
             'campaign_id' => 'required|exists:linkedin_campaigns,id',
         ]);
         
-        $campaign = LinkedinCampaign::findOrFail($validated['campaign_id']);
-
-        if(!$campaign) {
-            return response()->json([
-                'error' => 'Une erreur est produite lors de la recherche de votre campagne'
-            ], 404);
-        }
-
         switch ($validated['type']) {
             case 'text':
                 $request->validate(['content.text' => 'required|string|max:3000']);
@@ -108,7 +101,6 @@ class LinkedInController extends Controller
                     'content.caption' => 'nullable|string',
                     'content.original_filename' => 'required|string',
                 ]);
-                // Store the file temporarily (unchanged from original)
                 $file = $request->file('content.file');
                 $path = $file->store('', 'linkedin_media');
                 Log::info('Stored LinkedIn media', [
@@ -139,10 +131,12 @@ class LinkedInController extends Controller
                 return response()->json(['error' => 'Invalid post type'], 400);
         }
 
+        $campaign = LinkedinCampaign::findOrFail($validated['campaign_id']);
+
         $post = ScheduledLinkedinPost::create([
             'user_id' => Auth::id(),
             'linkedin_user_id' => $validated['linkedin_id'],
-            'campaign_id' => $campaign->id, // Link to the campaign
+            'campaign_id' => $campaign->id,
             'type' => $validated['type'],
             'content' => json_encode($content),
             'scheduled_time' => $validated['scheduled_date'],
@@ -150,6 +144,18 @@ class LinkedInController extends Controller
         ]);
 
         ScheduleLinkedInPost::dispatch($post)->delay(Carbon::parse($validated['scheduled_date']));
+        
+        if (config('queue.default') === 'database') {
+            $jobRecord = DB::table('jobs')
+                ->where('payload', 'like', '%ScheduleLinkedInPost%')
+                ->where('payload', 'like', '%'.$post->id.'%')
+                ->orderBy('id', 'desc')
+                ->first();
+                
+            if ($jobRecord) {
+                $post->update(['job_id' => $jobRecord->id]);
+            }
+        }
 
         return response()->json(['message' => 'Post scheduled successfully with campaign']);
     }
@@ -309,6 +315,7 @@ class LinkedInController extends Controller
      * Post text-only content to LinkedIn.
      */
     public function postTextOnly(array $data) {
+        set_time_limit(1800);
         $postUrl = "https://api.linkedin.com/v2/ugcPosts";
         $authorUrn = 'urn:li:person:' . $data['linkedin_id'];
 
@@ -341,7 +348,7 @@ class LinkedInController extends Controller
             CURLOPT_POST => true,
             CURLOPT_POSTFIELDS => json_encode($postData),
             CURLOPT_HTTPHEADER => $headers,
-            CURLOPT_TIMEOUT => 30
+            CURLOPT_TIMEOUT => 1800
         ]);
 
         $response = curl_exec($curl);
@@ -350,7 +357,8 @@ class LinkedInController extends Controller
         curl_close($curl);
 
         return [
-            'status' => $httpCode,
+            'status' => 200,
+            'http_code' => $httpCode,
             'data' => json_decode($response),
             'error' => $errorMsg,
         ];
@@ -429,7 +437,7 @@ class LinkedInController extends Controller
                 CURLOPT_POST => true,
                 CURLOPT_POSTFIELDS => json_encode($registerData),
                 CURLOPT_HTTPHEADER => $headers,
-                CURLOPT_TIMEOUT => 30
+                CURLOPT_TIMEOUT => 1800
             ]);
 
             $response = curl_exec($curl);
@@ -684,7 +692,7 @@ class LinkedInController extends Controller
             CURLOPT_POST => true,
             CURLOPT_POSTFIELDS => json_encode($postData),
             CURLOPT_HTTPHEADER => $headers,
-            CURLOPT_TIMEOUT => 30
+            CURLOPT_TIMEOUT => 1800
         ]);
 
         $response = curl_exec($curl);

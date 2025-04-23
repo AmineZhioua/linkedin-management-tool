@@ -15,10 +15,12 @@ class ScheduledLinkedinPost extends Model
         'user_id',
         'linkedin_user_id',
         'campaign_id',
+        'job_id',
         'type',
         'content',
         'scheduled_time',
         'status',
+        'post_urn',
         'error',
     ];
 

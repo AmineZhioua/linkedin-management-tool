@@ -157,53 +157,41 @@
         </div>
     </div>
 
-    <!-- Calendar Section -->
-    <div class="container py-2 my-10 flex flex-col gap-4" id="app">
-        <div class="flex justify-between align-items-center">
-            <h1 class="fw-bold text-3xl">Planning à Venir</h1>
-            <button class="text-white fw-semibold bg-black rounded-full px-4 py-2">Button</button>
+    <div id="app">
+        <!-- Calendar Section -->
+        <div class="container py-2 my-10 flex flex-col gap-4">
+            <div class="flex justify-between align-items-center">
+                <h1 class="fw-bold text-3xl">Planning à Venir</h1>
+                <button class="text-white fw-semibold bg-black rounded-full px-4 py-2">Button</button>
+            </div>
+
+            <dashboard-calendar 
+                :campaigns="{{ json_encode($campaigns) }}" 
+                :posts="{{ json_encode($posts) }}"
+                :initial-month="{{ now()->month - 1 }}" 
+                :initial-year="{{ now()->year }}" 
+            />
         </div>
 
-        <dashboard-calendar 
-            :campaigns="{{ json_encode($campaigns) }}" 
-            :posts="{{ json_encode($posts) }}"
-            :initial-month="{{ now()->month - 1 }}" 
-            :initial-year="{{ now()->year }}" 
-        />
+
+        <!-- Campaigns Display Section -->
+        <div class="container py-2 my-10">
+            <div class="flex justify-between align-items-center">
+                <h1 class="fw-bold text-3xl">Vos Campagnes</h1>
+                <button class="text-white flex items-center gap-2 fw-semibold bg-black rounded-full px-4 py-2">
+                    <img 
+                        src="/build/assets/icons/add-white.svg" 
+                        alt="Add Icon"
+                    />
+                    <a href="{{ route('linkedin-post') }}" class="text-decoration-none text-white fw-semibold">Créer une Campagne</a>
+                </button>
+            </div>
+
+            <campaign-table :campaigns="{{ json_encode($campaigns) }}" />
+        </div>
     </div>
 
-    <!-- Tasks Section -->
-    <!-- <div class="container py-2">
-        <div class="flex justify-content-between mt-32">
-            <h1 class="text-black">Taches à Réaliser</h1>
-            <button class="bg-white text-black">Ajouter</button>
-        </div>
 
-        <div class="flex justify-content-between align-items-center p-4 bg-green-400 rounded-xl mt-2">
-            <img 
-                src="/build/assets/icons/paint.svg" 
-                alt="paint-icon" 
-                class="bg-white p-2 rounded-full mr-8 relative top-[-50px]" 
-            />
-            <div class="text-black flex-grow-1 px-2">
-                <h1 class="text-3xl">Plateforme de marque</h1>
-                <h1 class="text-2xl text-slate-700">75%</h1>
-                <p class="text-muted fw-semibold">Plus que quelques taches!</p>
-                <span>---------------</span>
-            </div>
-
-            <div class="task-btns flex flex-col align-items-center gap-2">
-                <button class="bg-black text-white py-2 px-4 rounded-full">
-                    Finir la Tache
-                </button>
-
-                <button class="bg-transparent text-black py-2 px-4 rounded-full flex align-items-center gap-2">
-                    Tout voir
-                    <img src="/build/assets/icons/arrow-down.svg" alt="arrow-down" />
-                </button>
-            </div>
-        </div>
-    </div> -->
 
     <!-- Footer Section -->
     <footer class="bg-black py-4 mt-8">

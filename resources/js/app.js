@@ -14,6 +14,9 @@ import PostModal from "./components/PostModal.vue";
 import CalendarNavigation from "./components/CalendarNavigation.vue";
 import CampaignForm from "./components/CampaignForm.vue";
 import DashboardCalendar from "./components/DashboardCalendar.vue";
+import CampaignTable from "./components/CampaignTable.vue";
+import CampaignModal from "./components/CampaignModal.vue";
+import PostCard from "./components/PostCard.vue";
 
 
 const app = createApp();
@@ -31,5 +34,8 @@ app.component("post-modal", PostModal);
 app.component("calendar-navigation", CalendarNavigation);
 app.component("campaign-form", CampaignForm);
 app.component("dashboard-calendar", DashboardCalendar);
+app.component("campaign-table", CampaignTable);
+app.component("campaign-modal", CampaignModal);
+app.component("post-card", PostCard);
 
 app.mount("#app");

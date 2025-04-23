@@ -328,12 +328,10 @@ export default {
                 currentDate.setDate(start.getDate() + i);
                 currentDate.setHours(0, 0, 0, 0);
 
-                // Skip if the current date is after the end date
                 if (currentDate > endDay) {
                     continue;
                 }
 
-                // Determine the time window for this day
                 let dayStart, dayEnd;
                 if (i === 0) {
                     dayStart = new Date(start);
@@ -601,6 +599,10 @@ export default {
                 this.showSuccessPopup = true;
                 this.successMessage = "Tous vos posts ont été programmés avec succès!";
                 this.resetForm();
+                // Redirect to the Dasboard
+                setTimeout(() => {
+                    window.location = "/dashboard/linkedin";
+                }, 2000)
             } catch (error) {
                 console.error("Error submitting posts:", error);
                 if (error.response?.status === 401 || 

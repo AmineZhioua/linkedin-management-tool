@@ -8,6 +8,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use App\Models\ScheduledLinkedInPost;
 use App\Http\Controllers\LinkedInController;
+use App\Models\LinkedinCampaign;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -30,8 +31,7 @@ class ScheduleLinkedInPost implements ShouldQueue
 
         if (!$linkedinUser || !$linkedinUser->linkedin_token) {
             Log::error("LinkedIn user or token not found for scheduled post {$post->id}");
-            
-            $post->update(['status' => 'failed', 'error' => 'LinkedIn user or token not found']);
+            $post->update(['status' => 'failed', 'error' => 'LinkedIn user or token not found', 'job_id' => null]);
             return;
         }
 
@@ -121,32 +121,34 @@ class ScheduleLinkedInPost implements ShouldQueue
 
             // Uniform response parsing
             Log::info("Raw Response Before Parsing", ['response' => $response]);
-            
             $responseData = is_array($response) ? $response : $response->getData(true);
             Log::info("Parsed Response Data", [
                 'responseData' => $responseData,
                 'httpCode' => $responseData['status'] ?? 'not_set',
                 'errorMsg' => $responseData['error'] ?? 'not_set',
-                'post_id' => $responseData['data']['id'] ?? 'not_set' // WE NEED THIS FOR LATER // WE NEED TO SAVE IT IN THE DATABASE
+                'post_urn' => $responseData['data']['id'] ?? 'not_set' 
             ]);
 
-            // Fix: Use 'http_code' instead of 'status' for the HTTP status code
             $httpCode = isset($responseData['http_code']) ? (int) $responseData['http_code'] : 500;
             $errorMsg = $responseData['error'] ?? 'Unknown error';
 
             if ($httpCode >= 200 && $httpCode < 300) {
-                $post->update(['status' => 'posted']);
-                
-                if (in_array($post->type, ['image', 'video'])) {
-                    Storage::disk('linkedin_media')->delete($content['file_path']);
-                }
+                $post->update([
+                    'status' => 'posted',
+                    'post_urn' => $responseData['data']['id'] ?? null,
+                    'job_id' => null
+                ]);
+                Log::info("Scheduled LinkedIn post {$post->id} successfully posted", [
+                    'post_urn' => $responseData['data']['id'] ?? null,
+                    'http_code' => $httpCode,
+                ]);
             } else {
                 Log::error("Failed to post", ['response' => $responseData, 'error' => $errorMsg]);
-                $post->update(['status' => 'failed', 'error' => $errorMsg]);
+                $post->update(['status' => 'failed', 'error' => $errorMsg, 'job_id' => null]);
             }
         } catch (\Exception $e) {
             Log::error("Error processing scheduled LinkedIn post {$post->id}: " . $e->getMessage());
-            $post->update(['status' => 'failed', 'error' => $e->getMessage()]);
+            $post->update(['status' => 'failed', 'error' => $e->getMessage(), 'job_id' => null]);
         }
     }
 }
