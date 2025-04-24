@@ -119,27 +119,40 @@ class ScheduleLinkedInPost implements ShouldQueue
                     throw new \Exception("Invalid post type: {$post->type}");
             }
 
-            // Uniform response parsing
             Log::info("Raw Response Before Parsing", ['response' => $response]);
-            $responseData = is_array($response) ? $response : $response->getData(true);
+
+            if (is_array($response)) {
+                $responseData = $response;
+            } elseif (method_exists($response, 'getData')) {
+                $responseData = $response->getData(true);
+            } else {
+                $responseData = json_decode(json_encode($response), true);
+            }
+
             Log::info("Parsed Response Data", [
                 'responseData' => $responseData,
-                'httpCode' => $responseData['status'] ?? 'not_set',
-                'errorMsg' => $responseData['error'] ?? 'not_set',
-                'post_urn' => $responseData['data']['id'] ?? 'not_set' 
             ]);
 
             $httpCode = isset($responseData['http_code']) ? (int) $responseData['http_code'] : 500;
             $errorMsg = $responseData['error'] ?? 'Unknown error';
 
+            $postUrn = null;
+            if ($post->type === 'text' && isset($responseData['data']) && isset($responseData['data']['stdClass'])) {
+                $postUrn = $responseData['data']['stdClass']->id ?? null;
+            } else {
+                $postUrn = $responseData['data']['id'] ?? null;
+            }
+
             if ($httpCode >= 200 && $httpCode < 300) {
                 $post->update([
                     'status' => 'posted',
-                    'post_urn' => $responseData['data']['id'] ?? null,
+                    'post_urn' => $postUrn,
                     'job_id' => null
                 ]);
+                
                 Log::info("Scheduled LinkedIn post {$post->id} successfully posted", [
-                    'post_urn' => $responseData['data']['id'] ?? null,
+                    'post_type' => $post->type,
+                    'post_urn' => $postUrn,
                     'http_code' => $httpCode,
                 ]);
             } else {

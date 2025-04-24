@@ -25,36 +25,26 @@
                 <div 
                     class="h-24 border rounded overflow-hidden relative p-1"
                     :class="{
-                        'cursor-pointer': displayCampaigns(day).isActive && getPostsForDate(day).length > 0,
+                        'bg-black': displayCampaigns(day).isActive && getPostsForDate(day).length > 0,
                         'cursor-not-allowed': !displayCampaigns(day).isActive
                     }"
-                    :style="displayCampaigns(day).isActive ? { backgroundColor: displayCampaigns(day).color } : {}"
-                    @click="displayCampaigns(day).isActive && getPostsForDate(day).length > 0 ? showPostsPopover(day) : null"
+                    
                 >
+                <!-- @click="displayCampaigns(day).isActive && getPostsForDate(day).length > 0 ? showPostsPopover(day) : null" -->
+                <!-- :style="displayCampaigns(day).isActive ? { backgroundColor: displayCampaigns(day).color } : {}" -->
+
                     <div class="text-right text-sm">{{ day }}</div>
 
-                    <!-- A Message to display if that Day doesn't have any Posts -->
-                    <div 
-                        v-if="getPostsForDate(day).length === 0 && isDayInCampaign(day)"
-                    >
-                        <p class="text-black fw-semibold text-center">Pas de posts !</p>
-                    </div>
-
-                    <!-- Posts for that Day -->
+                    <!-- Campaigns for that Day -->
                     <div class="overflow-y-auto" style="max-height: 100px;">
                         <div 
-                            v-for="post in getPostsForDate(day)"
-                            class="text-xs p-1 mb-1 rounded truncate"
-                            :key="post.id || post.tempId"
-                            :class="{
-                            'bg-green-200': post.type === 'text',
-                            'bg-yellow-200': post.type === 'image',
-                            'bg-red-200': post.type === 'video',
-                            'bg-purple-300': post.type === 'article'
-                            }"
-                            @click="showPostsPopover(day)"
+                            v-for="(campaignData, index) in getCampaignsForDate(day)"
+                            :key="index"
+                            class="text-xs p-1 mb-1 rounded truncate cursor-pointer"
+                            :style="{ backgroundColor: campaignData.color }"
+                            @click="getCampaignPostsForDate(campaignData, day)"
                         >
-                            {{ getPostTypeIcon(post.type) }} {{ formatTime(post.scheduled_time) }}
+                            {{ campaignData.name }} ({{ campaignData.postCount }})
                         </div>
                     </div>
                 </div>
@@ -63,7 +53,7 @@
   
         <!-- Popover for viewing posts -->
         <div v-if="showPopover" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click="closePopover">
-            <div class="bg-white shadow-lg flex flex-col rounded-lg p-4 z-10 max-w-md w-full min-h-[400px]" @click.stop>
+            <div class="bg-white shadow-lg flex flex-col rounded-lg p-4 z-10 max-w-md w-full min-h-[400px] max-h-[500px]" @click.stop>
                 <div class="flex justify-between items-center">
                     <h3 class="font-semibold text-lg">Posts for {{ selectedDay }} {{ getMonthName(currentMonth) }} {{ currentYear }}</h3>
                     <button 
@@ -73,8 +63,8 @@
                         ×
                     </button>
                 </div>
-                <div class="mt-4 flex-1">
-                    <!-- In Case There Are Not Posts -->
+                <div class="mt-4 flex-1 overflow-y-auto">
+                    <!-- In Case There Are No Posts -->
                     <div v-if="getPostsForDate(selectedDay).length === 0" class="text-center text-gray-500 py-4">
                         Pas de posts prévus
                     </div>
@@ -103,7 +93,7 @@
                                     class="mb-0 px-4 py-1 rounded-full fw-semibold"
                                     :class="{
                                         'text-green-500 bg-green-100': post.status === 'posted',
-                                        'text-red-600': post.status === 'failed',
+                                        'text-red-600 bg-red-300': post.status === 'failed',
                                         'text-blue-600 bg-blue-300': post.status === 'queued',
                                     }"
                                 >
@@ -296,7 +286,7 @@
         </div>
     </div>
 </template>
-  
+
 <script>
 import axios from 'axios';
 
@@ -389,6 +379,78 @@ export default {
                     postDate.getMonth() === this.currentMonth && 
                     postDate.getFullYear() === this.currentYear;
             });
+        },
+
+        getCampaignsForDate(day) {
+            const campaignsForDay = [];
+            const checkDate = new Date(this.currentYear, this.currentMonth, day);
+            checkDate.setHours(0, 0, 0, 0);
+
+            this.campaigns.forEach(campaign => {
+                const startDate = new Date(campaign.start_date);
+                startDate.setHours(0, 0, 0, 0);
+                const endDate = new Date(campaign.end_date);
+                endDate.setHours(0, 0, 0, 0);
+
+                if (checkDate >= startDate && checkDate <= endDate) {
+                    const postCount = this.posts.filter(post => {
+                        const postDate = new Date(post.scheduled_time);
+                        postDate.setHours(0, 0, 0, 0);
+                        return post.campaign_id === campaign.id && postDate.getTime() === checkDate.getTime();
+                    }).length;
+
+                    campaignsForDay.push({
+                        id: campaign.id,
+                        user_id: campaign.user_id,
+                        name: campaign.name,
+                        description: campaign.description,
+                        color: campaign.color,
+                        start_date: campaign.start_date,
+                        end_date: campaign.end_date,
+                        linkedin_user_id: campaign.linkedin_user_id,
+                        target_audience: campaign.target_audience,
+                        frequency_per_day: campaign.frequency_per_day,
+                        status: campaign.status,
+                        postCount: postCount,
+                    });
+                }
+            });
+
+            return campaignsForDay;
+        },
+
+        async getCampaignPostsForDate(campaign, day) {
+            const clickedDate = new Date(this.currentYear, this.currentMonth, day);
+            const endDate = new Date(campaign.end_date);
+            const startDate = new Date(campaign.start_date);
+            // console.log(clickedDate)
+            // console.log(campaign.start_date)
+            // console.log(startDate)
+            // console.log(campaign)
+
+            clickedDate.setHours(0, 0, 0, 0);
+            startDate.setHours(0, 0, 0, 0);
+            endDate.setHours(0, 0, 0, 0);
+
+            if (clickedDate >= startDate && clickedDate <= endDate) {
+                try {
+                    const response = await axios.get('/linkedin/get-campaign-posts-for-day', {
+                        params: {
+                            linkedin_user_id: campaign.linkedin_user_id,
+                            campaign_id: campaign.id,
+                            selected_date: clickedDate.toISOString().split('T')[0],
+                        }
+                    });
+                    console.log(response.data);
+                    return response.data;
+                } catch (error) {
+                    console.error('Error fetching campaign posts:', error);
+                    return [];
+                }
+            } else {
+                console.log("zab")
+                return [];
+            }
         },
                 
         formatTime(dateTime) {
@@ -567,7 +629,7 @@ export default {
     },
 }
 </script>
-  
+
 <style scoped>
 .dashboard-calendar {
     max-width: 100%;

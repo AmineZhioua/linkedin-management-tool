@@ -357,7 +357,7 @@ class LinkedInController extends Controller
         curl_close($curl);
 
         return [
-            'status' => 200,
+            'status' => $httpCode,
             'http_code' => $httpCode,
             'data' => json_decode($response),
             'error' => $errorMsg,

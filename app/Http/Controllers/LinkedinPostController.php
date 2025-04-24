@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Auth;
 use App\Models\LinkedinUser;
+use App\Models\LinkedinCampaign;
 use Illuminate\Http\Request;
 use App\Models\ScheduledLinkedinPost;
 use Illuminate\Support\Facades\Storage;
+use Carbon\Carbon;
 
 class LinkedinPostController extends Controller
 {
@@ -92,5 +94,44 @@ class LinkedinPostController extends Controller
             'message' => 'Post non trouvé !',
             'success' => false
         ], 404);
+    }
+
+    public function getCampaignPostsForDay(Request $request) {
+        $validated = $request->validate([
+            'linkedin_user_id' => 'required|integer|exists:linkedin_users,id',
+            'campaign_id' => 'required|integer|exists:linkedin_campaigns,id',
+            'selected_date' => 'required|date',
+        ]);
+
+        // Retrieve the campaign and verify ownership
+        $campaign = LinkedinCampaign::where('id', $validated['campaign_id'])
+            ->where('linkedin_user_id', $validated['linkedin_user_id'])
+            ->first();
+
+        if (!$campaign) {
+            return response()->json(['error' => 'Campaign not found or not authorized'], 404);
+        }
+
+        // Parse dates for comparison
+        $selectedDate = Carbon::parse($validated['selected_date'])->startOfDay();
+        $startDate = Carbon::parse($campaign->start_date)->startOfDay();
+        $endDate = Carbon::parse($campaign->end_date)->endOfDay();
+
+        // Check if selected_date is within campaign's date range
+        if ($selectedDate < $startDate || $selectedDate > $endDate) {
+            return response()->json(['error' => 'Selected date is outside the campaign range'], 400);
+        }
+
+        // Fetch posts for the selected date
+        $posts = ScheduledLinkedinPost::where('linkedin_user_id', $validated['linkedin_user_id'])
+            ->where('campaign_id', $validated['campaign_id'])
+            ->whereDate('scheduled_time', $selectedDate)
+            ->get();
+
+        if ($posts->isEmpty()) {
+            return response()->json(['message' => 'No posts found for this campaign on this date'], 404);
+        }
+
+        return response()->json($posts, 200);
     }
 }
