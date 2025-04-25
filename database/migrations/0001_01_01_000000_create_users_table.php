@@ -18,7 +18,7 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password')->nullable();
             $table->string('google_id')->nullable();
-            $table->string('role')->default('user'); // Add role column with default 'user'
+            $table->string('role')->default('user');
             $table->rememberToken();
             $table->timestamps();
         });

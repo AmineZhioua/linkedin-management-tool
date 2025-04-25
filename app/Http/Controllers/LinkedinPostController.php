@@ -103,7 +103,6 @@ class LinkedinPostController extends Controller
             'selected_date' => 'required|date',
         ]);
 
-        // Retrieve the campaign and verify ownership
         $campaign = LinkedinCampaign::where('id', $validated['campaign_id'])
             ->where('linkedin_user_id', $validated['linkedin_user_id'])
             ->first();

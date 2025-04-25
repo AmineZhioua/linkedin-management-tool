@@ -15,7 +15,7 @@
             </template>
             <template v-for="day in getDaysInMonth(month, year)">
                 <div 
-                    class="h-24 border rounded overflow-hidden relative p-1"
+                    class="h-32 border rounded overflow-hidden relative p-1"
                     :class="{
                         'hover:opacity-70 cursor-pointer': getPostsForDate(day).length > 0,
                         [campaignColor]: getPostsForDate(day).length > 0
@@ -220,3 +220,18 @@ export default {
     }
 }
 </script>
+
+<style>
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 20px;
+}
+</style>

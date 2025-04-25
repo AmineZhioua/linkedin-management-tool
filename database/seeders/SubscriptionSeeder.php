@@ -17,7 +17,7 @@ class SubscriptionSeeder extends Seeder
             'name' => 'LinkedIn Plan',
             'monthly_price' => 22,
             'yearly_price' => 120,
-            'description' => 'Offert pour ton abonnement',
+            'description' => 'Accès premium avec plus de fonctionnalités',
             'features' => json_encode(['Hausse de 100 likes', 'Accès limité', 'Support prioritaire']),
             'linkedin' => true,
             'whatsapp' => false,

@@ -86,15 +86,28 @@
             </div>
         </div>
 
-        <!-- Couleur du Campagne -->
-        <div class="mb-2">
-            <label for="couleurCampgne" class="block text-md mb-2">Choissisez un couleur spécial <span style="color: red;">*</span> :</label>
-            <input
-                type="color"
-                id="couleurCampgne"
-                v-model="couleurCampagne"
-                class="min-w-[300px] max-w-[500px] h-[50px] border rounded-xl p-2 bg-white mb-1"
-            />
+        <div class="flex items-center flex-wrap gap-5">
+            <!-- Nom de Campagne -->
+            <div class="mb-2 flex-1">
+                <label for="couleurCampgne" class="block text-md mb-2">Nom de Campagne <span style="color: red;">*</span> :</label>
+                <input
+                    type="text"
+                    id="nomCampagne"
+                    v-model="nomCampagne"
+                    placeholder="e.g: Campagne de Noël"
+                    class="min-w-[300px] w-full h-[50px] border rounded-xl p-3 bg-white mb-1"
+                />
+            </div>
+            <!-- Couleur du Campagne -->
+            <div class="mb-2">
+                <label for="couleurCampgne" class="block text-md mb-2">Choissisez un couleur spécial <span style="color: red;">*</span> :</label>
+                <input
+                    type="color"
+                    id="couleurCampgne"
+                    v-model="couleurCampagne"
+                    class="min-w-[300px] max-w-[500px] h-[50px] border rounded-xl p-2 bg-white mb-1"
+                />
+            </div>
         </div>
   
         <!-- Description du Campagne -->
@@ -139,6 +152,9 @@ export default {
         initialCouleur: {
             type: String,
         },
+        initialNom: {
+            type: String,
+        },
         cibles: {
             type: Array,
             default: [],
@@ -160,6 +176,7 @@ export default {
             cibleErrorMessage: '',
             descriptionErrorMessage: '',
             couleurCampagne: this.initialCouleur || '#fff000',
+            nomCampagne: '',
         };
     },
   
@@ -231,6 +248,7 @@ export default {
                 this.isEndDateValid && 
                 this.selectedCible && 
                 this.couleurCampagne &&
+                this.nomCampagne &&
                 this.isDescriptionValid &&
                 this.frequenceParJour >= 1 && 
                 this.frequenceParJour <= 10;
@@ -244,6 +262,7 @@ export default {
                 frequenceParJour: this.frequenceParJour,
                 descriptionCampagne: this.descriptionCampagne,
                 couleurCampagne: this.couleurCampagne,
+                nomCampagne: this.nomCampagne,
             };
         },
     },

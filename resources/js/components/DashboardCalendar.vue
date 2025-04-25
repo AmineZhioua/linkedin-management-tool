@@ -17,22 +17,18 @@
         <div class="grid grid-cols-7 gap-1">
             <!-- Blank days before the first day of the month -->
             <template v-for="blankDay in Array.from({ length: getFirstDayOfMonth(currentMonth, currentYear) }, (_, i) => i)" :key="'blank-' + blankDay">
-                <div class="h-24 bg-gray-100 rounded"></div>
+                <div class="h-32 bg-gray-100 rounded"></div>
             </template>
     
             <!-- Days of the month -->
             <template v-for="day in getDaysInMonth(currentMonth, currentYear)" :key="day">
                 <div 
-                    class="h-24 border rounded overflow-hidden relative p-1"
+                    class="border h-32 rounded overflow-hidden relative p-1"
                     :class="{
-                        'bg-black': displayCampaigns(day).isActive && getPostsForDate(day).length > 0,
+                        'cursor-pointer hover:bg-gray-200 transition-all duration-200': displayCampaigns(day).isActive && getPostsForDate(day).length > 0,
                         'cursor-not-allowed': !displayCampaigns(day).isActive
                     }"
-                    
                 >
-                <!-- @click="displayCampaigns(day).isActive && getPostsForDate(day).length > 0 ? showPostsPopover(day) : null" -->
-                <!-- :style="displayCampaigns(day).isActive ? { backgroundColor: displayCampaigns(day).color } : {}" -->
-
                     <div class="text-right text-sm">{{ day }}</div>
 
                     <!-- Campaigns for that Day -->
@@ -40,7 +36,7 @@
                         <div 
                             v-for="(campaignData, index) in getCampaignsForDate(day)"
                             :key="index"
-                            class="text-xs p-1 mb-1 rounded truncate cursor-pointer"
+                            class="text-sm py-3 px-2 fw-semibold mb-1 rounded truncate cursor-pointer"
                             :style="{ backgroundColor: campaignData.color }"
                             @click="getCampaignPostsForDate(campaignData, day)"
                         >
@@ -53,7 +49,7 @@
   
         <!-- Popover for viewing posts -->
         <div v-if="showPopover" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click="closePopover">
-            <div class="bg-white shadow-lg flex flex-col rounded-lg p-4 z-10 max-w-md w-full min-h-[400px] max-h-[500px]" @click.stop>
+            <div class="bg-white relative shadow-lg flex flex-col rounded-lg p-4 z-10 max-w-md w-full min-h-[400px] max-h-[500px]" @click.stop>
                 <div class="flex justify-between items-center">
                     <h3 class="font-semibold text-lg">Posts for {{ selectedDay }} {{ getMonthName(currentMonth) }} {{ currentYear }}</h3>
                     <button 
@@ -63,15 +59,21 @@
                         ×
                     </button>
                 </div>
+
+                <!-- Loader -->
+                <div v-if="isLoadingPosts" class="loader-container">
+                    <div class="loader"></div>
+                </div>
+                
                 <div class="mt-4 flex-1 overflow-y-auto">
                     <!-- In Case There Are No Posts -->
-                    <div v-if="getPostsForDate(selectedDay).length === 0" class="text-center text-gray-500 py-4">
+                    <div v-if="popoverPosts.length === 0" class="text-center text-gray-500 py-4">
                         Pas de posts prévus
                     </div>
                     
                     <div v-else class="space-y-2">
                         <div 
-                            v-for="post in getPostsForDate(selectedDay)"
+                            v-for="post in popoverPosts"
                             :key="post.id || post.tempId"
                             class="p-3 rounded flex items-center cursor-pointer justify-between"
                             :class="{
@@ -200,10 +202,10 @@
                     <!-- View Mode -->
                     <div v-else>
                         <p>
-                            <strong>Date et heure :</strong> {{ formatDateTime(selectedPost.scheduledDateTime) }}
+                            <strong>Date & heure de publication :</strong> {{ formatDateTime(selectedPost.scheduledDateTime) }}
                         </p>
                         <p>
-                            <strong>Type de Post :</strong> {{ selectedPost.type }}
+                            <strong>Type de Publication :</strong> {{ selectedPost.type.toUpperCase() }}
                         </p>
 
                         <!-- Content based on post type -->
@@ -214,17 +216,17 @@
                         </div>
 
                         <div v-if="selectedPost.type === 'image'" class="mt-2">
-                            <img :src="getMediaUrl(selectedPost.content.file_path)" alt="Image" class="max-w-full h-auto mb-2">
                             <p v-if="selectedPost.content.caption">
-                                <strong>Légende :</strong> {{ selectedPost.content.caption }}
+                                <strong>Caption :</strong> {{ selectedPost.content.caption }}
                             </p>
+                            <img :src="getMediaUrl(selectedPost.content.file_path)" alt="Image" class="max-w-full h-auto mb-2">
                         </div>
 
                         <div v-if="selectedPost.type === 'video'" class="mt-2">
-                            <video :src="getMediaUrl(selectedPost.content.file_path)" controls class="max-w-full h-auto mb-2"></video>
                             <p v-if="selectedPost.content.caption">
-                                <strong>Légende :</strong> {{ selectedPost.content.caption }}
+                                <strong>Caption :</strong> {{ selectedPost.content.caption }}
                             </p>
+                            <video :src="getMediaUrl(selectedPost.content.file_path)" controls class="max-w-full h-auto mb-2"></video>
                         </div>
 
                         <div v-if="selectedPost.type === 'article'" class="mt-2 flex flex-col gap-2">
@@ -254,7 +256,9 @@
                     >
                         Fermer
                     </button>
-                    <div class="flex items-center gap-2">
+                    <div 
+                        v-if="selectedPost.status !== 'posted'" 
+                        class="flex items-center gap-2">
                         <button 
                             @click="deletePost(selectedPost.id)"
                             :disabled="selectedPost.status === 'posted'" 
@@ -309,6 +313,10 @@ export default {
         initialYear: {
             type: Number,
             required: true
+        },
+        linkedinUserId: {
+            type: Number,
+            required: true
         }
     },
     
@@ -325,7 +333,9 @@ export default {
             isOpen: false,
             isEditing: false,
             isLoading: false,
+            isLoadingPosts: false,
             localScheduledDateTime: '',
+            popoverPosts: []
         };
     },
   
@@ -411,45 +421,66 @@ export default {
                         target_audience: campaign.target_audience,
                         frequency_per_day: campaign.frequency_per_day,
                         status: campaign.status,
-                        postCount: postCount,
+                        postCount: postCount
                     });
                 }
             });
 
             return campaignsForDay;
         },
+        
+        toLocalISOString(date) { // THIS FUNCTION WAS CREATED TO FIX THE 'toISOString()' ERROR
+            const pad = (num) => String(num).padStart(2, "0");
+            const year = date.getFullYear();
+            const month = pad(date.getMonth() + 1);
+            const day = pad(date.getDate());
+            const hours = pad(date.getHours());
+            const minutes = pad(date.getMinutes());
+            return `${year}-${month}-${day}T${hours}:${minutes}`;
+        },
 
         async getCampaignPostsForDate(campaign, day) {
             const clickedDate = new Date(this.currentYear, this.currentMonth, day);
             const endDate = new Date(campaign.end_date);
             const startDate = new Date(campaign.start_date);
-            // console.log(clickedDate)
-            // console.log(campaign.start_date)
-            // console.log(startDate)
-            // console.log(campaign)
 
+            // Normalize dates to midnight for accurate comparison
             clickedDate.setHours(0, 0, 0, 0);
             startDate.setHours(0, 0, 0, 0);
             endDate.setHours(0, 0, 0, 0);
 
+            // Check if clickedDate is within the campaign's date range
             if (clickedDate >= startDate && clickedDate <= endDate) {
+                this.isLoadingPosts = true;
                 try {
                     const response = await axios.get('/linkedin/get-campaign-posts-for-day', {
                         params: {
                             linkedin_user_id: campaign.linkedin_user_id,
                             campaign_id: campaign.id,
-                            selected_date: clickedDate.toISOString().split('T')[0],
+                            selected_date: this.toLocalISOString(clickedDate).split('T')[0] // Format as YYYY-MM-DD
+                        },
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                         }
                     });
-                    console.log(response.data);
-                    return response.data;
+
+                    this.popoverPosts = response.data.map(post => ({
+                        ...post,
+                        content: typeof post.content === 'string' ? JSON.parse(post.content) : post.content
+                    }));
+                    this.selectedDay = day;
+                    this.showPopover = true;
                 } catch (error) {
                     console.error('Error fetching campaign posts:', error);
-                    return [];
+                    this.popoverPosts = [];
+                    this.showPopover = true; 
+                } finally {
+                    this.isLoadingPosts = false;
                 }
             } else {
-                console.log("zab")
-                return [];
+                this.popoverPosts = [];
+                this.selectedDay = day;
+                this.showPopover = true;
             }
         },
                 
@@ -489,6 +520,7 @@ export default {
             
         closePopover() {
             this.showPopover = false;
+            this.popoverPosts = [];
         },
             
         getMonthName(monthIndex) {
@@ -522,9 +554,8 @@ export default {
             this.selectedPost = {
                 ...post,
                 content: postContent,
-                scheduledDateTime: post.scheduled_time // Keep as UTC
+                scheduledDateTime: post.scheduled_time
             };
-            console.log("url:", this.getMediaUrl(postContent.file_path));
             this.editedPost = { ...this.selectedPost };
             this.localScheduledDateTime = this.utcToLocalForInput(post.scheduled_time); // Convert to local
             this.isOpen = true;
@@ -634,4 +665,50 @@ export default {
 .dashboard-calendar {
     max-width: 100%;
 }
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 20px;
+}
+
+.loader-container {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.144);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+}
+.loader {
+    border: 5px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top: 5px solid white;
+    width: 50px;
+    height: 50px;
+    animation: spin 0.5s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
 </style>

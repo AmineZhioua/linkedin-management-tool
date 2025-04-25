@@ -37,7 +37,7 @@ class LinkedInController extends Controller
         try {
             $validated = $request->validate([
                 'linkedin_id' => 'required|exists:linkedin_users,id',
-                'name' => 'nullable|string',
+                'name' => 'required|string',
                 'description' => 'required|string',
                 'target_audience' => 'nullable|string',
                 'frequency_per_day' => 'required|integer|min:1',
@@ -94,6 +94,7 @@ class LinkedInController extends Controller
                 $request->validate(['content.text' => 'required|string|max:3000']);
                 $content = ['text' => $validated['content']['text']];
                 break;
+
             case 'image':
             case 'video':
                 $request->validate([
@@ -113,6 +114,7 @@ class LinkedInController extends Controller
                     'original_filename' => $validated['content']['original_filename'],
                 ];
                 break;
+
             case 'article':
                 $request->validate([
                     'content.url' => 'required|url',
@@ -127,6 +129,7 @@ class LinkedInController extends Controller
                     'caption' => $validated['content']['caption'] ?? '',
                 ];
                 break;
+                
             default:
                 return response()->json(['error' => 'Invalid post type'], 400);
         }

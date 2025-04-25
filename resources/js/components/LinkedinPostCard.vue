@@ -86,6 +86,7 @@
                     :initial-frequence="frequenceParJour"
                     :initial-description="descriptionCampagne"
                     :initial-couleur="couleurCampagne"
+                    :initial-nom="nomCampagne"
                     :cibles="cibles"
                     @update:form-data="updateFormData"
                     @validate="isFormValid = $event"
@@ -215,6 +216,7 @@ export default {
             submissionError: null,
             showSuccessPopup: false,
             successMessage: "",
+            // Campaign Related Variables
             todayDate: this.formatDateTime(today),
             startDate: this.formatDateTime(today),
             endDate: this.formatDateTime(tomorrow),
@@ -224,6 +226,7 @@ export default {
             campaignStartDateTime: "",
             campaignEndDateTime: "",
             couleurCampagne: "",
+            nomCampagne: "",
             postTypes: [
                 { value: "text", label: "Text", icon: "fas fa-align-left" },
                 { value: "image", label: "Image", icon: "fas fa-image" },
@@ -539,9 +542,9 @@ export default {
 
                 const campaignFormData = new FormData();
                 campaignFormData.append("linkedin_id", this.selectedAccount.id);
-                campaignFormData.append("name", `Campaign ${new Date().toISOString()}`);
+                campaignFormData.append("name", this.nomCampagne);
                 campaignFormData.append("description", this.descriptionCampagne || '');
-                campaignFormData.append("target_audience", this.selectedCible || '');
+                campaignFormData.append("target_audience", this.selectedCible);
                 campaignFormData.append("frequency_per_day", this.frequenceParJour);
                 campaignFormData.append("couleur", this.couleurCampagne);
                 campaignFormData.append("start_date", this.startDate);
@@ -753,6 +756,7 @@ export default {
             this.frequenceParJour = formData.frequenceParJour;
             this.descriptionCampagne = formData.descriptionCampagne;
             this.couleurCampagne = formData.couleurCampagne;
+            this.nomCampagne = formData.nomCampagne;
         },
 
         updateCampaignDates({ startDate, endDate }) {
@@ -799,6 +803,7 @@ export default {
             this.endDate = tomorrow.toISOString().split("T")[0];
             this.frequenceParJour = 1;
             this.descriptionCampagne = "";
+            this.nomCampagne = "";
             this.postCards = [];
         },
 

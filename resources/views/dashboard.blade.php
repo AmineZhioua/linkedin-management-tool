@@ -125,7 +125,15 @@
     <!-- KPIs Section -->
     <div class="container py-4 flex flex-col gap-4 my-10">
         <div class="flex justify-between align-items-center">
-            <h1 class="fw-bold text-3xl">Tes KPIs</h1>
+            <div class="flex align-items-end gap-2">
+                <img 
+                    src="/build/assets/icons/kpi-black.svg" 
+                    alt="Kpi Icon"
+                    height="45"
+                    width="45"
+                />
+                <h1 class="fw-bold text-3xl mb-0">Tes KPIs</h1>
+            </div>
             <button class="text-white fw-semibold bg-black rounded-full px-4 py-2">Trier</button>
         </div>
         <div class="grid grid-cols-4 gap-4">
@@ -157,11 +165,20 @@
         </div>
     </div>
 
+    <!-- Calendar & Campaigns Table Section -->
     <div id="app">
         <!-- Calendar Section -->
         <div class="container py-2 my-10 flex flex-col gap-4">
             <div class="flex justify-between align-items-center">
-                <h1 class="fw-bold text-3xl">Planning à Venir</h1>
+                <div class="flex align-items-end gap-2">
+                    <img 
+                        src="/build/assets/icons/calendar-black.svg" 
+                        alt="Calendar Icon"
+                        height="45"
+                        width="45"
+                    />
+                    <h1 class="fw-bold text-3xl mb-0">Planning à Venir</h1>
+                </div>
                 <button class="text-white fw-semibold bg-black rounded-full px-4 py-2">Button</button>
             </div>
 
@@ -177,7 +194,15 @@
         <!-- Campaigns Display Section -->
         <div class="container py-2 my-10">
             <div class="flex justify-between align-items-center">
-                <h1 class="fw-bold text-3xl">Vos Campagnes</h1>
+                <div class="flex align-items-center gap-2">
+                    <img 
+                        src="/build/assets/icons/campaign_black.svg" 
+                        alt="Campaign Icon"
+                        height="50"
+                        width="50"
+                    />
+                    <h1 class="fw-bold text-3xl mb-0 mt-1">Vos Campagnes</h1>
+                </div>
                 <button class="text-white flex items-center gap-2 fw-semibold bg-black rounded-full px-4 py-2">
                     <img 
                         src="/build/assets/icons/add-white.svg" 
@@ -341,12 +366,12 @@
         transform: scale(0.8);
     }
 
-    .active {
+    /* .active {
         opacity: 1;
         transform: scale(1.2);
         margin-inline: 25px;
         z-index: 10;
-    }
+    } */
 
     #left-arrow, #right-arrow {
         cursor: pointer;
