@@ -55,6 +55,7 @@ class ScheduleLinkedInPost implements ShouldQueue
                     $response = $controller->postTextOnly(array_merge($payload, [
                         'caption' => $content['text'],
                     ]));
+                    
                     break;
 
                 case 'image':
@@ -133,7 +134,7 @@ class ScheduleLinkedInPost implements ShouldQueue
 
             // 3. Determine HTTP code & URN:
             $httpCode = isset($body['status']) ? (int)$body['status'] : 500;
-            $postUrn  = $body['data']['id'] ?? null;
+            $postUrn = $body['urn'] ?? ($body['data']['response']['data']['stdClass']['id'] ?? null) ?? ($body['data']['id'] ?? null);
             $errorMsg = $body['error'] ?? null;
 
             // 4. Success vs Failure

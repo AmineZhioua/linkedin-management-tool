@@ -357,24 +357,32 @@ class LinkedInController extends Controller
         $response = curl_exec($curl);
         $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
         $errorMsg = curl_error($curl);
+
+        $responseData = json_decode($response, true);
+        $apiData = $responseData['response'] ?? [];
+        $urn = $apiData['data']['stdClass']['id'] ?? null;
         curl_close($curl);
+
 
         return [
             'status' => $httpCode,
             'http_code' => $httpCode,
-            'data' => json_decode($response),
+            'data' => $responseData,
+            'urn' => $urn,
             'error' => $errorMsg,
         ];
     }
 
-    // Updated registerMedia method in LinkedInController.php
+    /**
+     * Register media (image/video) for LinkedIn posts.
+    */
     public function registerMedia(Request $request) {
         try {
             $validated = $request->validate([
                 'token' => 'required|string',
                 'linkedin_id' => 'required|string',
                 'type' => 'required|in:image,video',
-                'media' => 'required|file|max:50000', // 50MB max file size
+                'media' => 'required|file|max:50000',
                 'caption' => 'nullable|string|max:3000'
             ]);
 
@@ -395,7 +403,6 @@ class LinkedInController extends Controller
                 ], 400);
             }
 
-            // Check LinkedIn's specific size limits
             $maxSizes = [
                 'image' => 10 * 1024 * 1024, // 5MB for images
                 'video' => 50 * 1024 * 1024 // 50MB for videos
@@ -411,7 +418,6 @@ class LinkedInController extends Controller
 
             $authorUrn = 'urn:li:person:' . $validated['linkedin_id'];
 
-            // Determine recipe based on media type
             $recipe = $validated['type'] === 'image' ? "urn:li:digitalmediaRecipe:feedshare-image" : "urn:li:digitalmediaRecipe:feedshare-video";
 
             $registerData = [
@@ -525,7 +531,7 @@ class LinkedInController extends Controller
 
     /**
      * Upload the binary file for media posts.
-     */
+    */
     public function uploadMediaBinary(Request $request) {
         try {
             $validated = $request->validate([
