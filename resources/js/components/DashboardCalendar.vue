@@ -258,11 +258,11 @@
                     </button>
                     <div 
                         v-if="selectedPost.status !== 'posted'" 
-                        class="flex items-center gap-2">
+                        class="flex items-center gap-2"
+                    >
                         <button 
                             @click="deletePost(selectedPost.id)"
                             :disabled="selectedPost.status === 'posted'" 
-                            :class="{'opacity-50 cursor-not-allowed': selectedPost.status === 'posted'}"
                             class="bg-red-500 text-white py-2 px-4 rounded-lg"
                         >
                             Supprimer
@@ -271,15 +271,14 @@
                         <button 
                             v-if="!isEditing"
                             @click="startEditing"
-                            :disabled="selectedPost.status === 'posted'" 
                             class="bg-blue-500 text-white py-2 px-4 rounded-lg"
-                            :class="{'opacity-50 cursor-not-allowed': selectedPost.status === 'posted'}"
                         >
                             Modifier
                         </button>
                         <button 
                             v-else
                             @click="updatePost"
+                            :disabled="isLoading"
                             class="bg-green-500 text-white py-2 px-4 rounded-lg"
                         >
                             Enregistrer
@@ -293,6 +292,7 @@
 
 <script>
 import axios from 'axios';
+import Swal from 'sweetalert2'
 
 export default {
     name: 'DashboardCalendar',
@@ -429,6 +429,7 @@ export default {
             return campaignsForDay;
         },
         
+        // DO NOT USE 'toISOString()' AS IT GIVES AN ERROR
         toLocalISOString(date) { // THIS FUNCTION WAS CREATED TO FIX THE 'toISOString()' ERROR
             const pad = (num) => String(num).padStart(2, "0");
             const year = date.getFullYear();
@@ -583,11 +584,12 @@ export default {
 
         async updatePost() {
             this.isLoading = true;
-            console.log("Updating post:", this.editedPost);
-            console.log(this.editedPost.scheduledDateTime);
-            console.log(this.localScheduledDateTime);
+
             try {
                 this.editedPost.scheduledDateTime = this.localScheduledDateTime;
+
+                const campaignDates = this.getCampaignEndStartDates(this.editedPost.campaign_id);
+                const scheduledDateTime = new Date(this.editedPost.scheduledDateTime);
 
                 const formData = new FormData();
                 formData.append('post_id', this.editedPost.id);
@@ -601,9 +603,35 @@ export default {
                     formData.append('file', this.editedPost.content.file);
                 }
 
-                for (let [key, value] of formData.entries()) {
-                    console.log(`${key}: ${value}`);
+                // Check for dates before updating
+                if(scheduledDateTime < campaignDates.startDate || scheduledDateTime > campaignDates.endDate) {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Oops...",
+                        html: `<p>La date de publication doit être comprise entre<br><b>${this.formatDateTime(campaignDates.startDate)}</b> et <b>${this.formatDateTime(campaignDates.endDate)}</b>.</p>`,
+                        confirmButtonColor: "#fd0033",
+                        allowOutsideClick: true,
+                        timer: 6000,
+                        timerProgressBar: true,
+                    });
+                    return;
                 }
+
+                // Check for empty text content
+                if(this.editedPost.type === 'text' && this.editedPost.content.text.trim() === '') {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Oops...",
+                        text: "Le contenu du post ne peut pas être vide.",
+                        confirmButtonColor: "#fd0033",
+                        allowOutsideClick: true,
+                        timer: 6000,
+                        timerProgressBar: true,
+                    });
+                    return;
+                }
+
+
                 const response = await axios.post('/linkedin/update-post', formData, {
                     headers: {
                         'Content-Type': 'multipart/form-data',
@@ -614,7 +642,21 @@ export default {
                 if (response.status === 200) {
                     this.isEditing = false;
                     this.selectedPost = { ...this.editedPost };
-                    window.location.reload();
+
+                    // Show success message
+                    this.closeModal();
+                    Swal.fire({
+                        icon: "success",
+                        html: `<p class='fw-semibold'>Post mis à jour avec succès !</p>`,
+                        allowOutsideClick: false,
+                        timer: 3000,
+                        timerProgressBar: true,
+                        showConfirmButton: false,
+                    }).then((result) => {
+                        if (result.dismiss === Swal.DismissReason.timer) {
+                            window.location.reload();
+                        }
+                    });
                 } else {
                     console.error("Failed to update post:", response);
                     throw new Error("Failed to update post");
@@ -656,6 +698,17 @@ export default {
             } finally {
                 this.isLoading = false;
             }
+        },
+
+        getCampaignEndStartDates(campaignId) {
+            const campaign = this.campaigns.find(c => c.id === campaignId);
+            if (campaign) {
+                return {
+                    startDate: new Date(campaign.start_date),
+                    endDate: new Date(campaign.end_date)
+                };
+            }
+            return null;
         },
     },
 }

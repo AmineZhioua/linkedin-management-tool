@@ -72,16 +72,16 @@ class LinkedinPostController extends Controller
         if ($postToUpdate) {
             $postToUpdate->type = $validated['type'];
             $postToUpdate->scheduled_time = $validated['scheduled_time'];
-            $content = $validated['content']; // Start with the validated content
+            $content = $validated['content'];
     
             if ($request->hasFile('file')) {
                 $filePath = $request->file('file')->store('', 'linkedin_media');
-                $contentArray = json_decode($content, true); // Decode to modify
+                $contentArray = json_decode($content, true);
                 $contentArray['file_path'] = $filePath;
-                $content = json_encode($contentArray); // Update content with file path
+                $content = json_encode($contentArray);
             }
     
-            $postToUpdate->content = $content; // Set content once
+            $postToUpdate->content = $content;
             $postToUpdate->save();
     
             return response()->json([

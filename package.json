@@ -21,6 +21,7 @@
     },
     "dependencies": {
         "@daypilot/daypilot-lite-vue": "^3.32.1",
+        "sweetalert2": "^11.19.1",
         "swiper": "^11.2.6"
     }
 }
