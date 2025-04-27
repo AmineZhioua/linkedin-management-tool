@@ -458,78 +458,15 @@ export default {
             };
         },
 
-        isDayInCampaign(day) {
-            const currentDate = new Date(this.currentYear, this.currentMonth, day);
-            return this.campaigns.some(campaign => {
-                const start = new Date(campaign.start_date);
-                const end = new Date(campaign.end_date);
-                return currentDate >= start && currentDate <= end;
-            });
-        },
-
-        getDaysInMonth(month, year) {
-            return new Date(year, month + 1, 0).getDate();
-        },
-        
-        getFirstDayOfMonth(month, year) {
-            return new Date(year, month, 1).getDay();
-        },
-        
-        getPostsForDate(date) {
-            return this.posts.filter(post => {
-                const postDate = new Date(post.scheduled_time);
-                return postDate.getDate() === date && 
-                    postDate.getMonth() === this.currentMonth && 
-                    postDate.getFullYear() === this.currentYear;
-            });
-        },
-
-        getCampaignsForDate(day) {
-            const campaignsForDay = [];
-            const checkDate = new Date(this.currentYear, this.currentMonth, day);
-            checkDate.setHours(0, 0, 0, 0);
-
-            this.campaigns.forEach(campaign => {
-                const startDate = new Date(campaign.start_date);
-                startDate.setHours(0, 0, 0, 0);
-                const endDate = new Date(campaign.end_date);
-                endDate.setHours(0, 0, 0, 0);
-
-                if (checkDate >= startDate && checkDate <= endDate) {
-                    const postCount = this.posts.filter(post => {
-                        const postDate = new Date(post.scheduled_time);
-                        postDate.setHours(0, 0, 0, 0);
-                        return post.campaign_id === campaign.id && postDate.getTime() === checkDate.getTime();
-                    }).length;
-
-                    campaignsForDay.push({
-                        id: campaign.id,
-                        user_id: campaign.user_id,
-                        name: campaign.name,
-                        description: campaign.description,
-                        color: campaign.color,
-                        start_date: campaign.start_date,
-                        end_date: campaign.end_date,
-                        linkedin_user_id: campaign.linkedin_user_id,
-                        target_audience: campaign.target_audience,
-                        frequency_per_day: campaign.frequency_per_day,
-                        status: campaign.status,
-                        postCount: postCount
-                    });
-                }
-            });
-
-            return campaignsForDay;
-        },
-        
-        toLocalISOString(date) {
-            const pad = (num) => String(num).padStart(2, "0");
-            const year = date.getFullYear();
-            const month = pad(date.getMonth() + 1);
-            const day = pad(date.getDate());
-            const hours = pad(date.getHours());
-            const minutes = pad(date.getMinutes());
-            return `${year}-${month}-${day}T${hours}:${minutes}`;
+        getCampaignEndStartDates(campaignId) {
+            const campaign = this.campaigns.find(c => c.id === campaignId);
+            if (campaign) {
+                return {
+                    startDate: new Date(campaign.start_date),
+                    endDate: new Date(campaign.end_date)
+                };
+            }
+            return null;
         },
 
         async getCampaignPostsForDate(campaign, day) {
@@ -575,6 +512,81 @@ export default {
                 this.showPopover = true;
             }
         },
+
+        getCampaignsForDate(day) {
+            const campaignsForDay = [];
+            const checkDate = new Date(this.currentYear, this.currentMonth, day);
+            checkDate.setHours(0, 0, 0, 0);
+
+            this.campaigns.forEach(campaign => {
+                const startDate = new Date(campaign.start_date);
+                startDate.setHours(0, 0, 0, 0);
+                const endDate = new Date(campaign.end_date);
+                endDate.setHours(0, 0, 0, 0);
+
+                if (checkDate >= startDate && checkDate <= endDate) {
+                    const postCount = this.posts.filter(post => {
+                        const postDate = new Date(post.scheduled_time);
+                        postDate.setHours(0, 0, 0, 0);
+                        return post.campaign_id === campaign.id && postDate.getTime() === checkDate.getTime();
+                    }).length;
+
+                    campaignsForDay.push({
+                        id: campaign.id,
+                        user_id: campaign.user_id,
+                        name: campaign.name,
+                        description: campaign.description,
+                        color: campaign.color,
+                        start_date: campaign.start_date,
+                        end_date: campaign.end_date,
+                        linkedin_user_id: campaign.linkedin_user_id,
+                        target_audience: campaign.target_audience,
+                        frequency_per_day: campaign.frequency_per_day,
+                        status: campaign.status,
+                        postCount: postCount
+                    });
+                }
+            });
+
+            return campaignsForDay;
+        },
+
+        getDaysInMonth(month, year) {
+            return new Date(year, month + 1, 0).getDate();
+        },
+        
+        getFirstDayOfMonth(month, year) {
+            return new Date(year, month, 1).getDay();
+        },
+        
+        getPostsForDate(date) {
+            return this.posts.filter(post => {
+                const postDate = new Date(post.scheduled_time);
+                return postDate.getDate() === date && 
+                    postDate.getMonth() === this.currentMonth && 
+                    postDate.getFullYear() === this.currentYear;
+            });
+        },
+        
+        toLocalISOString(date) {
+            const pad = (num) => String(num).padStart(2, "0");
+            const year = date.getFullYear();
+            const month = pad(date.getMonth() + 1);
+            const day = pad(date.getDate());
+            const hours = pad(date.getHours());
+            const minutes = pad(date.getMinutes());
+            return `${year}-${month}-${day}T${hours}:${minutes}`;
+        },
+
+        utcToLocalForInput(utcString) {
+            const date = new Date(utcString);
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            return `${year}-${month}-${day}T${hours}:${minutes}`;
+        },
                 
         formatTime(dateTime) {
             return new Date(dateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -590,7 +602,15 @@ export default {
                 minute: '2-digit'
             });
         },
-                
+        
+        getMonthName(monthIndex) {
+            const months = [
+                'January', 'February', 'March', 'April', 'May', 'June',
+                'July', 'August', 'September', 'October', 'November', 'December'
+            ];
+            return months[monthIndex];
+        },
+
         getPostTypeIcon(type) {
             switch(type) {
                 case 'text': return '📝';
@@ -603,35 +623,6 @@ export default {
             
         getMediaUrl(filePath) {
             return `/linkedin/${filePath}`;
-        },
-            
-        showPostsPopover(day) {
-            this.selectedDay = day;
-            this.showPopover = true;
-        },
-            
-        closePopover() {
-            this.showPopover = false;
-            this.popoverPosts = [];
-            this.selectedCampaign = null;
-        },
-            
-        getMonthName(monthIndex) {
-            const months = [
-                'January', 'February', 'March', 'April', 'May', 'June',
-                'July', 'August', 'September', 'October', 'November', 'December'
-            ];
-            return months[monthIndex];
-        },
-
-        utcToLocalForInput(utcString) {
-            const date = new Date(utcString);
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const day = String(date.getDate()).padStart(2, '0');
-            const hours = String(date.getHours()).padStart(2, '0');
-            const minutes = String(date.getMinutes()).padStart(2, '0');
-            return `${year}-${month}-${day}T${hours}:${minutes}`;
         },
 
         openPost(post) {
@@ -675,6 +666,12 @@ export default {
                     fileName: ''
                 }
             };
+        },
+
+        closePopover() {
+            this.showPopover = false;
+            this.popoverPosts = [];
+            this.selectedCampaign = null;
         },
 
         startEditing() {
@@ -930,17 +927,6 @@ export default {
             } finally {
                 this.isLoading = false;
             }
-        },
-
-        getCampaignEndStartDates(campaignId) {
-            const campaign = this.campaigns.find(c => c.id === campaignId);
-            if (campaign) {
-                return {
-                    startDate: new Date(campaign.start_date),
-                    endDate: new Date(campaign.end_date)
-                };
-            }
-            return null;
         },
     },
 }
