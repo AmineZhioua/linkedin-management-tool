@@ -160,7 +160,7 @@ class LinkedInController extends Controller
             }
         }
 
-        return response()->json(['message' => 'Post scheduled successfully with campaign']);
+        return response()->json(['message' => 'Post planifié avec succès']);
     }
     /**
      * Redirect the user to LinkedIn for authorization.

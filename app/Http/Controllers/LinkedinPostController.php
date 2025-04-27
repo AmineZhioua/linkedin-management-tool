@@ -6,7 +6,10 @@ use App\Models\LinkedinUser;
 use App\Models\LinkedinCampaign;
 use Illuminate\Http\Request;
 use App\Models\ScheduledLinkedinPost;
+use Illuminate\Support\Facades\Log;
+use App\Jobs\ScheduleLinkedInPost;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
 class LinkedinPostController extends Controller
@@ -55,46 +58,65 @@ class LinkedinPostController extends Controller
     }
 
 
+
+
     // FUNCTION TO UPDATE A POST
     public function updatePost(Request $request) {
         $validated = $request->validate([
             'post_id' => 'required|integer|exists:scheduled_linkedin_posts,id',
+            'job_id' => 'required|integer|exists:jobs,id',
             'linkedin_user_id' => 'required|integer|exists:linkedin_users,id',
             'type' => 'required|string|in:text,image,video,article',
             'scheduled_time' => 'required|date|after:now',
             'content' => 'required|string',
         ]);
-    
+
         $postToUpdate = ScheduledLinkedinPost::where('id', $validated['post_id'])
             ->where('linkedin_user_id', $validated['linkedin_user_id'])
             ->first();
-    
+
         if ($postToUpdate) {
+            DB::table('jobs')->where('id', $postToUpdate->job_id)->delete();
+
             $postToUpdate->type = $validated['type'];
             $postToUpdate->scheduled_time = $validated['scheduled_time'];
             $content = $validated['content'];
-    
+
             if ($request->hasFile('file')) {
                 $filePath = $request->file('file')->store('', 'linkedin_media');
                 $contentArray = json_decode($content, true);
                 $contentArray['file_path'] = $filePath;
                 $content = json_encode($contentArray);
             }
-    
+
             $postToUpdate->content = $content;
             $postToUpdate->save();
-    
+
+            ScheduleLinkedInPost::dispatch($postToUpdate)->delay(Carbon::parse($validated['scheduled_time']));
+
+            $newJobId = DB::table('jobs')
+                ->where('payload', 'like', '%ScheduleLinkedInPost%')
+                ->where('payload', 'like', '%'.$postToUpdate->id.'%')
+                ->orderBy('id', 'desc')
+                ->value('id');
+
+            $postToUpdate->job_id = $newJobId;
+            $postToUpdate->save();
+
             return response()->json([
                 'message' => 'Post mis à jour avec succès !',
                 'success' => true
             ], 200);
         }
-    
+
         return response()->json([
             'message' => 'Post non trouvé !',
             'success' => false
         ], 404);
     }
+
+
+
 
     public function getCampaignPostsForDay(Request $request) {
         $validated = $request->validate([

@@ -105,6 +105,14 @@
                         </div>
                     </div>
                 </div>
+
+                <button 
+                    class="flex items-center justify-center bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded-lg mt-4 gap-2" 
+                    @click="startAdding"
+                >
+                    <img src="/build/assets/icons/add-white.svg" alt="Add Icon" />
+                    <span class="fw-semibold">Ajouter un Post</span>
+                </button>
             </div>
         </div>
 
@@ -121,7 +129,93 @@
                     </button>
                 </div>
 
-                <div v-if="selectedPost" class="mb-4">
+                <!-- Fields for Adding a Post -->
+                <div v-if="isAdding" class="mb-4">
+                    <div class="flex flex-col gap-4">
+                        <div>
+                            <label class="text-sm">Date et heure:</label>
+                            <input
+                                type="datetime-local"
+                                v-model="newPost.scheduled_time"
+                                class="border rounded p-2 w-full"
+                            />
+                        </div>
+
+                        <div>
+                            <label class="text-sm">Type de Post:</label>
+                            <select
+                                v-model="newPost.type"
+                                class="border rounded p-2 w-full"
+                            >
+                                <option value="text">Texte</option>
+                                <option value="image">Image</option>
+                                <option value="video">Vidéo</option>
+                                <option value="article">Article</option>
+                            </select>
+                        </div>
+
+                        <!-- Content based on post type -->
+                        <div v-if="newPost.type === 'text'">
+                            <textarea
+                                v-model="newPost.content.text"
+                                placeholder="Exprimez-vous !"
+                                class="w-full border rounded-lg p-2 h-32"
+                            ></textarea>
+                        </div>
+
+                        <div v-if="newPost.type === 'image' || newPost.type === 'video'">
+                            <input
+                                type="file"
+                                :accept="newPost.type === 'image' ? 'image/*' : 'video/*'"
+                                class="w-full border rounded-lg p-2 mb-2"
+                                @change="handleFileUploadNewPost"
+                            />
+                            <p v-if="newPost.content.fileName" class="mt-2 mb-0 text-sm text-gray-600">
+                                Fichier actuel : {{ newPost.content.fileName }}
+                            </p>
+                            <textarea
+                                v-model="newPost.content.caption"
+                                placeholder="Souhaitez-vous ajouter quelques mots ? (Optionnel)"
+                                class="w-full border rounded-lg p-2 h-32 mt-2"
+                            ></textarea>
+                        </div>
+
+                        <div v-if="newPost.type === 'article'" class="flex flex-col gap-2">
+                            <label class="text-sm text-gray-600">URL de l'Article :</label>
+                            <input
+                                type="text"
+                                v-model="newPost.content.url"
+                                class="w-full border rounded-lg p-2"
+                            />
+                            <label class="text-sm text-gray-600">Titre de l'Article :</label>
+                            <input
+                                type="text"
+                                v-model="newPost.content.title"
+                                class="w-full border rounded-lg p-2"
+                            />
+                            <label class="text-sm text-gray-600">Description de l'Article :</label>
+                            <input
+                                type="text"
+                                v-model="newPost.content.description"
+                                class="w-full border rounded-lg p-2"
+                            />
+                            <textarea
+                                v-model="newPost.content.caption"
+                                placeholder="Souhaitez-vous ajouter quelques mots ? (Optionnel)"
+                                class="w-full border rounded-lg p-2 h-32 mt-2"
+                            ></textarea>
+                        </div>
+
+                        <button 
+                            @click="createPost"
+                            class="bg-green-500 text-white py-2 px-4 fw-semibold rounded-lg mt-4"
+                        >
+                            Ajouter le Post
+                        </button>
+                    </div>
+                </div>
+
+                <div v-if="selectedPost && !isAdding" class="mb-4">
                     <!-- Editable Fields when in edit mode -->
                     <div v-if="isEditing" class="flex flex-col gap-4">
                         <div>
@@ -249,17 +343,8 @@
                     </div>
                 </div>
 
-                <div class="flex items-center justify-between">
-                    <button 
-                        @click="closeModal" 
-                        class="bg-gray-300 text-black py-2 px-4 rounded-lg"
-                    >
-                        Fermer
-                    </button>
-                    <div 
-                        v-if="selectedPost.status !== 'posted'" 
-                        class="flex items-center gap-2"
-                    >
+                <!-- All Buttons -->
+                <div class="flex items-center justify-end gap-2" v-if="selectedPost && selectedPost.status !== 'posted'" >
                         <button 
                             @click="deletePost(selectedPost.id)"
                             :disabled="selectedPost.status === 'posted'" 
@@ -283,7 +368,6 @@
                         >
                             Enregistrer
                         </button>
-                    </div>
                 </div>
             </div>
         </div>
@@ -292,7 +376,7 @@
 
 <script>
 import axios from 'axios';
-import Swal from 'sweetalert2'
+import Swal from 'sweetalert2';
 
 export default {
     name: 'DashboardCalendar',
@@ -314,15 +398,9 @@ export default {
             type: Number,
             required: true
         },
-        linkedinUserId: {
-            type: Number,
-            required: true
-        }
     },
     
     data() {
-        console.log("Posts:", this.posts);
-        console.log("Campaigns:", this.campaigns);
         return {
             selectedDay: null,
             showPopover: false,
@@ -332,10 +410,25 @@ export default {
             editedPost: null,
             isOpen: false,
             isEditing: false,
+            isAdding: false,
             isLoading: false,
             isLoadingPosts: false,
             localScheduledDateTime: '',
-            popoverPosts: []
+            popoverPosts: [],
+            selectedCampaign: null,
+            newPost: {
+                type: 'text',
+                scheduled_time: '',
+                content: {
+                    text: '',
+                    caption: '',
+                    url: '',
+                    title: '',
+                    description: '',
+                    file: null,
+                    fileName: ''
+                }
+            }
         };
     },
   
@@ -429,8 +522,7 @@ export default {
             return campaignsForDay;
         },
         
-        // DO NOT USE 'toISOString()' AS IT GIVES AN ERROR
-        toLocalISOString(date) { // THIS FUNCTION WAS CREATED TO FIX THE 'toISOString()' ERROR
+        toLocalISOString(date) {
             const pad = (num) => String(num).padStart(2, "0");
             const year = date.getFullYear();
             const month = pad(date.getMonth() + 1);
@@ -441,16 +533,15 @@ export default {
         },
 
         async getCampaignPostsForDate(campaign, day) {
+            this.selectedCampaign = campaign;
             const clickedDate = new Date(this.currentYear, this.currentMonth, day);
             const endDate = new Date(campaign.end_date);
             const startDate = new Date(campaign.start_date);
 
-            // Normalize dates to midnight for accurate comparison
             clickedDate.setHours(0, 0, 0, 0);
             startDate.setHours(0, 0, 0, 0);
             endDate.setHours(0, 0, 0, 0);
 
-            // Check if clickedDate is within the campaign's date range
             if (clickedDate >= startDate && clickedDate <= endDate) {
                 this.isLoadingPosts = true;
                 try {
@@ -458,7 +549,7 @@ export default {
                         params: {
                             linkedin_user_id: campaign.linkedin_user_id,
                             campaign_id: campaign.id,
-                            selected_date: this.toLocalISOString(clickedDate).split('T')[0] // Format as YYYY-MM-DD
+                            selected_date: this.toLocalISOString(clickedDate).split('T')[0]
                         },
                         headers: {
                             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
@@ -522,6 +613,7 @@ export default {
         closePopover() {
             this.showPopover = false;
             this.popoverPosts = [];
+            this.selectedCampaign = null;
         },
             
         getMonthName(monthIndex) {
@@ -558,9 +650,10 @@ export default {
                 scheduledDateTime: post.scheduled_time
             };
             this.editedPost = { ...this.selectedPost };
-            this.localScheduledDateTime = this.utcToLocalForInput(post.scheduled_time); // Convert to local
+            this.localScheduledDateTime = this.utcToLocalForInput(post.scheduled_time);
             this.isOpen = true;
             this.isEditing = false;
+            this.isAdding = false;
         },
             
         closeModal() {
@@ -568,10 +661,33 @@ export default {
             this.selectedPost = null;
             this.editedPost = null;
             this.isEditing = false;
+            this.isAdding = false;
+            this.newPost = {
+                type: 'text',
+                scheduled_time: '',
+                content: {
+                    text: '',
+                    caption: '',
+                    url: '',
+                    title: '',
+                    description: '',
+                    file: null,
+                    fileName: ''
+                }
+            };
         },
 
         startEditing() {
             this.isEditing = true;
+        },
+
+        startAdding() {
+            this.isAdding = true;
+            this.isOpen = true;
+            const selectedDate = new Date(this.currentYear, this.currentMonth, this.selectedDay);
+            const now = new Date();
+            selectedDate.setHours(now.getHours(), now.getMinutes(), 0, 0);
+            this.newPost.scheduled_time = this.toLocalISOString(selectedDate);
         },
 
         handleFileUpload(event) {
@@ -579,6 +695,125 @@ export default {
             if (file) {
                 this.editedPost.content.file = file;
                 this.editedPost.content.fileName = file.name;
+            }
+        },
+
+        handleFileUploadNewPost(event) {
+            const file = event.target.files && event.target.files[0];
+            if (file) {
+                this.newPost.content.file = file;
+                this.newPost.content.fileName = file.name;
+            }
+        },
+
+        async createPost() {
+            this.isLoading = true;
+            try {
+                const campaignDates = this.getCampaignEndStartDates(this.selectedCampaign.id);
+                const scheduledDateTime = new Date(this.newPost.scheduled_time);
+                const now = new Date();
+
+                if ((scheduledDateTime < campaignDates.startDate || scheduledDateTime > campaignDates.endDate) && scheduledDateTime > now) {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Oops...",
+                        html: `<p>La date de publication doit être comprise entre<br><b>${this.formatDateTime(campaignDates.startDate)}</b> et <b>${this.formatDateTime(campaignDates.endDate)}</b>.</p>`,
+                        confirmButtonColor: "#fd0033",
+                        allowOutsideClick: true,
+                        timer: 6000,
+                        timerProgressBar: true,
+                    });
+                    return;
+
+                } else if(scheduledDateTime < now) {
+                    // If the scheduled date is in the past
+                    Swal.fire({
+                        icon: "error",
+                        title: "Oops...",
+                        text: "La date de publication ne peut pas être dans le passé.",
+                        confirmButtonColor: "#fd0033",
+                        allowOutsideClick: true,
+                        timer: 6000,
+                        timerProgressBar: true,
+                    });
+                    return;
+                } 
+
+                if (this.newPost.type === 'text' && this.newPost.content.text.trim() === '') {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Oops...",
+                        text: "Le contenu du post ne peut pas être vide.",
+                        confirmButtonColor: "#fd0033",
+                        allowOutsideClick: true,
+                        timer: 6000,
+                        timerProgressBar: true,
+                    });
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append('linkedin_id', this.selectedCampaign.linkedin_user_id);
+                formData.append('campaign_id', this.selectedCampaign.id);
+                formData.append('type', this.newPost.type);
+                formData.append('scheduled_date', this.newPost.scheduled_time);
+
+                switch (this.newPost.type) {
+                    case "text":
+                        formData.append("content[text]", this.newPost.content.text.trim());
+                        break;
+
+                    case "image":
+                    case "video":
+                        formData.append("content[file]", this.newPost.content.file);
+                        formData.append("content[caption]", this.newPost.content.caption.trim());
+                        formData.append("content[original_filename]", this.newPost.content.file.name);
+                        break;
+
+                    case "article":
+                        formData.append("content[url]", this.newPost.content.url);
+                        formData.append("content[title]", this.newPost.content.title);
+                        formData.append("content[description]", this.newPost.content.description);
+                        formData.append("content[caption]", this.newPost.content.caption.trim());
+                        break;
+                    default:
+                        throw new Error("Type de publication invalide");
+                }
+
+                const response = await axios.post('/linkedin/schedule-post', formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    },
+                });
+
+                if (response.status === 200 || response.status === 201) {
+                    this.isAdding = false;
+                    this.closeModal();
+
+                    Swal.fire({
+                        icon: "success",
+                        html: `<p class='fw-semibold'>Post créé avec succès !</p>`,
+                        allowOutsideClick: false,
+                        timer: 3000,
+                        timerProgressBar: true,
+                        showConfirmButton: false,
+                    }).then((result) => {
+                        if (result.dismiss === Swal.DismissReason.timer) {
+                            window.location.reload();
+                        }
+                    });
+                } else {
+                    console.error("Failed to create post:", response);
+                    throw new Error("Failed to create post");
+                }
+            } catch (error) {
+                console.error("Error creating post:", error);
+                if (error.response && error.response.status === 422) {
+                    console.log("Validation errors:", error.response.data);
+                }
+            } finally {
+                this.isLoading = false;
             }
         },
 
@@ -594,6 +829,7 @@ export default {
                 const formData = new FormData();
                 formData.append('post_id', this.editedPost.id);
                 formData.append('linkedin_user_id', this.editedPost.linkedin_user_id);
+                formData.append('job_id', this.editedPost.job_id);
                 formData.append('type', this.editedPost.type);
                 formData.append('scheduled_time', this.editedPost.scheduledDateTime);
                 formData.append('content', JSON.stringify(this.editedPost.content));
@@ -603,7 +839,6 @@ export default {
                     formData.append('file', this.editedPost.content.file);
                 }
 
-                // Check for dates before updating
                 if(scheduledDateTime < campaignDates.startDate || scheduledDateTime > campaignDates.endDate) {
                     Swal.fire({
                         icon: "error",
@@ -617,7 +852,6 @@ export default {
                     return;
                 }
 
-                // Check for empty text content
                 if(this.editedPost.type === 'text' && this.editedPost.content.text.trim() === '') {
                     Swal.fire({
                         icon: "error",
@@ -631,7 +865,6 @@ export default {
                     return;
                 }
 
-
                 const response = await axios.post('/linkedin/update-post', formData, {
                     headers: {
                         'Content-Type': 'multipart/form-data',
@@ -642,9 +875,8 @@ export default {
                 if (response.status === 200) {
                     this.isEditing = false;
                     this.selectedPost = { ...this.editedPost };
-
-                    // Show success message
                     this.closeModal();
+
                     Swal.fire({
                         icon: "success",
                         html: `<p class='fw-semibold'>Post mis à jour avec succès !</p>`,
@@ -763,5 +995,4 @@ export default {
         transform: rotate(360deg);
     }
 }
-
 </style>
