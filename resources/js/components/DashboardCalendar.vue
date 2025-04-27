@@ -59,11 +59,6 @@
                         ×
                     </button>
                 </div>
-
-                <!-- Loader -->
-                <div v-if="isLoadingPosts" class="loader-container">
-                    <div class="loader"></div>
-                </div>
                 
                 <div class="mt-4 flex-1 overflow-y-auto">
                     <!-- In Case There Are No Posts -->
@@ -948,37 +943,5 @@ export default {
 ::-webkit-scrollbar-thumb {
   background: transparent;
   border-radius: 20px;
-}
-
-.loader-container {
-    position: absolute;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.144);
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 1000;
-}
-.loader {
-    border: 5px solid rgba(255, 255, 255, 0.3);
-    border-radius: 50%;
-    border-top: 5px solid white;
-    width: 50px;
-    height: 50px;
-    animation: spin 0.5s linear infinite;
-}
-
-@keyframes spin {
-    0% {
-        transform: rotate(0deg);
-    }
-    100% {
-        transform: rotate(360deg);
-    }
 }
 </style>

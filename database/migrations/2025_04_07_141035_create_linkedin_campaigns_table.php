@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('color');
             $table->dateTime('start_date');
             $table->dateTime('end_date');
-            $table->enum('status', ['draft', 'scheduled', 'completed', 'failed'])->default('draft'); // CHANGE THIS TO SCHEDULED
+            $table->enum('status', ['draft', 'scheduled', 'completed', 'failed'])->default('scheduled');
             $table->timestamps();
         });
     }
