@@ -18,6 +18,22 @@ class StripeController extends Controller
         return view('checkout');
     }
 
+    public function applyCoupon(Request $request) {
+        $couponCode = $request->input('coupon_code');
+        $coupon = Coupon::where('code', $couponCode)->first();
+
+        if ($coupon && $coupon->isValid()) {
+            session(['applied_coupon' => $couponCode]);
+            return response()->json([
+                'success' => true, 
+                'discount' => $coupon->discount, 
+                'type' => $coupon->type
+            ]);
+        }
+
+        return response()->json(['success' => false, 'error' => 'Code promo invalide ou expiré.']);
+    }
+
     public function session(Request $request) {
         require_once base_path('vendor/autoload.php');
         
@@ -94,7 +110,7 @@ class StripeController extends Controller
             return redirect()->route('login-linkedin')->with('success_payment', 'Votre Abonnement  est maintenant Activé!');
         } else {
             // Will be changed later
-            return redirect()->route('login-linkedin')->with('success_payment', 'Votre Abonnement  est maintenant Activé!'); 
+            return redirect()->route('home')->with('success_payment', 'Votre Abonnement  est maintenant Activé!'); 
         }
     }
 
