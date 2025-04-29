@@ -181,7 +181,7 @@ class LinkedInController extends Controller
             'client_id' => $client_id,
             'redirect_uri' => route('linkedin.callback'),
             'state' => 'random_string',
-            'scope' => 'email w_member_social profile openid r_basicprofile r_1st_connections_size',
+            'scope' => 'email w_member_social profile openid r_basicprofile r_1st_connections_size w_organization_social r_organization_social r_events',
             'prompt' => 'login',
         ]);
 
