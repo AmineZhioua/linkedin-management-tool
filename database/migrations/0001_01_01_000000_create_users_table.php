@@ -19,6 +19,8 @@ return new class extends Migration
             $table->string('password')->nullable();
             $table->string('google_id')->nullable();
             $table->string('role')->default('user');
+            $table->boolean('post_perm')->default(false);
+            $table->boolean('boost_perm')->default(false);
             $table->rememberToken();
             $table->timestamps();
         });

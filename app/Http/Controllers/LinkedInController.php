@@ -81,6 +81,14 @@ class LinkedInController extends Controller
      * Schedule a LinkedIn post with token expiration and validation.
      */
     public function publish(Request $request) {
+        $user = Auth::user();
+        if (!$user->post_perm) {
+            return response()->json([
+                'status' => 403,
+                'error' => 'You don\'t have permission to schedule a post'
+            ], 403);
+        }
+        
         $validated = $request->validate([
             'linkedin_id' => 'required|exists:linkedin_users,id',
             'type' => 'required|in:text,image,video,article',

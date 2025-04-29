@@ -14,7 +14,8 @@ use Illuminate\Support\Facades\Log;
 
 class StripeController extends Controller
 {
-    public function checkout() {
+    public function checkout()
+    {
         return view('checkout');
     }
 
@@ -78,9 +79,9 @@ class StripeController extends Controller
         }
     }
 
-
     // Success Payment Function
-    public function success(Request $request) {
+    public function success(Request $request)
+    {
         $userId = Auth::id();
         $pricingMode = $request->query('pricingMode');
         $subscriptionId = $request->query('subscription_id') ?? session('subscription_id');
@@ -102,21 +103,29 @@ class StripeController extends Controller
             ['date_expiration' => $expirationDate]
         );
 
+        // Update user permissions based on subscription features
+        $user = Auth::user();
+        if ($user instanceof \App\Models\User) {
+            $user->post_perm = ($subscription->linkedin == 1 || $subscription->whatsapp == 1) ? true : false;
+            $user->save();
+        } else {
+            Log::error('Authenticated user is not an instance of the User model.');
+        }
+
         session()->forget(['subscription_id', 'pricingMode']);
 
-        if($subscription->whatsapp == 1 && $subscription->linkedin == 0) {
-            return redirect()->route('dashboard')->with('success_payment', 'Votre Abonnement  est maintenant Activé!');
-        } else if($subscription->whatsapp == 0 && $subscription->linkedin == 1) {
-            return redirect()->route('login-linkedin')->with('success_payment', 'Votre Abonnement  est maintenant Activé!');
+        if ($subscription->whatsapp == 1 && $subscription->linkedin == 0) {
+            return redirect()->route('dashboard')->with('success_payment', 'Votre Abonnement est maintenant Activé!');
+        } else if ($subscription->whatsapp == 0 && $subscription->linkedin == 1) {
+            return redirect()->route('login-linkedin')->with('success_payment', 'Votre Abonnement est maintenant Activé!');
         } else {
             // Will be changed later
             return redirect()->route('home')->with('success_payment', 'Votre Abonnement  est maintenant Activé!'); 
         }
     }
 
-
-
-    public function cancel() {
+    public function cancel()
+    {
         return redirect()->route('subscriptions')->with('cancel_payment', 'Abonnement Annulé!');
     }
 }
