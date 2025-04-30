@@ -61,11 +61,12 @@ class KpiController extends Controller
         } else {
             Log::error('LinkedIn API error: ' . $response);
             if ($httpCode == 401) {
+                // TRANSLATE THEM TO FRENCH
                 return response()->json(['error' => 'Unauthorized: Invalid or expired token'], 401);
             } elseif ($httpCode == 403) {
                 return response()->json(['error' => 'Forbidden: Insufficient permissions'], 403);
             } elseif ($httpCode == 404) {
-                return response()->json(['error' => 'Not Found: The specified URN does not exist'], 404);
+                return response()->json(['error' => 'Not Found: The Post does not exist'], 404);
             } else {
                 return response()->json(['error' => 'An error occurred while retrieving social metadata'], $httpCode);
             }

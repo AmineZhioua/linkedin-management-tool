@@ -125,18 +125,6 @@
 
         <!-- KPIs Section -->
         <div class="container py-4 flex flex-col gap-4 my-10">
-            <div class="flex justify-between align-items-center">
-                <div class="flex align-items-end gap-2">
-                    <img 
-                        src="/build/assets/icons/kpi-black.svg" 
-                        alt="Kpi Icon"
-                        height="45"
-                        width="45"
-                    />
-                    <h1 class="fw-bold text-3xl mb-0">Tes KPIs</h1>
-                </div>
-                <button class="text-white fw-semibold bg-black rounded-full px-4 py-2">Trier</button>
-            </div>
             <!-- KPI List VueJS Component -->
             <kpi-list 
                 :all-user-posts="{{ json_encode($posts) }}" 
