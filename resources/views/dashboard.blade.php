@@ -30,143 +30,121 @@
     </style>
 </head>
 <body>
-    <div class="bg-black mb-8 relative">
-        <!-- Header Component Section -->
-        <x-header />
-
-        <!-- Main Content Section -->
-        <main class="container min-h-[600px]">
-
-            <!-- Landing Section -->
-            <div class="d-flex justify-content-between align-items-center py-10 relative">
-
-                <!-- Main Text Section -->
-                <div class="text-white flex-grow-1">
-                    <h1 class="fw-bold text-5xl">Bienvenue sur ton</h1>
-                    <h1 class="special-text my-4">dashboard, </h1>
-                    <h1 class="fw-bold text-5xl">à toi de jouer !</h1>
-
-                    <p class="fw-semibold mt-4 text-lg">
-                        Devenez un pro en programmant et personnalisant <br> vos prochains posts.
-                    </p>
-                </div>
-
-                <!-- Main Image Section -->
-                <img 
-                    src="/build/assets/images/dashboard-img.svg" 
-                    alt="dashboard" 
-                    height="400" 
-                    width="420"
-                    class="dashboard-img d-none d-lg-block"
-                />
-            </div>
-        </main>
-
-        <!-- Start Waves Animation Section -->
-        <div class="waves">
-            <div class="wave" id="wave1"></div>
-            <div class="wave" id="wave2"></div>
-            <div class="wave" id="wave3"></div>
-            <div class="wave" id="wave4"></div>
-        </div>
-        <!-- End Waves Animation Section -->
-    </div>
-
-    <!-- LinkedIn Profiles Section -->
-    <div class="container py-2 flex flex-col gap-8 my-10">
-        <div class="flex align-items-center justify-between">
-            <h1 class="fw-bold text-3xl">Vos Profils LinkedIn</h1>
-            <button class="bg-black rounded-full px-4 py-2 flex items-center gap-2 hover:opacity-70 transition-all duration-300">
-                <img 
-                    src="/build/assets/icons/add-white.svg" 
-                    alt="Add Icon"
-                />
-                <a href="{{ route('linkedin-post') }}" class="text-decoration-none text-white fw-semibold">Ajouter un profil</a>
-            </button>
-        </div>
-
-        <div class="relative">
-            <div class="flex justify-content-center align-items-center gap-12 min-h-[300px]" id="profiles-container">
-                @foreach($linkedinUserList as $linkedinUser)
-                <div class="flex flex-col align-items-center justify-center gap-4 cursor-pointer relative profile transition-all duration-300">
-                    <img 
-                        src="{{ $linkedinUser->linkedin_picture ?? '/build/assets/images/default-profile.png' }}"
-                        alt="profile-picture" 
-                        height="200"
-                        width="200"
-                        class="rounded-full"
-                    />
-                    <h3 class="text-xl fw-bold">{{ $linkedinUser->linkedin_firstname }} {{ $linkedinUser->linkedin_lastname }}</h3>
-                    <img 
-                        src="/build/assets/icons/linkedin-blue.svg" 
-                        alt="LinkedIn Icon" 
-                        class="absolute bottom-[20%] right-[5%] bg-white" 
-                        style="border: 5px solid white; border-radius: 20px;"
-                    />
-                </div>
-                @endforeach
-            </div>
-            
-            <button id="left-arrow" class="absolute top-1/2 left-0 transform -translate-y-1/2 bg-black text-white rounded-full w-10 h-10 flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="15 18 9 12 15 6"></polyline>
-                </svg>
-            </button>
-            <button id="right-arrow" class="absolute top-1/2 right-0 transform -translate-y-1/2 bg-black text-white rounded-full w-10 h-10 flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="9 18 15 12 9 6"></polyline>
-                </svg>
-            </button>
-        </div>
-    
-        <div class="flex justify-center gap-2" id="pagination-dots"></div>
-    </div>
-
-    <!-- KPIs Section -->
-    <div class="container py-4 flex flex-col gap-4 my-10">
-        <div class="flex justify-between align-items-center">
-            <div class="flex align-items-end gap-2">
-                <img 
-                    src="/build/assets/icons/kpi-black.svg" 
-                    alt="Kpi Icon"
-                    height="45"
-                    width="45"
-                />
-                <h1 class="fw-bold text-3xl mb-0">Tes KPIs</h1>
-            </div>
-            <button class="text-white fw-semibold bg-black rounded-full px-4 py-2">Trier</button>
-        </div>
-        <div class="grid grid-cols-4 gap-4">
-            <div class="flex flex-col align-items-center py-8 px-3 rounded-xl" style="background-color: #E6DFFF;">
-                <h1>10K</h1>
-                <h3>Likes</h3>
-                <p class="text-muted">Hausse de XX likes</p>
-                <button class="text-white fw-semibold bg-black rounded-full px-4 py-2">En savoir plus</button>
-            </div>
-            <div class="flex flex-col align-items-center py-8 px-3 rounded-xl" style="background-color: #C4EDDB;">
-                <h1>10K</h1>
-                <h3>Likes</h3>
-                <p class="text-muted">Hausse de XX likes</p>
-                <button class="text-white fw-semibold bg-black rounded-full px-4 py-2">En savoir plus</button>
-            </div>
-            <div class="flex flex-col align-items-center py-8 px-3 rounded-xl" style="background-color: #FFB0C6;">
-                <h1>10K</h1>
-                <h3>Likes</h3>
-                <p class="text-muted">Hausse de XX likes</p>
-                <button class="text-white fw-semibold bg-black rounded-full px-4 py-2">En savoir plus</button>
-            </div>
-            <div class="flex flex-col align-items-center py-8 px-3 rounded-xl" style="background-color: #FFE4CF;">
-                <h1>10K</h1>
-                <h3>Likes</h3>
-                <p class="text-muted">Hausse de XX likes</p>
-                <button class="text-white fw-semibold bg-black rounded-full px-4 py-2">En savoir plus</button>
-            </div>
-            
-        </div>
-    </div>
-
-    <!-- Calendar & Campaigns Table Section -->
     <div id="app">
+        <div class="bg-black mb-8 relative">
+            <!-- Header Component Section -->
+            <x-header />
+
+            <!-- Main Content Section -->
+            <main class="container min-h-[600px]">
+
+                <!-- Landing Section -->
+                <div class="d-flex justify-content-between align-items-center py-10 relative">
+
+                    <!-- Main Text Section -->
+                    <div class="text-white flex-grow-1">
+                        <h1 class="fw-bold text-5xl">Bienvenue sur ton</h1>
+                        <h1 class="special-text my-4">dashboard, </h1>
+                        <h1 class="fw-bold text-5xl">à toi de jouer !</h1>
+
+                        <p class="fw-semibold mt-4 text-lg">
+                            Devenez un pro en programmant et personnalisant <br> vos prochains posts.
+                        </p>
+                    </div>
+
+                    <!-- Main Image Section -->
+                    <img 
+                        src="/build/assets/images/dashboard-img.svg" 
+                        alt="dashboard" 
+                        height="400" 
+                        width="420"
+                        class="dashboard-img d-none d-lg-block"
+                    />
+                </div>
+            </main>
+
+            <!-- Start Waves Animation Section -->
+            <div class="waves">
+                <div class="wave" id="wave1"></div>
+                <div class="wave" id="wave2"></div>
+                <div class="wave" id="wave3"></div>
+                <div class="wave" id="wave4"></div>
+            </div>
+            <!-- End Waves Animation Section -->
+        </div>
+
+        <!-- LinkedIn Profiles Section -->
+        <div class="container py-2 flex flex-col gap-8 my-10">
+            <div class="flex align-items-center justify-between">
+                <h1 class="fw-bold text-3xl">Vos Profils LinkedIn</h1>
+                <button class="bg-black rounded-full px-4 py-2 flex items-center gap-2 hover:opacity-70 transition-all duration-300">
+                    <img 
+                        src="/build/assets/icons/add-white.svg" 
+                        alt="Add Icon"
+                    />
+                    <a href="{{ route('linkedin-post') }}" class="text-decoration-none text-white fw-semibold">Ajouter un profil</a>
+                </button>
+            </div>
+
+            <div class="relative">
+                <div class="flex justify-content-center align-items-center gap-12 min-h-[300px]" id="profiles-container">
+                    @foreach($linkedinUserList as $linkedinUser)
+                    <div class="flex flex-col align-items-center justify-center gap-4 cursor-pointer relative profile transition-all duration-300">
+                        <img 
+                            src="{{ $linkedinUser->linkedin_picture ?? '/build/assets/images/default-profile.png' }}"
+                            alt="profile-picture" 
+                            height="200"
+                            width="200"
+                            class="rounded-full"
+                        />
+                        <h3 class="text-xl fw-bold">{{ $linkedinUser->linkedin_firstname }} {{ $linkedinUser->linkedin_lastname }}</h3>
+                        <img 
+                            src="/build/assets/icons/linkedin-blue.svg" 
+                            alt="LinkedIn Icon" 
+                            class="absolute bottom-[20%] right-[5%] bg-white" 
+                            style="border: 5px solid white; border-radius: 20px;"
+                        />
+                    </div>
+                    @endforeach
+                </div>
+                
+                <button id="left-arrow" class="absolute top-1/2 left-0 transform -translate-y-1/2 bg-black text-white rounded-full w-10 h-10 flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                </button>
+                <button id="right-arrow" class="absolute top-1/2 right-0 transform -translate-y-1/2 bg-black text-white rounded-full w-10 h-10 flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                </button>
+            </div>
+        
+            <div class="flex justify-center gap-2" id="pagination-dots"></div>
+        </div>
+
+        <!-- KPIs Section -->
+        <div class="container py-4 flex flex-col gap-4 my-10">
+            <div class="flex justify-between align-items-center">
+                <div class="flex align-items-end gap-2">
+                    <img 
+                        src="/build/assets/icons/kpi-black.svg" 
+                        alt="Kpi Icon"
+                        height="45"
+                        width="45"
+                    />
+                    <h1 class="fw-bold text-3xl mb-0">Tes KPIs</h1>
+                </div>
+                <button class="text-white fw-semibold bg-black rounded-full px-4 py-2">Trier</button>
+            </div>
+            <!-- KPI List VueJS Component -->
+            <kpi-list 
+                :all-user-posts="{{ json_encode($posts) }}" 
+                :user-linkedin-accounts="{{ json_encode($linkedinUserList) }}"
+            />
+        </div>
+
+        <!-- Calendar & Campaigns Table Section -->
         <!-- Calendar Section -->
         <div class="container py-2 my-10 flex flex-col gap-4">
             <div class="flex justify-between align-items-center">
@@ -189,7 +167,6 @@
                 :initial-year="{{ now()->year }}" 
             />
         </div>
-
 
         <!-- Campaigns Display Section -->
         <div class="container py-2 my-10">
@@ -215,7 +192,6 @@
             <campaign-table :campaigns="{{ json_encode($campaigns) }}" />
         </div>
     </div>
-
 
 
     <!-- Footer Section -->

@@ -17,6 +17,7 @@ import DashboardCalendar from "./components/DashboardCalendar.vue";
 import CampaignTable from "./components/CampaignTable.vue";
 import CampaignModal from "./components/CampaignModal.vue";
 import PostCard from "./components/PostCard.vue";
+import KpiList from "./components/KpiList.vue";
 
 
 const app = createApp();
@@ -37,5 +38,6 @@ app.component("dashboard-calendar", DashboardCalendar);
 app.component("campaign-table", CampaignTable);
 app.component("campaign-modal", CampaignModal);
 app.component("post-card", PostCard);
+app.component("kpi-list", KpiList);
 
 app.mount("#app");

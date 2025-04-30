@@ -71,6 +71,13 @@ Route::get('/linkedin/get-campaign-posts', [App\Http\Controllers\DashboardContro
 Route::get('/linkedin/get-campaign-posts-for-day', [App\Http\Controllers\LinkedinPostController::class, 'getCampaignPostsForDay'])
     ->name('get.posts.campaign.for.day');
 
+
+Route::get('/linkedin/get-social-actions', [App\Http\Controllers\KpiController::class, 'getSocialActions'])->name('get.social.actions');
+
+
+
+
+
 // Admin Routes (without admin middleware)
 Route::middleware(['auth', 'verified'])->prefix('admin')->group(function () {
     Route::get('/dashboard', function () {
