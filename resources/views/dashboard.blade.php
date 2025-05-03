@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="user_id" content="{{ Auth::user()->id }}">
 
     @vite(['resources/js/app.js', 'resources/css/app.css'])
     <title>Lemonade - Dashboard</title>

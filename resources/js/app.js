@@ -18,7 +18,7 @@ import CampaignTable from "./components/CampaignTable.vue";
 import CampaignModal from "./components/CampaignModal.vue";
 import PostCard from "./components/PostCard.vue";
 import KpiList from "./components/KpiList.vue";
-
+import "./echo"
 
 const app = createApp();
 

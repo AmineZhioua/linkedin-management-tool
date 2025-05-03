@@ -1,0 +1,15 @@
+[90m= [39m[34;4mApp\Models\User[39;24m {#6292
+    [34mid[39m: [35m1[39m,
+    [34mname[39m: "[32mAmine Zhioua[39m",
+    [34memail[39m: "[32mzhiouaamine23@gmail.com[39m",
+    [34memail_verified_at[39m: "[32m2025-04-29 00:58:05[39m",
+    #[33mpassword[39m: "[32m$2y$12$Bfd4wUGJN3mYtA5hUSgneOJe7NZCuY44D/yXfjeYsYHqpzIDXCTpG[39m",
+    [34mgoogle_id[39m: "[32m107533277033137687066[39m",
+    [34mrole[39m: "[32muser[39m",
+    [34mpost_perm[39m: [35m1[39m,
+    [34mboost_perm[39m: [35m0[39m,
+    #[33mremember_token[39m: "[32mEzDR9n2QpCRG3GoS43YAbyMASgn4iaI6NHr9cGfcw4hkqnSDOgFdVWeSIlnb[39m",
+    [34mcreated_at[39m: "[32m2025-04-29 00:58:03[39m",
+    [34mupdated_at[39m: "[32m2025-04-29 01:09:51[39m",
+  }
+

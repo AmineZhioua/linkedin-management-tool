@@ -76,8 +76,6 @@ Route::get('/linkedin/get-social-actions', [App\Http\Controllers\KpiController::
 
 
 
-
-
 // Admin Routes (without admin middleware)
 Route::middleware(['auth', 'verified'])->prefix('admin')->group(function () {
     Route::get('/dashboard', function () {

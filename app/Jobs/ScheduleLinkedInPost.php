@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Events\CampaignStarted;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -9,6 +10,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use App\Models\ScheduledLinkedInPost;
 use App\Http\Controllers\LinkedInController;
+use App\Models\LinkedinCampaign;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -147,6 +149,11 @@ class ScheduleLinkedInPost implements ShouldQueue
                 Log::info("Post {$post->id} posted → URN {$postUrn}", [
                     'http_code' => $httpCode,
                 ]);
+
+
+                $campaign = LinkedinCampaign::where("id", $post->campaign_id)->first();
+                event(new CampaignStarted($campaign));
+                
             } else {
                 Log::error("Failed to post {$post->id}", [
                     'http_code' => $httpCode,
