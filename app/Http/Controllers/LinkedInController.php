@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use App\Models\ScheduledLinkedinPost;
 use App\Jobs\ScheduleLinkedInPost;
+use App\Jobs\CheckCampaignStartStatus;
 use App\Models\LinkedinCampaign;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
@@ -62,6 +63,8 @@ class LinkedInController extends Controller
                     'status' => 'scheduled',
                 ]
             );
+
+            CheckCampaignStartStatus::dispatch($campaign)->delay(Carbon::parse($validated['start_date']));
     
             return response()->json([
                 'id' => $campaign->id,
@@ -79,7 +82,7 @@ class LinkedInController extends Controller
 
     /**
      * Schedule a LinkedIn post with token expiration and validation.
-     */
+    */
     public function publish(Request $request) {
         $user = Auth::user();
         if (!$user->post_perm) {
@@ -170,6 +173,9 @@ class LinkedInController extends Controller
 
         return response()->json(['message' => 'Post planifié avec succès']);
     }
+
+
+
     /**
      * Redirect the user to LinkedIn for authorization.
      */

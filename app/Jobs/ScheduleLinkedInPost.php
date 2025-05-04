@@ -151,8 +151,8 @@ class ScheduleLinkedInPost implements ShouldQueue
                 ]);
 
 
-                $campaign = LinkedinCampaign::where("id", $post->campaign_id)->first();
-                event(new CampaignStarted($campaign));
+                // $campaign = LinkedinCampaign::where("id", $post->campaign_id)->first();
+                // event(new CampaignStarted($campaign));
                 
             } else {
                 Log::error("Failed to post {$post->id}", [

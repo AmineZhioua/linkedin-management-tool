@@ -40,14 +40,14 @@ class CampaignStarted implements ShouldBroadcast
     }
 
     public function broadcastAs() {
-        return 'CampaignStarted';
+        return "CampaignStarted";
     }
 
 
     public function broadcastWith(): array
     {
         return [
-            'message' => "Votre {$this->campaign->start_date} a commencé à '{$this->campaign->name}'!"
+            'message' => "Votre campagne '{$this->campaign->name}' a commencé à {$this->campaign->start_date}!"
         ];
     }
 }
