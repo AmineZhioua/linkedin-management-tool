@@ -18,6 +18,7 @@ import CampaignTable from "./components/CampaignTable.vue";
 import CampaignModal from "./components/CampaignModal.vue";
 import PostCard from "./components/PostCard.vue";
 import KpiList from "./components/KpiList.vue";
+import NotificationCard from "./components/NotificationCard.vue";
 import "./echo"
 
 const app = createApp();
@@ -39,5 +40,6 @@ app.component("campaign-table", CampaignTable);
 app.component("campaign-modal", CampaignModal);
 app.component("post-card", PostCard);
 app.component("kpi-list", KpiList);
+app.component("notification-card", NotificationCard);
 
 app.mount("#app");

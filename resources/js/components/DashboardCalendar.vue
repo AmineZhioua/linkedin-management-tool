@@ -931,17 +931,4 @@ export default {
 .dashboard-calendar {
     max-width: 100%;
 }
-
-::-webkit-scrollbar {
-  width: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: transparent;
-  border-radius: 20px;
-}
 </style>

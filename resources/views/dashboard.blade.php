@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <meta name="user_id" content="{{ Auth::user()->id }}">
+    <!-- <meta name="user_id" content="{{ Auth::user()->id }}"> -->
 
     @vite(['resources/js/app.js', 'resources/css/app.css'])
     <title>Lemonade - Dashboard</title>
@@ -23,10 +23,6 @@
             flex-direction: column;
             justify-content: space-between;
             overflow-x: hidden;
-        }
-
-        .task-btns button:last-of-type {
-            border: 1px solid black;
         }
     </style>
 </head>
@@ -180,6 +176,8 @@
 
             <campaign-table :campaigns="{{ json_encode($campaigns) }}" />
         </div>
+
+        <notification-card :user-id="{{ Auth::user()->id }}" />
     </div>
 
 

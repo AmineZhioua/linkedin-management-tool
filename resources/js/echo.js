@@ -13,15 +13,15 @@ window.Echo = new Echo({
     enabledTransports: ['ws', 'wss'],
 });
 
-document.addEventListener('DOMContentLoaded', function() {
-    const userId = document.querySelector("meta[name='user_id']").getAttribute("content");
-    // window.Echo.connector.pusher.connection.bind('message', (message) => {
-    //     console.log('Raw WebSocket message:', message);
-    // });
-    console.log('Setting up Echo listener');
-    window.Echo.private(`campaign-started.${userId}`).listen('.CampaignStarted', (event) => {
-        alert(`Message received: ${event.message}`);
-        console.log(event);
-    });
-    console.log('Echo listener set up');
-});
+// document.addEventListener('DOMContentLoaded', function() {
+//     const userId = document.querySelector("meta[name='user_id']").getAttribute("content");
+//     window.Echo.connector.pusher.connection.bind('message', (message) => {
+//         console.log('Raw WebSocket message:', message);
+//     });
+//     console.log('Setting up Echo listener');
+//     window.Echo.private(`campaign-started.${userId}`).listen('.CampaignStarted', (event) => {
+//         alert(`Message received: ${event.message}`);
+//         console.log(event);
+//     });
+//     console.log('Echo listener set up');
+// });
