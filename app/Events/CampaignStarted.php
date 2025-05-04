@@ -32,6 +32,7 @@ class CampaignStarted implements ShouldBroadcast
      *
      * @return array<int, \Illuminate\Broadcasting\Channel>
      */
+
     public function broadcastOn(): array
     {
         return [
@@ -39,6 +40,7 @@ class CampaignStarted implements ShouldBroadcast
         ];
     }
 
+    // New method to specify the event name
     public function broadcastAs() {
         return "CampaignStarted";
     }
