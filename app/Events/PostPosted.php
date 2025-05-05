@@ -50,7 +50,7 @@ class PostPosted implements ShouldBroadcast
     public function broadcastWith(): array
     {
         return [
-            'user_id' => $this->post->id,
+            'user_id' => $this->post->user_id,
             'campaign_id' => $this->campaign->id,
             'linkedin_user_id' => $this->post->linkedin_user_id,
             'event_name' => 'PostPosted',

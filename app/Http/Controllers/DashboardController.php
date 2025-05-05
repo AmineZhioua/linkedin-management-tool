@@ -58,32 +58,38 @@ class DashboardController extends Controller
     public function addNotification(Request $request) {
         try {
             $validated = $request->validate([
-                'user_id' => 'required|integer|exists:users,id',
-                'campaign_id' => 'required|integer|exists:linkedin_campaigns,id',
-                'linkedin_user_id' => 'required|integer|exists:linkedin_users,id',
-                'event_name' => 'required|string',
-                'message' => 'required|string'
+                'notifications' => 'required|array',
+                'notifications.*.user_id' => 'required|integer|exists:users,id',
+                'notifications.*.campaign_id' => 'required|integer|exists:linkedin_campaigns,id',
+                'notifications.*.linkedin_user_id' => 'required|integer|exists:linkedin_users,id',
+                'notifications.*.event_name' => 'required|string',
+                'notifications.*.message' => 'required|string',
             ]);
     
-            $notification = UserNotification::create([
-                'user_id' => $validated['user_id'],
-                'campaign_id' => $validated['campaign_id'],
-                'linkedin_user_id' => $validated['linkedin_user_id'],
-                'event_name' => $validated['event_name'],
-                'message' => $validated['message']
-            ]);
+            $createdNotifications = [];
+    
+            foreach ($validated['notifications'] as $notificationData) {
+                $notification = UserNotification::create([
+                    'user_id' => $notificationData['user_id'],
+                    'campaign_id' => $notificationData['campaign_id'],
+                    'linkedin_user_id' => $notificationData['linkedin_user_id'],
+                    'event_name' => $notificationData['event_name'],
+                    'message' => $notificationData['message'],
+                ]);
+                $createdNotifications[] = $notification->id;
+            }
     
             return response()->json([
-                'id' => $notification->id,
                 'status' => 201,
-                'message' => 'Notification a été créer avec succès !'
+                'message' => count($createdNotifications) . ' notifications ont été créées avec succès !',
+                'notification_ids' => $createdNotifications,
             ], 201);
-        } catch(\Exception $e) {
-            Log::error('Error creating Notification', [
+        } catch (\Exception $e) {
+            Log::error('Error creating Notifications', [
                 'error' => $e->getMessage(),
                 'data' => $request->all()
             ]);
-            return response()->json(['error' => 'Une erreur s\'est produite lors de l\'enregistrement de la notification ! ' . $e], 500);
+            return response()->json(['error' => 'Une erreur s\'est produite lors de l\'enregistrement des notifications ! ' . $e], 500);
         }
     }
 }

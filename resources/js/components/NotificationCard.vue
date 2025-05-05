@@ -15,10 +15,10 @@
             />
         </button>
 
-        <div v-if="showNotification" v-for="notification in notifications">
+        <div v-if="showNotification" v-for="notification in notifications" :key="notification.message">
             <div class="absolute top-[-190%] min-w-[300px] right-0 bg-white p-4 rounded shadow-lg">
                 <h2 class="text-lg font-bold">Notification</h2>
-                <p class="text-gray-700">{{ notification }}</p>
+                <p class="text-gray-700">{{ notification.message }}</p>
             </div>
         </div>
     </div>
@@ -46,8 +46,18 @@ export default {
 
     mounted() {
         this.listenToCampaignNotifications();
-        console.log("#########################");
         this.listenToPostsNotifications();
+    },
+
+    watch: {
+        'notifications.length': {
+            handler(newLength, oldLength) {
+                if (newLength > oldLength) {
+                    const newNotifications = this.notifications.slice(oldLength);
+                    this.addNotificationToDatabase(newNotifications);
+                }
+            }
+        }
     },
 
     methods: {
@@ -55,8 +65,8 @@ export default {
             this.showNotification = !this.showNotification;
         },
 
-        listenToCampaignNotifications() {
-            console.log('Setting up Echo listener from mounted');
+        async listenToCampaignNotifications() {
+            // console.log('Setting up Echo listener from mounted');
             window.Echo.private(`campaign-started.${this.userId}`).listen('.CampaignStarted', (event) => {
                 const notification = {
                     user_id: event.user_id,
@@ -65,19 +75,15 @@ export default {
                     event_name: event.event_name,
                     message: event.message
                 };
-
-                console.log(notification);
                 this.notifications.push(notification);
-                console.log('Notifications array:', this.notifications);
-                console.log("hello", event);
+                console.log('Campaign notification added:', notification);
             });
-            console.log('Echo listener set up from mounted');
+            // console.log('Echo listener set up from mounted');
         },
 
         listenToPostsNotifications() {
-            console.log('Setting up Echo listener from mounted for posts');
+            // console.log('Setting up Echo listener from mounted for posts');
             window.Echo.private(`post-posted.${this.userId}`).listen('.PostPosted', (event) => {
-                console.log(event);
                 const notification = {
                     user_id: event.user_id,
                     linkedin_user_id: event.linkedin_user_id,
@@ -85,38 +91,33 @@ export default {
                     event_name: event.event_name,
                     message: event.message
                 };
-
-                console.log(notification);
                 this.notifications.push(notification);
-                console.log('Notifications array about posts:', this.notifications);
-                console.log(event);
+                console.log('Post notification added:', notification);
             });
-            console.log('Echo listener set up from mounted for posts');
+            // console.log('Echo listener set up from mounted for posts');
         },
 
-        async addNotificationToDatabase(notification) {
+        async addNotificationToDatabase(newNotifications) {
             try {
-                const notificationData = new FormData();
+                const notificationsData = newNotifications.map(notification => ({
+                    user_id: notification.user_id,
+                    linkedin_user_id: notification.linkedin_user_id,
+                    campaign_id: notification.campaign_id,
+                    event_name: notification.event_name,
+                    message: notification.message
+                }));
 
-                notificationData.append('user_id', notification.user_id);
-                notificationData.append('linkedin_user_id', notification.linkedin_user_id);
-                notificationData.append('campaign_id', notification.campaign_id);
-                notificationData.append('event_name', notification.event_name);
-                notificationData.append('message', notification.message);
-
-                const response = await axios.post('/add-notification', notificationData, {
+                const response = await axios.post('/add-notification', { notifications: notificationsData }, {
                     headers: {
-                        'Content-Type': 'multipart/form-data',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                     }
                 });
 
-                if(response.status = 201) {
-                    console.log("amine is sel3a :", response.message);
+                if (response.status === 201) {
+                    console.log("Notifications added successfully:", response.data.message);
                 }
-
-            } catch(error) {
-                console.log('An error occurred :', error);
+            } catch (error) {
+                console.error('Error adding notifications:', error.response ? error.response.data : error.message);
             }
         }
     }
@@ -124,5 +125,4 @@ export default {
 </script>
 
 <style scoped>
-
 </style>
