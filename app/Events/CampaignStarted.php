@@ -49,6 +49,10 @@ class CampaignStarted implements ShouldBroadcast
     public function broadcastWith(): array
     {
         return [
+            'campaign_id' => $this->campaign->id,
+            'user_id' => $this->campaign->user_id,
+            'linkedin_user_id' => $this->campaign->linkedin_user_id,
+            'event_name' => 'CampaignStarted',
             'message' => "Votre campagne '{$this->campaign->name}' a commencé à {$this->campaign->start_date}!"
         ];
     }

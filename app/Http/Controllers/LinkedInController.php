@@ -76,7 +76,7 @@ class LinkedInController extends Controller
                 'error' => $e->getMessage(),
                 'data' => $request->all()
             ]);
-            return response()->json(['error' => 'Une erreur s\'est produite lors de la création de cotre campagne ! ' . $e], 500);
+            return response()->json(['error' => 'Une erreur s\'est produite lors de la création de votre campagne ! ' . $e], 500);
         }
     }
 

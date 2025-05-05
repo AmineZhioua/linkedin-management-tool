@@ -50,6 +50,10 @@ class PostPosted implements ShouldBroadcast
     public function broadcastWith(): array
     {
         return [
+            'user_id' => $this->post->id,
+            'campaign_id' => $this->campaign->id,
+            'linkedin_user_id' => $this->post->linkedin_user_id,
+            'event_name' => 'PostPosted',
             'message' => "Campaign {$this->campaign->name}: Post {$this->post->id} de type {$this->post->type} a été publié avec succès !",
         ];
     }

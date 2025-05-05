@@ -76,7 +76,7 @@ Route::get('/linkedin/get-campaign-posts-for-day', [App\Http\Controllers\Linkedi
 
 
 Route::get('/linkedin/get-social-actions', [App\Http\Controllers\KpiController::class, 'getSocialActions'])->name('get.social.actions');
-
+Route::post('/add-notification', [App\Http\Controllers\DashboardController::class, 'addNotification'])->name('add.notification');
 
 
 // Admin Routes (without admin middleware)
@@ -101,7 +101,8 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->group(function () {
         'update' => 'admin.subscriptions.update',
         'destroy' => 'admin.subscriptions.destroy',
     ]);
-        // New routes for coupons
+
+    // New routes for coupons
     Route::get('/subscriptions/active', [AdminSubscriptionController::class, 'active'])->name('admin.subscriptions.active');
     Route::get('/subscriptions/active/create', [AdminSubscriptionController::class, 'createActive'])->name('admin.subscriptions.active.create');
     Route::post('/subscriptions/active', [AdminSubscriptionController::class, 'storeActive'])->name('admin.subscriptions.active.store');
@@ -110,10 +111,9 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->group(function () {
     Route::delete('/subscriptions/active/{userSubscription}', [AdminSubscriptionController::class, 'destroyActive'])->name('admin.subscriptions.active.destroy');
 
     Route::get('/coupons', [AdminSubscriptionController::class, 'indexCoupons'])->name('admin.coupons.index');
-Route::get('/coupons/create', [AdminSubscriptionController::class, 'createCoupon'])->name('admin.coupons.create');
-Route::post('/coupons', [AdminSubscriptionController::class, 'storeCoupon'])->name('admin.coupons.store');
-Route::get('/coupons/{coupon}/edit', [AdminSubscriptionController::class, 'editCoupon'])->name('admin.coupons.edit');
-Route::put('/coupons/{coupon}', [AdminSubscriptionController::class, 'updateCoupon'])->name('admin.coupons.update');
-Route::delete('/coupons/{coupon}', [AdminSubscriptionController::class, 'destroyCoupon'])->name('admin.coupons.destroy');
+    Route::get('/coupons/create', [AdminSubscriptionController::class, 'createCoupon'])->name('admin.coupons.create');
+    Route::post('/coupons', [AdminSubscriptionController::class, 'storeCoupon'])->name('admin.coupons.store');
+    Route::get('/coupons/{coupon}/edit', [AdminSubscriptionController::class, 'editCoupon'])->name('admin.coupons.edit');
+    Route::put('/coupons/{coupon}', [AdminSubscriptionController::class, 'updateCoupon'])->name('admin.coupons.update');
+    Route::delete('/coupons/{coupon}', [AdminSubscriptionController::class, 'destroyCoupon'])->name('admin.coupons.destroy');
 });
-?>
