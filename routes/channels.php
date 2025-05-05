@@ -11,6 +11,16 @@ Broadcast::channel('campaign-started.{id}', function ($user, $id) {
     return (int) $user->id === (int) $id;
 });
 
+Broadcast::channel('campaign-completed.{id}', function ($user, $id) {
+    return (int) $user->id === (int) $id;
+});
+
+
 Broadcast::channel('post-posted.{id}', function ($user, $id) {
+    return (int) $user->id === (int) $id;
+});
+
+
+Broadcast::channel('post-failed.{id}', function ($user, $id) {
     return (int) $user->id === (int) $id;
 });

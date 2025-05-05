@@ -1,6 +1,6 @@
 <template>
     <div 
-        class="fixed bottom-5 right-0 p-4 bg-white rounded-full flex items-center justify-center"
+        class="fixed bottom-5 right-2 p-4 bg-white rounded-full flex items-center justify-center"
         style="box-shadow: #00000066 0px 0px 20px 0px;"
     >
         <div v-if="!showNotification && notifications.length > 0" class="absolute py-2 px-3 bg-red-500 top-[-15px] left-[-10px] rounded-full text-white fw-bold">
@@ -14,11 +14,22 @@
                 alt="Notification Icon"
             />
         </button>
-
-        <div v-if="showNotification" v-for="notification in notifications" :key="notification.message">
-            <div class="absolute top-[-190%] min-w-[300px] right-0 bg-white p-4 rounded shadow-lg">
-                <h2 class="text-lg font-bold">Notification</h2>
-                <p class="text-gray-700">{{ notification.message }}</p>
+        
+        <!-- Notifications List -->
+        <div 
+            v-if="showNotification"
+            class="notification-container absolute max-h-[350px] flex flex-col bottom-[90px] right-[20px] bg-white rounded-xl shadow-lg overflow-y-scroll"
+        >
+            <div 
+                v-for="notification in notifications"
+                class="p-4 min-w-[300px] cursor-pointer hover:bg-gray-200" style="border-bottom: 1px solid #ccc;"
+            >
+                <div class="flex items-center justify-between gap-2">
+                    <p class="text-black mb-0">{{ notification.message }}</p>
+                    <button>
+                        <i class="fa-solid fa-envelope-circle-check text-2xl hover:text-green-500 transition-all duration-200"></i>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -65,8 +76,7 @@ export default {
             this.showNotification = !this.showNotification;
         },
 
-        async listenToCampaignNotifications() {
-            // console.log('Setting up Echo listener from mounted');
+        listenToCampaignNotifications() {
             window.Echo.private(`campaign-started.${this.userId}`).listen('.CampaignStarted', (event) => {
                 const notification = {
                     user_id: event.user_id,
@@ -76,13 +86,23 @@ export default {
                     message: event.message
                 };
                 this.notifications.push(notification);
-                console.log('Campaign notification added:', notification);
+                console.log('Campaign Started notification added:', notification);
             });
-            // console.log('Echo listener set up from mounted');
+
+            window.Echo.private(`campaign-completed.${this.userId}`).listen('.CampaignCompleted', (event) => {
+                const notification = {
+                    user_id: event.user_id,
+                    linkedin_user_id: event.linkedin_user_id,
+                    campaign_id: event.campaign_id,
+                    event_name: event.event_name,
+                    message: event.message
+                };
+                this.notifications.push(notification);
+                console.log('Campaign Completed notification added:', notification);
+            });
         },
 
         listenToPostsNotifications() {
-            // console.log('Setting up Echo listener from mounted for posts');
             window.Echo.private(`post-posted.${this.userId}`).listen('.PostPosted', (event) => {
                 const notification = {
                     user_id: event.user_id,
@@ -94,7 +114,19 @@ export default {
                 this.notifications.push(notification);
                 console.log('Post notification added:', notification);
             });
-            // console.log('Echo listener set up from mounted for posts');
+
+            window.Echo.private(`post-failed.${this.userId}`).listen('.PostFailed', (event) => {
+                const notification = {
+                    user_id: event.user_id,
+                    linkedin_user_id: event.linkedin_user_id,
+                    campaign_id: event.campaign_id,
+                    event_name: event.event_name,
+                    message: event.message
+                };
+                console.log("this is from the post failed event");
+                this.notifications.push(notification);
+                console.log('Post notification added:', notification);
+            });
         },
 
         async addNotificationToDatabase(newNotifications) {
@@ -125,4 +157,16 @@ export default {
 </script>
 
 <style scoped>
+.notification-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.notification-container::-webkit-scrollbar-track {
+    background: white;
+}
+
+.notification-container::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, rgb(255 16 185) 0%, rgb(255 125 82) 100%);
+    border-radius: 20px;
+}
 </style>
