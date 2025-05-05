@@ -22,8 +22,19 @@ class UserSubscription extends Model
         'date_expiration' => 'date',
     ];
 
+    /**
+     * Get the user that owns this subscription.
+     */
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get the subscription that this user subscription belongs to.
+     */
+    public function subscription()
+    {
+        return $this->belongsTo(Subscription::class);
     }
 }

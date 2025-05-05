@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\UserSubscription;
 use App\Models\Coupon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class SubscriptionController extends Controller
 {
@@ -176,14 +177,19 @@ class SubscriptionController extends Controller
             'expires_at' => ['nullable', 'date', 'after:today'],
         ]);
 
-        Coupon::create([
-            'code' => $request->code,
-            'discount' => $request->discount,
-            'type' => $request->type,
-            'expires_at' => $request->expires_at,
-        ]);
+        try {
+            Coupon::create([
+                'code' => $request->code,
+                'discount' => $request->discount,
+                'type' => $request->type,
+                'expires_at' => $request->expires_at,
+            ]);
 
-        return redirect()->route('admin.coupons.index')->with('success', 'Coupon created successfully.');
+            return redirect()->route('admin.coupons.index')->with('success', 'Coupon created successfully.');
+        } catch (\Exception $e) {
+            Log::error('Failed to create coupon: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to create coupon. Please check the logs.');
+        }
     }
 
     public function editCoupon(Coupon $coupon)
@@ -200,19 +206,30 @@ class SubscriptionController extends Controller
             'expires_at' => ['nullable', 'date', 'after:today'],
         ]);
 
-        $coupon->update([
-            'code' => $request->code,
-            'discount' => $request->discount,
-            'type' => $request->type,
-            'expires_at' => $request->expires_at,
-        ]);
+        try {
+            $coupon->update([
+                'code' => $request->code,
+                'discount' => $request->discount,
+                'type' => $request->type,
+                'expires_at' => $request->expires_at,
+            ]);
 
-        return redirect()->route('admin.coupons.index')->with('success', 'Coupon updated successfully.');
+            return redirect()->route('admin.coupons.index')->with('success', 'Coupon updated successfully.');
+        } catch (\Exception $e) {
+            Log::error('Failed to update coupon: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to update coupon. Please check the logs.');
+        }
     }
 
     public function destroyCoupon(Coupon $coupon)
     {
-        $coupon->delete();
-        return redirect()->route('admin.coupons.index')->with('success', 'Coupon deleted successfully.');
+        try {
+            $coupon->delete();
+            return redirect()->route('admin.coupons.index')->with('success', 'Coupon deleted successfully.');
+        } catch (\Exception $e) {
+            Log::error('Failed to delete coupon: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to delete coupon. Please check the logs.');
+        }
     }
 }
+?>
