@@ -62,7 +62,7 @@
                 </div>
                 <div class="menu-inner-shadow"></div>
                 <ul class="menu-inner py-1">
-                    <li class="menu-item {{ Route::is('admin.dashboard') || Route::is('admin.users.*') || Route::is('admin.subscriptions.*') || Route::is('admin.coupons.*') ? 'active open' : '' }}">
+                    <li class="menu-item {{ Route::is('admin.dashboard') || Route::is('admin.users.*') || Route::is('admin.subscriptions.*') || Route::is('admin.coupons.*') || Route::is('admin.boostinteractions.*') ? 'active open' : '' }}">
                         <a href="javascript:void(0);" class="menu-link menu-toggle">
                             <i class="menu-icon tf-icons ti ti-smart-home"></i>
                             <div data-i18n="Dashboards">Dashboard</div>
@@ -86,6 +86,11 @@
                             <li class="menu-item {{ Route::is('admin.coupons.index') || Route::is('admin.coupons.create') || Route::is('admin.coupons.edit') ? 'active' : '' }}">
                                 <a href="{{ route('admin.coupons.index') }}" class="menu-link">
                                     <div data-i18n="Promo Codes">Promo Codes</div>
+                                </a>
+                            </li>
+                            <li class="menu-item {{ Route::is('admin.boostinteractions.index') ? 'active' : '' }}">
+                                <a href="{{ route('admin.boostinteractions.index') }}" class="menu-link">
+                                    <div data-i18n="Boost Interactions">Boost Interactions</div>
                                 </a>
                             </li>
                         </ul>
@@ -279,6 +284,9 @@
                                             <a href="{{ route('admin.coupons.index') }}" class="btn btn-primary d-flex align-items-center">
                                                 <i class="ti ti-ticket me-2"></i> Promo Codes
                                             </a>
+                                            <a href="{{ route('admin.boostinteractions.index') }}" class="btn btn-primary d-flex align-items-center">
+                                                <i class="ti ti-rocket me-2"></i> Boost Interactions
+                                            </a>
                                         </div>
                                     </div>
                                 </div>
@@ -290,10 +298,13 @@
                                 <div class="card">
                                     <div class="card-header d-flex align-items-center justify-content-between">
                                         <h5 class="card-title m-0 me-2">Users</h5>
-                                        <a href="{{ route('admin.users.create') }}" class="btn btn-primary">Create User</a>
+                                        <div class="d-flex align-items-center">
+                                            <input type="text" class="form-control me-2" id="userSearch" placeholder="Search by name..." style="width: 200px;">
+                                            <a href="{{ route('admin.users.create') }}" class="btn btn-primary">Create User</a>
+                                        </div>
                                     </div>
                                     <div class="table-responsive">
-                                        <table class="table table-borderless border-top">
+                                        <table class="table table-borderless border-top" id="usersTable">
                                             <thead class="border-bottom">
                                                 <tr>
                                                     <th>ID</th>
@@ -307,7 +318,7 @@
                                             </thead>
                                             <tbody>
                                                 @foreach ($users ?? [] as $user)
-                                                    <tr>
+                                                    <tr data-name="{{ strtolower($user->name) }}">
                                                         <td>{{ $user->id }}</td>
                                                         <td>{{ $user->name }}</td>
                                                         <td>{{ $user->email }}</td>
@@ -472,7 +483,7 @@
                                                 <label for="boost_perm" class="form-label">Boost Permission</label>
                                                 <select class="form-select" name="boost_perm" id="boost_perm" required>
                                                     <option value="1" {{ $user->boost_perm ? 'selected' : '' }}>Yes</option>
-                                                    <option value="0" {{ !$user->boost_perm ? 'selected' : '' }}>No</option>
+                                                    <option value="0" {{ !$user->post_perm ? 'selected' : '' }}>No</option>
                                                 </select>
                                                 @error('boost_perm')
                                                     <div class="text-danger mt-1">{{ $message }}</div>
@@ -732,10 +743,13 @@
                                 <div class="card">
                                     <div class="card-header d-flex align-items-center justify-content-between">
                                         <h5 class="card-title m-0 me-2">Active Subscriptions</h5>
-                                        <a href="{{ route('admin.subscriptions.active.create') }}" class="btn btn-primary">Create Active Subscription</a>
+                                        <div class="d-flex align-items-center">
+                                            <input type="text" class="form-control me-2" id="subscriptionSearch" placeholder="Search by user name..." style="width: 200px;">
+                                            <a href="{{ route('admin.subscriptions.active.create') }}" class="btn btn-primary">Create Active Subscription</a>
+                                        </div>
                                     </div>
                                     <div class="table-responsive">
-                                        <table class="table table-borderless border-top">
+                                        <table class="table table-borderless border-top" id="subscriptionsTable">
                                             <thead class="border-bottom">
                                                 <tr>
                                                     <th>ID</th>
@@ -748,7 +762,7 @@
                                             </thead>
                                             <tbody>
                                                 @foreach ($userSubscriptions ?? [] as $userSubscription)
-                                                    <tr>
+                                                    <tr data-user-name="{{ strtolower($userSubscription->user->name ?? 'unknown user') }}">
                                                         <td>{{ $userSubscription->id }}</td>
                                                         <td>{{ $userSubscription->user->name ?? 'Unknown User' }}</td>
                                                         <td>{{ $userSubscription->subscription->name ?? 'Unknown Subscription' }}</td>
@@ -1040,14 +1054,76 @@
                                 </div>
                             @endif
                         @show
+
+                        @section('boostinteractions-index')
+                            @if (Route::is('admin.boostinteractions.index'))
+                                <div class="card">
+                                    <div class="card-header d-flex align-items-center justify-content-between">
+                                        <h5 class="card-title m-0 me-2">Boost Interactions</h5>
+                                        <div class="d-flex align-items-center">
+                                            <select class="form-select" id="statusFilter" style="width: 200px;">
+                                                <option value="pending" {{ request('status', 'pending') === 'pending' ? 'selected' : '' }}>Pending</option>
+                                                <option value="accepted" {{ request('status') === 'accepted' ? 'selected' : '' }}>Accepted</option>
+                                                <option value="declined" {{ request('status') === 'declined' ? 'selected' : '' }}>Declined</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="table-responsive">
+                                        <table class="table table-borderless border-top">
+                                            <thead class="border-bottom">
+                                                <tr>
+                                                    <th>ID</th>
+                                                    <th>User</th>
+                                                    <th>Post URL</th>
+                                                    <th>Status</th>
+                                                    <th>Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach ($boostinteractions ?? [] as $boostinteraction)
+                                                    <tr>
+                                                        <td>{{ $boostinteraction->id }}</td>
+                                                        <td>{{ $boostinteraction->user->name ?? 'Unknown User' }}</td>
+                                                        <td><a href="{{ $boostinteraction->post_url }}" target="_blank">{{ Illuminate\Support\Str::limit($boostinteraction->post_url, 30) }}</a></td>
+                                                        <td>{{ ucfirst($boostinteraction->status) }}</td>
+                                                        <td>
+                                                            @if ($boostinteraction->status === 'pending')
+                                                                <form action="{{ route('admin.boostinteractions.update', $boostinteraction) }}" method="POST" style="display: inline;">
+                                                                    @csrf
+                                                                    @method('PUT')
+                                                                    <input type="hidden" name="status" value="accepted">
+                                                                    <button type="submit" class="btn btn-sm btn-outline-success me-2">Accept</button>
+                                                                </form>
+                                                                <form action="{{ route('admin.boostinteractions.update', $boostinteraction) }}" method="POST" style="display: inline;">
+                                                                    @csrf
+                                                                    @method('PUT')
+                                                                    <input type="hidden" name="status" value="declined">
+                                                                    <button type="submit" class="btn btn-sm btn-outline-danger me-2">Decline</button>
+                                                                </form>
+                                                            @endif
+                                                            <form action="{{ route('admin.boostinteractions.destroy', $boostinteraction) }}" method="POST" style="display: inline;">
+                                                                @csrf
+                                                                @method('DELETE')
+                                                                <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure?')">Delete</button>
+                                                            </form>
+                                                        </td>
+                                                    </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            @endif
+                        @show
                     </div>
                     <!-- / Content -->
                     <!-- Footer -->
                     <footer class="content-footer footer bg-footer-theme">
                         <div class="container-xxl">
                             <div class="footer-container d-flex align-items-center justify-content-between py-2 flex-md-row flex-column">
-                               
-
+                                <div>
+                                    © <script>document.write(new Date().getFullYear())</script>, made with ❤️ by <a href="https://pixinvent.com" target="_blank" class="footer-link">Pixinvent</a>
+                                </div>
                             </div>
                         </div>
                     </footer>
@@ -1086,5 +1162,34 @@
 
     <!-- Main JS -->
     <script src="../../assets/js/main.js"></script>
+
+    <!-- Custom JS for Search and Filter -->
+    <script>
+        // Users Search
+        document.getElementById('userSearch')?.addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const rows = document.querySelectorAll('#usersTable tbody tr');
+            rows.forEach(row => {
+                const name = row.getAttribute('data-name');
+                row.style.display = name.includes(searchTerm) ? '' : 'none';
+            });
+        });
+
+        // Active Subscriptions Search
+        document.getElementById('subscriptionSearch')?.addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const rows = document.querySelectorAll('#subscriptionsTable tbody tr');
+            rows.forEach(row => {
+                const userName = row.getAttribute('data-user-name');
+                row.style.display = userName.includes(searchTerm) ? '' : 'none';
+            });
+        });
+
+        // Boost Interactions Status Filter
+        document.getElementById('statusFilter')?.addEventListener('change', function(e) {
+            const status = e.target.value;
+            window.location.href = '{{ route('admin.boostinteractions.index') }}?status=' + status;
+        });
+    </script>
 </body>
 </html>

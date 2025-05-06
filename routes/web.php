@@ -8,6 +8,7 @@ use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\LinkedInController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\SubscriptionController as AdminSubscriptionController;
+use App\Http\Controllers\Admin\BoostinteractionController;
 
 
 
@@ -117,4 +118,9 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->group(function () {
     Route::get('/coupons/{coupon}/edit', [AdminSubscriptionController::class, 'editCoupon'])->name('admin.coupons.edit');
     Route::put('/coupons/{coupon}', [AdminSubscriptionController::class, 'updateCoupon'])->name('admin.coupons.update');
     Route::delete('/coupons/{coupon}', [AdminSubscriptionController::class, 'destroyCoupon'])->name('admin.coupons.destroy');
+ Route::resource('boostinteractions', BoostinteractionController::class)->only(['index', 'update', 'destroy'])->names([
+        'index' => 'admin.boostinteractions.index',
+        'update' => 'admin.boostinteractions.update',
+        'destroy' => 'admin.boostinteractions.destroy',
+    ]);
 });
