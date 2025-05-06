@@ -42,9 +42,7 @@ class DashboardController extends Controller
             'campaign_id' => 'required|integer|exists:linkedin_campaigns,id',
         ]);
 
-        $posts = ScheduledLinkedinPost::where('user_id', $user->id)
-            ->where('campaign_id', $validated['campaign_id'])
-            ->get();
+        $posts = ScheduledLinkedinPost::where('user_id', $user->id)->where('campaign_id', $validated['campaign_id'])->get();
 
         // If There Are No Posts for the Campaign
         if($posts->isEmpty()) {
@@ -90,6 +88,33 @@ class DashboardController extends Controller
                 'data' => $request->all()
             ]);
             return response()->json(['error' => 'Une erreur s\'est produite lors de l\'enregistrement des notifications ! ' . $e], 500);
+        }
+    }
+
+
+    public function getNotifications() {
+        try {
+            $user_id = Auth::id();
+
+            $notifications = UserNotification::where('user_id', $user_id)->get();
+
+            if(count($notifications) == 0) {
+                return response()->json([
+                    "status" => 200,
+                    "message" => "Pas de notifications pour le moment"
+                ]);
+            }
+                
+            return response()->json([
+                "status" => 201,
+                "data" => json_decode($notifications),
+            ]);
+
+        } catch(\Exception $e) {
+            Log::error('Error retrieving notifications', [
+                'error' => $e->getMessage(),
+            ]);
+            return response()->json(['error' => 'Une erreur s\'est produite lors de la récupération des notifications' . $e], 500);
         }
     }
 }

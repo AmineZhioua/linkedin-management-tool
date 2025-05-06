@@ -20,7 +20,13 @@
             v-if="showNotification"
             class="notification-container absolute max-h-[350px] flex flex-col bottom-[90px] right-[20px] bg-white rounded-xl shadow-lg overflow-y-scroll"
         >
+            <div v-if="notifications.length === 0" class="p-4 text-center min-w-[300px] text-gray-500">
+                <p class="mb-0">
+                    {{ notificationMessage || 'Pas de notifications pour le moment' }}
+                </p>
+            </div>
             <div 
+                v-else
                 v-for="notification in notifications"
                 class="p-4 min-w-[300px] cursor-pointer hover:bg-gray-200" style="border-bottom: 1px solid #ccc;"
             >
@@ -52,12 +58,14 @@ export default {
         return {
             notifications: [],
             showNotification: false,
+            notificationMessage: '',
         }
     },
 
     mounted() {
         this.listenToCampaignNotifications();
         this.listenToPostsNotifications();
+        this.getNotifications();
     },
 
     watch: {
@@ -72,6 +80,27 @@ export default {
     },
 
     methods: {
+        async getNotifications() {
+            try {
+                const response = await axios.get('/get-notifications', {
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    }
+                });
+
+                if (response.status === 200) {
+                    this.notifications = [];
+                    this.notificationMessage = response.data.message || 'Pas de Notifications pour le moment';
+                } else if (response.status === 201) {
+                    this.notifications = response.data.data;
+                    this.notificationMessage = '';
+                }
+            } catch (error) {
+                console.error('Error fetching notifications:', error);
+                this.notificationMessage = 'Une erreur s\'est produite lors de la récupération des notifications';
+            }
+        },
+
         toggleNotification() {
             this.showNotification = !this.showNotification;
         },

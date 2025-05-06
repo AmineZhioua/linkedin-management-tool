@@ -77,6 +77,7 @@ Route::get('/linkedin/get-campaign-posts-for-day', [App\Http\Controllers\Linkedi
 
 Route::get('/linkedin/get-social-actions', [App\Http\Controllers\KpiController::class, 'getSocialActions'])->name('get.social.actions');
 Route::post('/add-notification', [App\Http\Controllers\DashboardController::class, 'addNotification'])->name('add.notification');
+Route::get('/get-notifications', [App\Http\Controllers\DashboardController::class, 'getNotifications'])->name('get.notifications');
 
 
 // Admin Routes (without admin middleware)
