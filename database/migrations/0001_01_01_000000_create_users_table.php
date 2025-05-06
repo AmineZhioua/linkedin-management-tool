@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('role')->default('user');
             $table->boolean('post_perm')->default(false);
             $table->boolean('boost_perm')->default(false);
+            $table->string('image')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });

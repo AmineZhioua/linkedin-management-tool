@@ -123,4 +123,6 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->group(function () {
         'update' => 'admin.boostinteractions.update',
         'destroy' => 'admin.boostinteractions.destroy',
     ]);
+    Route::get('/profile', [UserController::class, 'profile'])->name('admin.profile');
+    Route::put('/profile', [UserController::class, 'updateProfile'])->name('admin.profile.update');
 });

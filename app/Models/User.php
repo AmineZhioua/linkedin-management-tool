@@ -24,8 +24,9 @@ class User extends Authenticatable implements MustVerifyEmail
         'google_id',
         'email_verified_at',
         'role',
-        'post_perm', // Added post_perm to fillable attributes
-        'boost_perm', // Added boost_perm to fillable attributes
+        'post_perm',
+        'boost_perm',
+        'image',
     ];
 
     /**
@@ -48,8 +49,8 @@ class User extends Authenticatable implements MustVerifyEmail
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
-            'post_perm' => 'boolean', // Cast post_perm as boolean
-            'boost_perm' => 'boolean', // Cast boost_perm as boolean
+            'post_perm' => 'boolean',
+            'boost_perm' => 'boolean',
         ];
     }
 
