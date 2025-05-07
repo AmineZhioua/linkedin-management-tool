@@ -81,7 +81,7 @@ Route::post('/add-notification', [App\Http\Controllers\DashboardController::clas
 Route::post('/notifications', [App\Http\Controllers\DashboardController::class, 'notification'])->name('notifications');
 
 Route::get('/get-notifications', [App\Http\Controllers\DashboardController::class, 'getNotifications'])->name('get.notifications');
-Route::post('/mark-as-read', [App\Http\Controllers\NotificationController::class])->name('mark.as.read');
+Route::put('/linkedin/mark-as-read', [App\Http\Controllers\NotificationsController::class, 'markAsRead'])->name('mark.as.read');
 
 
 // Admin Routes (without admin middleware)

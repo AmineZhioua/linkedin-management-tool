@@ -28,11 +28,22 @@
             <div 
                 v-else
                 v-for="notification in notifications"
-                class="p-4 min-w-[300px] cursor-pointer hover:bg-gray-200" style="border-bottom: 1px solid #ccc;"
+                :class="{
+                    'p-4 min-w-[300px] cursor-pointer hover:bg-gray-200': notification.read_at === null,
+                    'p-4 min-w-[300px] cursor-not-allowed bg-gray-200': notification.read_at !== null,
+                }" 
+                style="border-bottom: 1px solid #ccc;"
             >
                 <div class="flex items-center justify-between gap-2" :key="notification.id">
                     <p class="text-black mb-0">{{ notification.message }}</p>
+
+                    <i 
+                        v-if="notification.read_at !== null"
+                        class="fa-solid fa-circle-check text-xl text-green-500"
+                    ></i>
+
                     <button
+                        v-if="notification.read_at === null"
                         @click="markAsRead(notification.id)"
                     >
                         <i class="fa-solid fa-envelope-circle-check text-2xl hover:text-green-500 transition-all duration-200"></i>
@@ -102,30 +113,33 @@ export default {
 
         async markAsRead(notificationId) {
             try {
-                const now = new Date();
-                this.readDateTime = this.formatDateTime(now);
-
                 const markAsReadData = new FormData();
-                const notification = this.notifications.find(n => n.id === notificationId);
 
-                markAsReadData.append("user_id", this.userId);
-                markAsReadData.append("campaign_id", notification.campaign_id);
                 markAsReadData.append("notification_id", notificationId);
-                markAsReadData.append("read_at", this.readDateTime);
+                markAsReadData.append('_method', 'PUT');
 
-                const markAsReadResponse = await axios.post('/mark-as-read', markAsReadData, {
+                const response = await axios.post('/linkedin/mark-as-read', markAsReadData, {
                     headers: {
+                        'Content-Type': 'multipart/form-data',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                     }
                 });
 
-                if (markAsReadResponse.data.success === true) {
-                    console.log("good job bro");
+                if (response.data.success === true) {
+                    // this.notifications = this.notifications.filter(n => n.id !== notificationId);
+                    
+                    // If all notifications are read, update message
+                    if (this.notifications.length === 0) {
+                        this.notificationMessage = 'Pas de notifications pour le moment';
+                    }
+                    
+                    console.log("Notification marked as read successfully");
                 } else {
-                    console.log("normal normal");
+                    console.error("Failed to mark notification as read:", response.data.message);
                 }
             } catch (error) {
                 console.error("Request error:", error);
+                // You might want to show an error message to the user
             }
         },
 
