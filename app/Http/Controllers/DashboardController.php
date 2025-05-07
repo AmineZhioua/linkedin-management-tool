@@ -91,6 +91,38 @@ class DashboardController extends Controller
         }
     }
 
+    public function notification(Request $request) {
+        try {
+            $validated = $request->validate([
+                'user_id' => 'required|integer|exists:users,id',
+                'campaign_id' => 'required|integer|exists:linkedin_campaigns,id',
+                'linkedin_user_id' => 'required|integer|exists:linkedin_users,id',
+                'event_name' => 'required|string',
+                'message' => 'required|string',
+            ]);
+        
+                $notification = UserNotification::create([
+                    'user_id' => $validated['user_id'],
+                    'campaign_id' => $validated['campaign_id'],
+                    'linkedin_user_id' => $validated['linkedin_user_id'],
+                    'event_name' => $validated['event_name'],
+                    'message' => $validated['message'],
+                ]);
+
+                return response()->json([
+                    'status' => 201,
+                    'message' =>' notification a été créée avec succès !',
+                ], 201);
+
+        } catch (\Exception $e) {
+            Log::error('Error creating Notifications', [
+                'error' => $e->getMessage(),
+                'data' => $request->all()
+            ]);
+            return response()->json(['error' => 'Une erreur s\'est produite lors de l\'enregistrement des notifications ! ' . $e], 500);
+        }
+    }
+
 
     public function getNotifications() {
         try {

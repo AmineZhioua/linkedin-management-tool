@@ -30,9 +30,11 @@
                 v-for="notification in notifications"
                 class="p-4 min-w-[300px] cursor-pointer hover:bg-gray-200" style="border-bottom: 1px solid #ccc;"
             >
-                <div class="flex items-center justify-between gap-2">
+                <div class="flex items-center justify-between gap-2" :key="notification.id">
                     <p class="text-black mb-0">{{ notification.message }}</p>
-                    <button>
+                    <button
+                        @click="markAsRead(notification.id)"
+                    >
                         <i class="fa-solid fa-envelope-circle-check text-2xl hover:text-green-500 transition-all duration-200"></i>
                     </button>
                 </div>
@@ -59,6 +61,7 @@ export default {
             notifications: [],
             showNotification: false,
             notificationMessage: '',
+            readDateTime: '',
         }
     },
 
@@ -66,17 +69,6 @@ export default {
         this.listenToCampaignNotifications();
         this.listenToPostsNotifications();
         this.getNotifications();
-    },
-
-    watch: {
-        'notifications.length': {
-            handler(newLength, oldLength) {
-                if (newLength > oldLength) {
-                    const newNotifications = this.notifications.slice(oldLength);
-                    this.addNotificationToDatabase(newNotifications);
-                }
-            }
-        }
     },
 
     methods: {
@@ -88,16 +80,52 @@ export default {
                     }
                 });
 
-                if (response.status === 200) {
+                if (response.data.status === 200) {
                     this.notifications = [];
                     this.notificationMessage = response.data.message || 'Pas de Notifications pour le moment';
-                } else if (response.status === 201) {
+                } else if (response.data.status === 201) {
                     this.notifications = response.data.data;
                     this.notificationMessage = '';
                 }
             } catch (error) {
                 console.error('Error fetching notifications:', error);
+                this.notifications = [];
                 this.notificationMessage = 'Une erreur s\'est produite lors de la récupération des notifications';
+            }
+        },
+
+        formatDateTime(date) {
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            return `${date.toISOString().split('T')[0]}T${hours}:${minutes}`;
+        },
+
+        async markAsRead(notificationId) {
+            try {
+                const now = new Date();
+                this.readDateTime = this.formatDateTime(now);
+
+                const markAsReadData = new FormData();
+                const notification = this.notifications.find(n => n.id === notificationId);
+
+                markAsReadData.append("user_id", this.userId);
+                markAsReadData.append("campaign_id", notification.campaign_id);
+                markAsReadData.append("notification_id", notificationId);
+                markAsReadData.append("read_at", this.readDateTime);
+
+                const markAsReadResponse = await axios.post('/mark-as-read', markAsReadData, {
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    }
+                });
+
+                if (markAsReadResponse.data.success === true) {
+                    console.log("good job bro");
+                } else {
+                    console.log("normal normal");
+                }
+            } catch (error) {
+                console.error("Request error:", error);
             }
         },
 
@@ -105,8 +133,9 @@ export default {
             this.showNotification = !this.showNotification;
         },
 
-        listenToCampaignNotifications() {
-            window.Echo.private(`campaign-started.${this.userId}`).listen('.CampaignStarted', (event) => {
+        // Notification Listener for Campaign Notifications
+        async listenToCampaignNotifications() {
+            window.Echo.private(`campaign-started.${this.userId}`).listen('.CampaignStarted', async (event) => {
                 const notification = {
                     user_id: event.user_id,
                     linkedin_user_id: event.linkedin_user_id,
@@ -114,11 +143,12 @@ export default {
                     event_name: event.event_name,
                     message: event.message
                 };
+                await this.addNotification(notification);
                 this.notifications.push(notification);
                 console.log('Campaign Started notification added:', notification);
             });
 
-            window.Echo.private(`campaign-completed.${this.userId}`).listen('.CampaignCompleted', (event) => {
+            window.Echo.private(`campaign-completed.${this.userId}`).listen('.CampaignCompleted', async (event) => {
                 const notification = {
                     user_id: event.user_id,
                     linkedin_user_id: event.linkedin_user_id,
@@ -126,13 +156,15 @@ export default {
                     event_name: event.event_name,
                     message: event.message
                 };
+                await this.addNotification(notification);
                 this.notifications.push(notification);
                 console.log('Campaign Completed notification added:', notification);
             });
         },
 
-        listenToPostsNotifications() {
-            window.Echo.private(`post-posted.${this.userId}`).listen('.PostPosted', (event) => {
+        // Notification Listener for Posts Notifications
+        async listenToPostsNotifications() {
+            window.Echo.private(`post-posted.${this.userId}`).listen('.PostPosted', async (event) => {
                 const notification = {
                     user_id: event.user_id,
                     linkedin_user_id: event.linkedin_user_id,
@@ -140,11 +172,12 @@ export default {
                     event_name: event.event_name,
                     message: event.message
                 };
+                await this.addNotification(notification);
                 this.notifications.push(notification);
                 console.log('Post notification added:', notification);
             });
 
-            window.Echo.private(`post-failed.${this.userId}`).listen('.PostFailed', (event) => {
+            window.Echo.private(`post-failed.${this.userId}`).listen('.PostFailed', async (event) => {
                 const notification = {
                     user_id: event.user_id,
                     linkedin_user_id: event.linkedin_user_id,
@@ -152,33 +185,35 @@ export default {
                     event_name: event.event_name,
                     message: event.message
                 };
-                console.log("this is from the post failed event");
+                await this.addNotification(notification);
                 this.notifications.push(notification);
                 console.log('Post notification added:', notification);
             });
         },
 
-        async addNotificationToDatabase(newNotifications) {
+        // Function to Add Notifications to Database
+        async addNotification(notification) {
             try {
-                const notificationsData = newNotifications.map(notification => ({
-                    user_id: notification.user_id,
-                    linkedin_user_id: notification.linkedin_user_id,
-                    campaign_id: notification.campaign_id,
-                    event_name: notification.event_name,
-                    message: notification.message
-                }));
+                const notificationData = new FormData();
 
-                const response = await axios.post('/add-notification', { notifications: notificationsData }, {
+                notificationData.append("user_id", notification.user_id);
+                notificationData.append("linkedin_user_id", notification.linkedin_user_id);
+                notificationData.append("campaign_id", notification.campaign_id);
+                notificationData.append("event_name", notification.event_name);
+                notificationData.append("message", notification.message);
+
+                const response = await axios.post('/notifications', notificationData, {
                     headers: {
+                        'Content-Type': 'multipart/form-data',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                     }
                 });
 
                 if (response.status === 201) {
-                    console.log("Notifications added successfully:", response.data.message);
+                    console.log("Notification added successfully:", response.data.message);
                 }
             } catch (error) {
-                console.error('Error adding notifications:', error.response ? error.response.data : error.message);
+                console.error('Error adding notification:', error.response ? error.response.data : error.message);
             }
         }
     }

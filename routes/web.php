@@ -78,7 +78,10 @@ Route::get('/linkedin/get-campaign-posts-for-day', [App\Http\Controllers\Linkedi
 
 Route::get('/linkedin/get-social-actions', [App\Http\Controllers\KpiController::class, 'getSocialActions'])->name('get.social.actions');
 Route::post('/add-notification', [App\Http\Controllers\DashboardController::class, 'addNotification'])->name('add.notification');
+Route::post('/notifications', [App\Http\Controllers\DashboardController::class, 'notification'])->name('notifications');
+
 Route::get('/get-notifications', [App\Http\Controllers\DashboardController::class, 'getNotifications'])->name('get.notifications');
+Route::post('/mark-as-read', [App\Http\Controllers\NotificationController::class])->name('mark.as.read');
 
 
 // Admin Routes (without admin middleware)
@@ -118,7 +121,7 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->group(function () {
     Route::get('/coupons/{coupon}/edit', [AdminSubscriptionController::class, 'editCoupon'])->name('admin.coupons.edit');
     Route::put('/coupons/{coupon}', [AdminSubscriptionController::class, 'updateCoupon'])->name('admin.coupons.update');
     Route::delete('/coupons/{coupon}', [AdminSubscriptionController::class, 'destroyCoupon'])->name('admin.coupons.destroy');
- Route::resource('boostinteractions', BoostinteractionController::class)->only(['index', 'update', 'destroy'])->names([
+    Route::resource('boostinteractions', BoostinteractionController::class)->only(['index', 'update', 'destroy'])->names([
         'index' => 'admin.boostinteractions.index',
         'update' => 'admin.boostinteractions.update',
         'destroy' => 'admin.boostinteractions.destroy',
