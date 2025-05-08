@@ -3,8 +3,8 @@
         class="fixed bottom-5 right-2 p-4 bg-white rounded-full flex items-center justify-center"
         style="box-shadow: #00000066 0px 0px 20px 0px;"
     >
-        <div v-if="!showNotification && notifications.length > 0" class="absolute py-2 px-3 bg-red-500 top-[-15px] left-[-10px] rounded-full text-white fw-bold">
-            {{ notifications.length }}
+        <div v-if="!showNotification && notificationNumber > 0" class="absolute py-2 px-3 bg-red-500 top-[-15px] left-[-10px] rounded-full text-white fw-bold">
+            {{ notificationNumber }}
         </div>
         <button @click="toggleNotification" class="z-50">
             <img 
@@ -38,7 +38,7 @@
                     <p class="text-black mb-0">{{ notification.message }}</p>
 
                     <i 
-                        v-if="notification.read_at !== null"
+                        v-if="notification.read_at != null"
                         class="fa-solid fa-circle-check text-xl text-green-500"
                     ></i>
 
@@ -56,6 +56,8 @@
 
 <script>
 import axios from 'axios';
+import { useToast } from "vue-toastification";
+
 
 export default {
     name: 'NotificationCard',
@@ -67,12 +69,20 @@ export default {
         }
     },
 
+    setup() {
+        // Toast interface
+        const toast = useToast();
+
+        return { toast }
+    },
+
     data() {
         return {
             notifications: [],
             showNotification: false,
             notificationMessage: '',
             readDateTime: '',
+            notificationNumber: 0,
         }
     },
 
@@ -96,6 +106,7 @@ export default {
                     this.notificationMessage = response.data.message || 'Pas de Notifications pour le moment';
                 } else if (response.data.status === 201) {
                     this.notifications = response.data.data;
+                    this.updateNotificationsNumber();
                     this.notificationMessage = '';
                 }
             } catch (error) {
@@ -103,12 +114,6 @@ export default {
                 this.notifications = [];
                 this.notificationMessage = 'Une erreur s\'est produite lors de la récupération des notifications';
             }
-        },
-
-        formatDateTime(date) {
-            const hours = String(date.getHours()).padStart(2, '0');
-            const minutes = String(date.getMinutes()).padStart(2, '0');
-            return `${date.toISOString().split('T')[0]}T${hours}:${minutes}`;
         },
 
         async markAsRead(notificationId) {
@@ -125,23 +130,52 @@ export default {
                     }
                 });
 
-                if (response.data.success === true) {
-                    // this.notifications = this.notifications.filter(n => n.id !== notificationId);
-                    
-                    // If all notifications are read, update message
+                if (response.data.success === true) {                    
+                    this.toast.success("Notification marquée comme lu avec succès", {
+                        position: "bottom-left",
+                        closeOnClick: true,
+                        pauseOnFocusLoss: true,
+                        pauseOnHover: true,
+                        draggable: true,
+                        draggablePercent: 0.6,
+                        showCloseButtonOnHover: false,
+                        hideProgressBar: false,
+                        timeout: 2500,
+                        closeButton: "button",
+                        icon: true,
+                        rtl: false
+                    });
+
                     if (this.notifications.length === 0) {
                         this.notificationMessage = 'Pas de notifications pour le moment';
                     }
                     
-                    console.log("Notification marked as read successfully");
                 } else {
                     console.error("Failed to mark notification as read:", response.data.message);
                 }
             } catch (error) {
                 console.error("Request error:", error);
-                // You might want to show an error message to the user
+                this.toast.error("Une erreur s'est produite! Réessayer plus tard.", {
+                    position: "bottom-left",
+                    closeOnClick: true,
+                    pauseOnFocusLoss: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    draggablePercent: 0.6,
+                    showCloseButtonOnHover: false,
+                    hideProgressBar: false,
+                    timeout: 2500,
+                    closeButton: "button",
+                    icon: true,
+                    rtl: false
+                });
             }
         },
+
+        updateNotificationsNumber() {
+            const newNotifications = this.notifications.filter((notification) => notification.read_at === null);
+            this.notificationNumber = newNotifications.length;
+        },  
 
         toggleNotification() {
             this.showNotification = !this.showNotification;
@@ -157,8 +191,23 @@ export default {
                     event_name: event.event_name,
                     message: event.message
                 };
+
                 await this.addNotification(notification);
                 this.notifications.push(notification);
+                this.toast.info("Vous avez une nouvelle Notification", {
+                    position: "bottom-left",
+                    closeOnClick: true,
+                    pauseOnFocusLoss: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    draggablePercent: 0.6,
+                    showCloseButtonOnHover: false,
+                    hideProgressBar: false,
+                    timeout: 2500,
+                    closeButton: "button",
+                    icon: true,
+                    rtl: false
+                });
                 console.log('Campaign Started notification added:', notification);
             });
 
@@ -170,8 +219,23 @@ export default {
                     event_name: event.event_name,
                     message: event.message
                 };
+
                 await this.addNotification(notification);
                 this.notifications.push(notification);
+                this.toast.info("Vous avez une nouvelle Notification", {
+                    position: "bottom-left",
+                    closeOnClick: true,
+                    pauseOnFocusLoss: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    draggablePercent: 0.6,
+                    showCloseButtonOnHover: false,
+                    hideProgressBar: false,
+                    timeout: 2500,
+                    closeButton: "button",
+                    icon: true,
+                    rtl: false
+                });
                 console.log('Campaign Completed notification added:', notification);
             });
         },
@@ -186,8 +250,23 @@ export default {
                     event_name: event.event_name,
                     message: event.message
                 };
+
                 await this.addNotification(notification);
                 this.notifications.push(notification);
+                this.toast.info("Vous avez une nouvelle Notification", {
+                    position: "bottom-left",
+                    closeOnClick: true,
+                    pauseOnFocusLoss: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    draggablePercent: 0.6,
+                    showCloseButtonOnHover: false,
+                    hideProgressBar: false,
+                    timeout: 2500,
+                    closeButton: "button",
+                    icon: true,
+                    rtl: false
+                });
                 console.log('Post notification added:', notification);
             });
 
@@ -199,8 +278,23 @@ export default {
                     event_name: event.event_name,
                     message: event.message
                 };
+
                 await this.addNotification(notification);
                 this.notifications.push(notification);
+                this.toast.info("Vous avez une nouvelle Notification", {
+                    position: "bottom-left",
+                    closeOnClick: true,
+                    pauseOnFocusLoss: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    draggablePercent: 0.6,
+                    showCloseButtonOnHover: false,
+                    hideProgressBar: false,
+                    timeout: 2500,
+                    closeButton: "button",
+                    icon: true,
+                    rtl: false
+                });
                 console.log('Post notification added:', notification);
             });
         },

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Boostinteraction;
 use App\Models\LinkedinCampaign;
 use App\Models\LinkedinUser;
 use App\Models\ScheduledLinkedinPost;
@@ -9,6 +10,7 @@ use App\Models\UserNotification;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
@@ -52,44 +54,6 @@ class DashboardController extends Controller
         return response()->json($posts, 200);
     }
 
-
-    public function addNotification(Request $request) {
-        try {
-            $validated = $request->validate([
-                'notifications' => 'required|array',
-                'notifications.*.user_id' => 'required|integer|exists:users,id',
-                'notifications.*.campaign_id' => 'required|integer|exists:linkedin_campaigns,id',
-                'notifications.*.linkedin_user_id' => 'required|integer|exists:linkedin_users,id',
-                'notifications.*.event_name' => 'required|string',
-                'notifications.*.message' => 'required|string',
-            ]);
-    
-            $createdNotifications = [];
-    
-            foreach ($validated['notifications'] as $notificationData) {
-                $notification = UserNotification::create([
-                    'user_id' => $notificationData['user_id'],
-                    'campaign_id' => $notificationData['campaign_id'],
-                    'linkedin_user_id' => $notificationData['linkedin_user_id'],
-                    'event_name' => $notificationData['event_name'],
-                    'message' => $notificationData['message'],
-                ]);
-                $createdNotifications[] = $notification->id;
-            }
-    
-            return response()->json([
-                'status' => 201,
-                'message' => count($createdNotifications) . ' notifications ont été créées avec succès !',
-                'notification_ids' => $createdNotifications,
-            ], 201);
-        } catch (\Exception $e) {
-            Log::error('Error creating Notifications', [
-                'error' => $e->getMessage(),
-                'data' => $request->all()
-            ]);
-            return response()->json(['error' => 'Une erreur s\'est produite lors de l\'enregistrement des notifications ! ' . $e], 500);
-        }
-    }
 
     public function notification(Request $request) {
         try {
@@ -147,6 +111,66 @@ class DashboardController extends Controller
                 'error' => $e->getMessage(),
             ]);
             return response()->json(['error' => 'Une erreur s\'est produite lors de la récupération des notifications' . $e], 500);
+        }
+    }
+
+
+    public function requestBoostInteraction(Request $request) {
+        try {
+            $validated = $request->validate([
+                "post_id" => "required|integer|exists:scheduled_linkedin_posts,id",
+                "linkedin_user_id" => "required|integer|exists:linkedin_users,id",
+                "post_url" => "required|url"
+            ]);
+        
+            $userId = Auth::id();
+        
+            $post = ScheduledLinkedinPost::findOrFail($validated["post_id"]);
+            
+            DB::beginTransaction();
+            
+            try {
+                $boost = BoostInteraction::create([
+                    "user_id" => $userId,
+                    "linkedin_user_id" => $validated["linkedin_user_id"],
+                    "post_id" => $post->id,
+                    "post_url" => $validated["post_url"],
+                    "status" => "pending"
+                ]);
+                                
+                DB::commit();
+                
+                return response()->json([
+                    "status" => 201,
+                    "message" => "Votre requête de Boost a été envoyée à l'administrateur !"
+                ], 201);
+                
+            } catch (\Exception $e) {
+                DB::rollback();
+                throw $e;
+            }
+        } catch(\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            Log::warning('Post not found for boost request', [
+                'post_id' => $request->post_id,
+                'user_id' => Auth::id()
+            ]);
+            
+            return response()->json([
+                "status" => 404,
+                "message" => "Post non trouvé !"
+            ], 404);
+        } catch(\Exception $e) {
+            Log::error('Error while creating Boost request', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'post_id' => $request->post_id ?? null,
+                'user_id' => Auth::id() ?? null
+            ]);
+            
+            return response()->json([
+                "status" => 500,
+                "message" => "Une erreur s'est produite lors de l'envoi de la requête !"
+            ], 500);
         }
     }
 }

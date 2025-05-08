@@ -94,7 +94,7 @@
                         src="/build/assets/icons/add-white.svg" 
                         alt="Add Icon"
                     />
-                    <a href="{{ route('linkedin-post') }}" class="text-decoration-none text-white fw-semibold">Ajouter un profil</a>
+                    <a href="{{ route('login-linkedin') }}" class="text-decoration-none text-white fw-semibold">Ajouter un profil</a>
                 </button>
             </div>
 

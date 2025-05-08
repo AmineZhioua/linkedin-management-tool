@@ -19,10 +19,15 @@ import CampaignModal from "./components/CampaignModal.vue";
 import PostCard from "./components/PostCard.vue";
 import KpiList from "./components/KpiList.vue";
 import NotificationCard from "./components/NotificationCard.vue";
+// Toast Imports
+import Toast from "vue-toastification";
+import "vue-toastification/dist/index.css";
+// Laravel Echo
 import "./echo"
 
 const app = createApp();
 
+app.use(Toast);
 app.component("subscription-cards", SubscriptionCards);
 app.component("popup", Popup);
 app.component("plateforme-card", PlateformeCard);

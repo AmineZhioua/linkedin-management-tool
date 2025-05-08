@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('user_notifications', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('linkedin_user_id')->constrained()->onDelete('cascade'); // CAN BE CHANGED
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('linkedin_user_id')->constrained('linkedin_users')->onDelete('cascade'); // CAN BE CHANGED
             $table->foreignId('campaign_id')->constrained('linkedin_campaigns')->onDelete('cascade');
             $table->string('event_name');
             $table->text('message');

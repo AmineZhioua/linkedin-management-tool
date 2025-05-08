@@ -70,16 +70,18 @@
                         <div 
                             v-for="post in popoverPosts"
                             :key="post.id || post.tempId"
-                            class="p-3 rounded flex items-center cursor-pointer justify-between"
+                            class="p-3 rounded flex items-center cursor-pointer justify-between gap-2"
                             :class="{
                                 'bg-green-200': post.type === 'text',
                                 'bg-yellow-200': post.type === 'image',
                                 'bg-red-200': post.type === 'video',
                                 'bg-purple-200': post.type === 'article'
                             }"
-                            @click="openPost(post)"
                         >
-                            <div class="flex items-center w-full">
+                            <div 
+                                class="flex gap-2 items-center w-full" 
+                                @click="openPost(post)"
+                            >
                                 <div class="flex-1"> 
                                     <span class="mr-2">{{ getPostTypeIcon(post.type) }}</span>
                                     <span>{{ formatTime(post.scheduled_time) }}</span>
@@ -97,6 +99,29 @@
                                     {{ post.status === "posted" ? "Publié" : post.status === "failed" ? "Échoué" : "En attente" }}
                                 </p>
                             </div>
+                            <!-- Boost Interaction Dropdown Menu -->
+                            <div class="relative z-50">
+                                <button class="ml-1" @click="postDropdown = !postDropdown">
+                                    <i class="fa-solid fa-ellipsis-vertical"></i>
+                                </button>
+
+                                <ul 
+                                    v-if="postDropdown"
+                                    class="bg-gray-50 p-0 absolute top-[30px] right-0 rounded-md min-w-[250px]"
+                                >
+                                    <li class="text-sm flex justify-center px-2 py-3 text-black hover:bg-gray-200 rounded-md">
+                                        <button 
+                                            class="flex items-center gap-2"
+                                            @click="requestBoost(post)"
+                                        >
+                                            <i class="fa-solid fa-rocket text-lg"></i>
+                                            <span class="fw-semibold">
+                                                Activer le Boost d'interaction
+                                            </span>
+                                        </button>
+                                    </li>
+                                </ul>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -113,7 +138,7 @@
 
         <!-- POST MODAL POPOVER -->
         <div v-if="isOpen" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div class="bg-white rounded-lg p-6 w-full max-w-lg">
+            <div class="bg-white rounded-lg p-6 w-full max-w-lg max-h-[550px] overflow-y-scroll">
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-lg font-semibold mb-0">Détails du Post</h3>
                     <button 
@@ -372,6 +397,7 @@
 <script>
 import axios from 'axios';
 import Swal from 'sweetalert2';
+import { useToast } from "vue-toastification";
 
 export default {
     name: 'DashboardCalendar',
@@ -395,8 +421,16 @@ export default {
         },
     },
     
+    setup() {
+        // Toast interface
+        const toast = useToast();
+
+        return { toast }
+    },
+    
     data() {
         return {
+            postDropdown: false,
             selectedDay: null,
             showPopover: false,
             currentMonth: this.initialMonth,
@@ -428,6 +462,74 @@ export default {
     },
   
     methods: {
+        async requestBoost(post) {
+            try {
+                const boostData = new FormData();
+
+                const postUrl = `https://www.linkedin.com/feed/update/${post.post_urn}`;
+
+                boostData.append("post_id", post.id);
+                boostData.append("linkedin_user_id", post.linkedin_user_id);
+                boostData.append("post_url", postUrl);
+
+                const boostResponse = await axios.post("/boost-interaction/request", boostData, {
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    }
+                });
+
+                if(boostResponse.status === 201) {
+                    this.toast.success("La requête de Boost a été envoyé avec succès!", {
+                        position: "bottom-left",
+                        closeOnClick: true,
+                        pauseOnFocusLoss: true,
+                        pauseOnHover: true,
+                        draggable: true,
+                        draggablePercent: 0.6,
+                        showCloseButtonOnHover: false,
+                        hideProgressBar: false,
+                        timeout: 5000,
+                        closeButton: "button",
+                        icon: true,
+                        rtl: false
+                    });
+                } else if(boostResponse.status === 404){
+                    this.toast.error("Post non trouvé !", {
+                        position: "bottom-left",
+                        closeOnClick: true,
+                        pauseOnFocusLoss: true,
+                        pauseOnHover: true,
+                        draggable: true,
+                        draggablePercent: 0.6,
+                        showCloseButtonOnHover: false,
+                        hideProgressBar: false,
+                        timeout: 5000,
+                        closeButton: "button",
+                        icon: false,
+                        rtl: false
+                    });
+                }
+                
+            } catch(error) {
+                console.error(error);
+                this.toast.error("Une erreur s'est produite lors de l'envoi de la requête !", {
+                    position: "bottom-left",
+                    closeOnClick: true,
+                    pauseOnFocusLoss: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    draggablePercent: 0.6,
+                    showCloseButtonOnHover: false,
+                    hideProgressBar: false,
+                    timeout: 5000,
+                    closeButton: "button",
+                    icon: true,
+                    rtl: false
+                });
+            }
+        },
+
         displayCampaigns(day) {
             const checkDate = new Date(this.currentYear, this.currentMonth, day);
             checkDate.setHours(0, 0, 0, 0);

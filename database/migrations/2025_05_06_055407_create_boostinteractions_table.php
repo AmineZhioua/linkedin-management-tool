@@ -10,7 +10,9 @@ return new class extends Migration
     {
         Schema::create('boostinteractions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('linkedin_user_id')->constrained('linkedin_users')->onDelete('cascade');
+            $table->foreignId('post_id')->constrained('scheduled_linkedin_posts')->onDelete('cascade');
             $table->string('post_url');
             $table->enum('status', ['pending', 'accepted', 'declined'])->default('pending');
             $table->timestamps();

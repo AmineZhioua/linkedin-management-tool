@@ -77,11 +77,11 @@ Route::get('/linkedin/get-campaign-posts-for-day', [App\Http\Controllers\Linkedi
 
 
 Route::get('/linkedin/get-social-actions', [App\Http\Controllers\KpiController::class, 'getSocialActions'])->name('get.social.actions');
-Route::post('/add-notification', [App\Http\Controllers\DashboardController::class, 'addNotification'])->name('add.notification');
 Route::post('/notifications', [App\Http\Controllers\DashboardController::class, 'notification'])->name('notifications');
 
 Route::get('/get-notifications', [App\Http\Controllers\DashboardController::class, 'getNotifications'])->name('get.notifications');
 Route::put('/linkedin/mark-as-read', [App\Http\Controllers\NotificationsController::class, 'markAsRead'])->name('mark.as.read');
+Route::post('/boost-interaction/request', [\App\Http\Controllers\DashboardController::class, 'requestBoostInteraction'])->name('boost.interaction.request');
 
 
 // Admin Routes (without admin middleware)
