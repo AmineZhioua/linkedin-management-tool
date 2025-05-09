@@ -17,7 +17,7 @@ export default {
     },
     message: {
         type: String,
-        default: 'Traitement en cours...',
+        // default: 'Traitement en cours...',
         required: false
     }
   }

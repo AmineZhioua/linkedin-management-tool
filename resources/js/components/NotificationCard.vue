@@ -189,7 +189,8 @@ export default {
                     linkedin_user_id: event.linkedin_user_id,
                     campaign_id: event.campaign_id,
                     event_name: event.event_name,
-                    message: event.message
+                    message: event.message,
+                    read_at: null,
                 };
 
                 await this.addNotification(notification);
@@ -217,7 +218,8 @@ export default {
                     linkedin_user_id: event.linkedin_user_id,
                     campaign_id: event.campaign_id,
                     event_name: event.event_name,
-                    message: event.message
+                    message: event.message,
+                    read_at: null,
                 };
 
                 await this.addNotification(notification);
@@ -248,7 +250,8 @@ export default {
                     linkedin_user_id: event.linkedin_user_id,
                     campaign_id: event.campaign_id,
                     event_name: event.event_name,
-                    message: event.message
+                    message: event.message,
+                    read_at: null,
                 };
 
                 await this.addNotification(notification);
@@ -276,7 +279,8 @@ export default {
                     linkedin_user_id: event.linkedin_user_id,
                     campaign_id: event.campaign_id,
                     event_name: event.event_name,
-                    message: event.message
+                    message: event.message,
+                    read_at: null,
                 };
 
                 await this.addNotification(notification);

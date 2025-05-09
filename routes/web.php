@@ -37,6 +37,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/subscriptions', [SubscriptionController::class, 'index'])->name('subscriptions');
     // Route for Applying Coupon Code in Subscription Page
     Route::post('/apply-coupon', [StripeController::class, 'applyCoupon'])->name('applyCoupon');
+
+
+
+    // Route for ADDITIONAL INFORMATION
+    Route::get('/user/additional-infomation', [App\Http\Controllers\InfoFormController::class, 'index'])->name('additional.info');
+    Route::post('/extra-info/add', [App\Http\Controllers\InfoFormController::class, 'addExtraInformation'])->name('add.extra.info');
 });
 
 // LinkedIn Auth Page Routes
@@ -49,6 +55,8 @@ Route::middleware(['auth', 'verified', 'linkedin.valid'])->group(function() {
 
     Route::get('/dashboard/linkedin', [App\Http\Controllers\DashboardController::class, 'index'])
         ->middleware('linkedin.account.exist')->name('dashboard');
+
+    Route::delete('/linkedin-post/delete', [App\Http\Controllers\LinkedInController::class, 'deletePost'])->name('delete.linkedin.post');
 });
 
 // Routes for "Plateforme de Marque" Page

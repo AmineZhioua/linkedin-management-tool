@@ -19,6 +19,7 @@ import CampaignModal from "./components/CampaignModal.vue";
 import PostCard from "./components/PostCard.vue";
 import KpiList from "./components/KpiList.vue";
 import NotificationCard from "./components/NotificationCard.vue";
+import ExtraInfoForm from "./components/ExtraInfoForm.vue";
 // Toast Imports
 import Toast from "vue-toastification";
 import "vue-toastification/dist/index.css";
@@ -46,5 +47,6 @@ app.component("campaign-modal", CampaignModal);
 app.component("post-card", PostCard);
 app.component("kpi-list", KpiList);
 app.component("notification-card", NotificationCard);
+app.component("extra-info-form", ExtraInfoForm);
 
 app.mount("#app");
