@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="light-style layout-navbar-fixed layout-menu-fixed layout-compact" dir="ltr" data-theme="theme-default" data-assets-path="../../assets/" data-template="vertical-menu-template">
+<html lang="en" class="light-style layout-navbar-fixed layout-menu-fixed layout-compact" dir="ltr" data-theme="theme-default" data-assets-path="{{ asset('assets/') }}/" data-template="vertical-menu-template">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
@@ -10,7 +10,7 @@
     <base href="{{ url('/') }}/" />
 
     <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="../../assets/img/favicon/favicon.ico" />
+    <link rel="icon" type="image/x-icon" href="{{ asset('assets/img/favicon/favicon.ico') }}" />
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -18,28 +18,31 @@
     <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet" />
 
     <!-- Icons -->
-    <link rel="stylesheet" href="../../assets/vendor/fonts/fontawesome.css" />
-    <link rel="stylesheet" href="../../assets/vendor/fonts/tabler-icons.css" />
-    <link rel="stylesheet" href="../../assets/vendor/fonts/flag-icons.css" />
+    <link rel="stylesheet" href="{{ asset('assets/vendor/fonts/fontawesome.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/vendor/fonts/tabler-icons.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/vendor/fonts/flag-icons.css') }}" />
 
     <!-- Core CSS -->
-    <link rel="stylesheet" href="../../assets/vendor/css/rtl/core.css" class="template-customizer-core-css" />
-    <link rel="stylesheet" href="../../assets/vendor/css/rtl/theme-default.css" class="template-customizer-theme-css" />
-    <link rel="stylesheet" href="../../assets/css/demo.css" />
+    <link rel="stylesheet" href="{{ asset('assets/vendor/css/rtl/core.css') }}" class="template-customizer-core-css" />
+    <link rel="stylesheet" href="{{ asset('assets/vendor/css/rtl/theme-default.css') }}" class="template-customizer-theme-css" />
+    <link rel="stylesheet" href="{{ asset('assets/css/demo.css') }}" />
 
     <!-- Vendors CSS -->
-    <link rel="stylesheet" href="../../assets/vendor/libs/node-waves/node-waves.css" />
-    <link rel="stylesheet" href="../../assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css" />
-    <link rel="stylesheet" href="../../assets/vendor/libs/typeahead-js/typeahead.css" />
-    <link rel="stylesheet" href="../../assets/vendor/libs/datatables-bs5/datatables.bootstrap5.css" />
-    <link rel="stylesheet" href="../../assets/vendor/libs/datatables-responsive-bs5/responsive.bootstrap5.css" />
-    <link rel="stylesheet" href="../../assets/vendor/libs/datatables-buttons-bs5/buttons.bootstrap5.css" />
-    <link rel="stylesheet" href="../../assets/vendor/libs/apex-charts/apex-charts.css" />
+    <link rel="stylesheet" href="{{ asset('assets/vendor/libs/node-waves/node-waves.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/vendor/libs/typeahead-js/typeahead.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/vendor/libs/datatables-bs5/datatables.bootstrap5.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/vendor/libs/datatables-responsive-bs5/responsive.bootstrap5.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/vendor/libs/datatables-buttons-bs5/buttons.bootstrap5.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/vendor/libs/apex-charts/apex-charts.css') }}" />
+
+    <!-- CSRF Token for AJAX -->
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <!-- Helpers -->
-    <script src="../../assets/vendor/js/helpers.js"></script>
-    <script src="../../assets/vendor/js/template-customizer.js"></script>
-    <script src="../../assets/js/config.js"></script>
+    <script src="{{ asset('assets/vendor/js/helpers.js') }}"></script>
+    <script src="{{ asset('assets/vendor/js/template-customizer.js') }}"></script>
+    <script src="{{ asset('assets/js/config.js') }}"></script>
 </head>
 <body>
     <!-- Layout wrapper -->
@@ -214,7 +217,7 @@
                             <li class="nav-item navbar-dropdown dropdown-user dropdown">
                                 <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
                                     <div class="avatar avatar-online">
-                                        <img src="../../assets/img/avatars/1.png" alt class="h-auto rounded-circle" />
+                                        <img src="{{ auth()->user()->image ?? asset('assets/img/avatars/1.png') }}" alt class="h-auto rounded-circle" />
                                     </div>
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end">
@@ -223,21 +226,24 @@
                                             <div class="d-flex">
                                                 <div class="flex-shrink-0 me-3">
                                                     <div class="avatar avatar-online">
-                                                        <img src="../../assets/img/avatars/1.png" alt class="h-auto rounded-circle" />
+                                                        <img src="{{ auth()->user()->image ?? asset('assets/img/avatars/1.png') }}" alt class="h-auto rounded-circle" />
                                                     </div>
                                                 </div>
                                                 <div class="flex-grow-1">
-                                                    <span class="fw-medium d-block">Admin</span>
-                                                    <small class="text-muted">Admin</small>
+                                                    <span class="fw-medium d-block">{{ auth()->user()->name }}</span>
+                                                    <small class="text-muted">{{ ucfirst(auth()->user()->role) }}</small>
                                                 </div>
                                             </div>
                                         </a>
                                     </li>
                                     <li><div class="dropdown-divider"></div></li>
-                                    <li><a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-user-check me-2 ti-sm"></i><span class="align-middle">My Profile</span></a></li>
+                                    <li><a class="dropdown-item" href="{{ route('admin.profile') }}"><i class="ti ti-user-check me-2 ti-sm"></i><span class="align-middle">My Profile</span></a></li>
                                     <li><a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-settings me-2 ti-sm"></i><span class="align-middle">Settings</span></a></li>
                                     <li><div class="dropdown-divider"></div></li>
-                                    <li><a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-logout me-2 ti-sm"></i><span class="align-middle">Log Out</span></a></li>
+                                    <li><a class="dropdown-item" href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();"><i class="ti ti-logout me-2 ti-sm"></i><span class="align-middle">Log Out</span></a></li>
+                                    <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                                        @csrf
+                                    </form>
                                 </ul>
                             </li>
                             <!--/ User -->
@@ -274,6 +280,10 @@
                                     <div class="card-body">
                                         <h3 class="card-title">Welcome to the Admin Dashboard</h3>
                                         <p class="text-muted mb-4">Manage users and other resources from the sidebar.</p>
+                                        <div class="mb-4">
+                                            <h5>Active Users (Last Hour)</h5>
+                                            <p class="text-primary fw-bold">{{ \App\Models\User::getActiveUsersCount() }} users active in the current hour</p>
+                                        </div>
                                         <div class="d-flex flex-column gap-3 align-items-center">
                                             <a href="{{ route('admin.users.index') }}" class="btn btn-primary d-flex align-items-center">
                                                 <i class="ti ti-users me-2"></i> Users
@@ -299,12 +309,15 @@
                                     <div class="card-header d-flex align-items-center justify-content-between">
                                         <h5 class="card-title m-0 me-2">Users</h5>
                                         <div class="d-flex align-items-center">
-                                            <input type="text" class="form-control me-2" id="userSearch" placeholder="Search by name..." style="width: 200px;">
+                                            <form action="{{ route('admin.users.index') }}" method="GET" class="d-flex">
+                                                <input type="text" class="form-control me-2" name="search" placeholder="Search by name or email..." value="{{ request('search') }}" style="width: 200px;">
+                                                <button type="submit" class="btn btn-outline-primary me-2">Search</button>
+                                            </form>
                                             <a href="{{ route('admin.users.create') }}" class="btn btn-primary">Create User</a>
                                         </div>
                                     </div>
                                     <div class="table-responsive">
-                                        <table class="table table-borderless border-top" id="usersTable">
+                                        <table class="table table-borderless border-top">
                                             <thead class="border-bottom">
                                                 <tr>
                                                     <th>ID</th>
@@ -313,12 +326,13 @@
                                                     <th>Role</th>
                                                     <th>Post Permission</th>
                                                     <th>Boost Permission</th>
+                                                    <th>Last Activity</th>
                                                     <th>Actions</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                @foreach ($users ?? [] as $user)
-                                                    <tr data-name="{{ strtolower($user->name) }}">
+                                                @foreach ($users as $user)
+                                                    <tr>
                                                         <td>{{ $user->id }}</td>
                                                         <td>{{ $user->name }}</td>
                                                         <td>{{ $user->email }}</td>
@@ -333,6 +347,7 @@
                                                                 {{ $user->boost_perm ? 'Yes' : 'No' }}
                                                             </span>
                                                         </td>
+                                                        <td>{{ $user->last_activity ? $user->last_activity->format('Y-m-d H:i:s') : 'Never' }}</td>
                                                         <td>
                                                             <a href="{{ route('admin.users.edit', $user) }}" class="btn btn-sm btn-outline-primary me-2">Edit</a>
                                                             <form action="{{ route('admin.users.destroy', $user) }}" method="POST" style="display: inline;">
@@ -345,6 +360,9 @@
                                                 @endforeach
                                             </tbody>
                                         </table>
+                                        <div class="mt-3">
+                                            {{ $users->appends(['search' => request('search')])->links() }}
+                                        </div>
                                     </div>
                                 </div>
                             @endif
@@ -411,6 +429,13 @@
                                                     <option value="0" selected>No</option>
                                                 </select>
                                                 @error('boost_perm')
+                                                    <div class="text-danger mt-1">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="image" class="form-label">Profile Image</label>
+                                                <input type="text" class="form-control" name="image" id="image" placeholder="Enter image URL">
+                                                @error('image')
                                                     <div class="text-danger mt-1">{{ $message }}</div>
                                                 @enderror
                                             </div>
@@ -483,9 +508,16 @@
                                                 <label for="boost_perm" class="form-label">Boost Permission</label>
                                                 <select class="form-select" name="boost_perm" id="boost_perm" required>
                                                     <option value="1" {{ $user->boost_perm ? 'selected' : '' }}>Yes</option>
-                                                    <option value="0" {{ !$user->post_perm ? 'selected' : '' }}>No</option>
+                                                    <option value="0" {{ !$user->boost_perm ? 'selected' : '' }}>No</option>
                                                 </select>
                                                 @error('boost_perm')
+                                                    <div class="text-danger mt-1">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="image" class="form-label">Profile Image</label>
+                                                <input type="text" class="form-control" name="image" id="image" value="{{ old('image', $user->image) }}" placeholder="Enter image URL">
+                                                @error('image')
                                                     <div class="text-danger mt-1">{{ $message }}</div>
                                                 @enderror
                                             </div>
@@ -744,12 +776,15 @@
                                     <div class="card-header d-flex align-items-center justify-content-between">
                                         <h5 class="card-title m-0 me-2">Active Subscriptions</h5>
                                         <div class="d-flex align-items-center">
-                                            <input type="text" class="form-control me-2" id="subscriptionSearch" placeholder="Search by user name..." style="width: 200px;">
+                                            <form action="{{ route('admin.subscriptions.active') }}" method="GET" class="d-flex">
+                                                <input type="text" class="form-control me-2" name="search" placeholder="Search by user name..." value="{{ request('search') }}" style="width: 200px;">
+                                                <button type="submit" class="btn btn-outline-primary me-2">Search</button>
+                                            </form>
                                             <a href="{{ route('admin.subscriptions.active.create') }}" class="btn btn-primary">Create Active Subscription</a>
                                         </div>
                                     </div>
                                     <div class="table-responsive">
-                                        <table class="table table-borderless border-top" id="subscriptionsTable">
+                                        <table class="table table-borderless border-top">
                                             <thead class="border-bottom">
                                                 <tr>
                                                     <th>ID</th>
@@ -762,7 +797,7 @@
                                             </thead>
                                             <tbody>
                                                 @foreach ($userSubscriptions ?? [] as $userSubscription)
-                                                    <tr data-user-name="{{ strtolower($userSubscription->user->name ?? 'unknown user') }}">
+                                                    <tr>
                                                         <td>{{ $userSubscription->id }}</td>
                                                         <td>{{ $userSubscription->user->name ?? 'Unknown User' }}</td>
                                                         <td>{{ $userSubscription->subscription->name ?? 'Unknown Subscription' }}</td>
@@ -780,6 +815,9 @@
                                                 @endforeach
                                             </tbody>
                                         </table>
+                                        <div class="mt-3">
+                                            {{ $userSubscriptions->appends(['search' => request('search')])->links() }}
+                                        </div>
                                     </div>
                                 </div>
                             @endif
@@ -1145,47 +1183,26 @@
     <!-- / Layout wrapper -->
 
     <!-- Core JS -->
-    <script src="../../assets/vendor/libs/jquery/jquery.js"></script>
-    <script src="../../assets/vendor/libs/popper/popper.js"></script>
-    <script src="../../assets/vendor/js/bootstrap.js"></script>
-    <script src="../../assets/vendor/libs/node-waves/node-waves.js"></script>
-    <script src="../../assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
-    <script src="../../assets/vendor/libs/hammer/hammer.js"></script>
-    <script src="../../assets/vendor/libs/i18n/i18n.js"></script>
-    <script src="../../assets/vendor/libs/typeahead-js/typeahead.js"></script>
-    <script src="../../assets/vendor/js/menu.js"></script>
+    <script src="{{ asset('assets/vendor/libs/jquery/jquery.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/popper/popper.js') }}"></script>
+    <script src="{{ asset('assets/vendor/js/bootstrap.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/node-waves/node-waves.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/hammer/hammer.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/i18n/i18n.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/typeahead-js/typeahead.js') }}"></script>
+    <script src="{{ asset('assets/vendor/js/menu.js') }}"></script>
 
     <!-- Vendors JS -->
-    <script src="../../assets/vendor/libs/moment/moment.js"></script>
-    <script src="../../assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js"></script>
-    <script src="../../assets/vendor/libs/apex-charts/apexcharts.js"></script>
+    <script src="{{ asset('assets/vendor/libs/moment/moment.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/apex-charts/apexcharts.js') }}"></script>
 
     <!-- Main JS -->
-    <script src="../../assets/js/main.js"></script>
+    <script src="{{ asset('assets/js/main.js') }}"></script>
 
-    <!-- Custom JS for Search and Filter -->
+    <!-- Custom JS for Boost Interactions Filter -->
     <script>
-        // Users Search
-        document.getElementById('userSearch')?.addEventListener('input', function(e) {
-            const searchTerm = e.target.value.toLowerCase();
-            const rows = document.querySelectorAll('#usersTable tbody tr');
-            rows.forEach(row => {
-                const name = row.getAttribute('data-name');
-                row.style.display = name.includes(searchTerm) ? '' : 'none';
-            });
-        });
-
-        // Active Subscriptions Search
-        document.getElementById('subscriptionSearch')?.addEventListener('input', function(e) {
-            const searchTerm = e.target.value.toLowerCase();
-            const rows = document.querySelectorAll('#subscriptionsTable tbody tr');
-            rows.forEach(row => {
-                const userName = row.getAttribute('data-user-name');
-                row.style.display = userName.includes(searchTerm) ? '' : 'none';
-            });
-        });
-
-        // Boost Interactions Status Filter
         document.getElementById('statusFilter')?.addEventListener('change', function(e) {
             const status = e.target.value;
             window.location.href = '{{ route('admin.boostinteractions.index') }}?status=' + status;

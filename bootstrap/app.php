@@ -16,6 +16,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'check.subscriptions' => \App\Http\Middleware\CheckValidSubscription::class,
             'linkedin.valid' => \App\Http\Middleware\LinkedinValid::class,
             'linkedin.account.exist' => \App\Http\Middleware\LinkedinAccountExist::class,
+            'update.last.activity' => \App\Http\Middleware\UpdateLastActivity::class,
+
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
