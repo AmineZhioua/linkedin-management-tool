@@ -138,7 +138,7 @@
 
         <!-- POST MODAL POPOVER -->
         <div v-if="isOpen" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div class="bg-white rounded-lg p-6 w-full max-w-lg max-h-[550px] overflow-y-scroll">
+            <div class="bg-white rounded-lg p-6 w-full max-w-lg max-h-[600px] overflow-y-scroll">
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-lg font-semibold mb-0">Détails du Post</h3>
                     <button 
@@ -363,32 +363,53 @@
                     </div>
                 </div>
 
-                <!-- All Buttons -->
-                <div class="flex items-center justify-end gap-2" v-if="selectedPost && selectedPost.status !== 'posted'" >
+                    <!-- All Buttons -->
+                    <div class="flex items-center justify-end gap-2" v-if="selectedPost">
+                        <!-- Delete the Post after posting it -->
                         <button 
-                            @click="deletePost(selectedPost.id)"
-                            :disabled="selectedPost.status === 'posted'" 
-                            class="bg-red-500 text-white py-2 px-4 rounded-lg"
+                            @click="deletePostFromLinkedIn(selectedPost)"
+                            v-if="selectedPost.status === 'posted'" 
+                            class="flex items-center gap-2 bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-700"
                         >
-                            Supprimer
+                            <img 
+                                src="/build/assets/icons/linkedin.svg" 
+                                alt="LinkedIn Icon"
+                                height="20"
+                                width="20"
+                            />
+
+                            <span>Supprimer de LinkedIn</span>
                         </button>
 
-                        <button 
-                            v-if="!isEditing"
-                            @click="startEditing"
-                            class="bg-blue-500 text-white py-2 px-4 rounded-lg"
-                        >
-                            Modifier
-                        </button>
-                        <button 
-                            v-else
-                            @click="updatePost"
-                            :disabled="isLoading"
-                            class="bg-green-500 text-white py-2 px-4 rounded-lg"
-                        >
-                            Enregistrer
-                        </button>
-                </div>
+
+                        <div class="flex items-center gap-2" v-if="selectedPost.status !== 'posted'">
+                            <!-- Delete the Post before Posting -->
+                            <button 
+                                @click="deletePost(selectedPost.id)"
+                                v-if="selectedPost.status !== 'posted' && !isEditing"
+                                class="bg-red-500 text-white py-2 px-4 rounded-lg"
+                            >
+                                Supprimer
+                            </button>
+
+            
+                            <button 
+                                v-if="!isEditing"
+                                @click="startEditing"
+                                class="bg-blue-500 text-white py-2 px-4 rounded-lg"
+                            >
+                                Modifier
+                            </button>
+                            <button 
+                                v-else
+                                @click="updatePost"
+                                :disabled="isLoading"
+                                class="bg-green-500 text-white py-2 px-4 rounded-lg"
+                            >
+                                Enregistrer
+                            </button>
+                        </div>
+                    </div>
             </div>
         </div>
     </div>
@@ -1020,9 +1041,63 @@ export default {
                 }
             } catch (error) {
                 console.error("Error deleting post:", error);
-                this.isLoading = false;
+
             } finally {
                 this.isLoading = false;
+            }
+        },
+
+
+        async deletePostFromLinkedIn(post) {
+            const result = await Swal.fire({
+                title: "Vous êtes sûr ?",
+                text: "Vous ne pourrez pas revenir en arrière !",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Oui, supprimer !",
+                cancelButtonText: "Annuler"
+            });
+
+            if (result.isConfirmed) {
+                try {
+                    const urnId = post.post_urn.split(':')[3]; // Fixed typo: unrId to urnId
+                    const deleteData = new FormData();
+                    deleteData.append("post_id", post.id);
+                    deleteData.append("linkedin_user_id", post.linkedin_user_id);
+                    deleteData.append("urn_id", urnId);
+
+                    const deleteResponse = await axios.delete("/linkedin/post/delete", {
+                        data: {
+                            post_id: post.id,
+                            linkedin_user_id: post.linkedin_user_id,
+                            urn_id: urnId
+                        },
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
+                        }
+                    });
+
+                    if (deleteResponse.status === 200) {
+                        await Swal.fire({
+                            title: "Supprimé !",
+                            text: "Votre post a été supprimé.",
+                            icon: "success"
+                        });
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 2500);
+                    }
+                } catch (error) {
+                    console.error(error);
+                    await Swal.fire({
+                        icon: "error",
+                        title: "Oops...",
+                        text: "Une erreur s'est produite lors de la suppression du post !",
+                    });
+                }
             }
         },
     },

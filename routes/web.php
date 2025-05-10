@@ -24,10 +24,10 @@ Route::get('auth/google/callback', [GoogleController::class, 'callback']);
 
 // Home Page route with middleware for checking if user is verified and has subscription
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home')
-    ->middleware('verified', 'auth', 'check.subscriptions');
+    ->middleware(['verified', 'auth', 'check.subscriptions', 'check.additional.info']);
 
 // Route for Handling Subscription page, Payment and Cancelation
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified', 'check.additional.info'])->group(function () {
     Route::post('/session', [StripeController::class, 'session'])->name('session');
     Route::get('/success', [StripeController::class, 'success'])->name('success');
     Route::get('/cancel', [StripeController::class, 'cancel'])->name('cancel');
@@ -35,16 +35,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/subscriptions', [SubscriptionController::class, 'index'])->name('subscriptions');
     // Route for Applying Coupon Code in Subscription Page
     Route::post('/apply-coupon', [StripeController::class, 'applyCoupon'])->name('applyCoupon');
+});
 
-
-
+// Routes & Middleware for the User Additional Information Page and requests
+Route::middleware(['auth', 'verified'])->group(function() {
     // Route for ADDITIONAL INFORMATION
     Route::get('/user/additional-infomation', [App\Http\Controllers\InfoFormController::class, 'index'])->name('additional.info');
+    // Route for the post request
     Route::post('/extra-info/add', [App\Http\Controllers\InfoFormController::class, 'addExtraInformation'])->name('add.extra.info');
 });
 
 // LinkedIn Auth Page Routes
-Route::middleware(['auth', 'verified', 'linkedin.valid'])->group(function() {
+Route::middleware(['auth', 'verified', 'linkedin.valid', 'check.additional.info'])->group(function() {
     Route::get('/login-linkedin', [LinkedInController::class, 'index'])->name('login-linkedin');
     Route::get('/linkedin/auth', [LinkedInController::class, 'redirect'])->name('linkedin.auth');
     Route::get('/linkedin/callback', [LinkedInController::class, 'callback'])->name('linkedin.callback');
@@ -54,18 +56,18 @@ Route::middleware(['auth', 'verified', 'linkedin.valid'])->group(function() {
     Route::get('/dashboard/linkedin', [App\Http\Controllers\DashboardController::class, 'index'])
         ->middleware('linkedin.account.exist')->name('dashboard');
 
-    Route::delete('/linkedin-post/delete', [App\Http\Controllers\LinkedInController::class, 'deletePost'])->name('delete.linkedin.post');
+    Route::delete('/linkedin/post/delete', [App\Http\Controllers\LinkedInController::class, 'deletePostFromLinkedin'])->name('delete.linkedin.post');
 });
 
 // Routes for "Plateforme de Marque" Page
-Route::middleware(['auth', 'verified', 'check.subscriptions'])->group(function() {
+Route::middleware(['auth', 'verified', 'check.subscriptions', 'check.additional.info'])->group(function() {
     Route::get('/plateforme-marque', [App\Http\Controllers\PlateformeMarqueController::class, 'index'])->name('plateforme-marque');
     Route::post('/save-platform-info', [App\Http\Controllers\PlateformeMarqueController::class, 'store'])->name('plateforme.store');
     Route::get('/marque', [App\Http\Controllers\PlateformeMarqueController::class, 'showMarque'])->name('marque.show');
 });
 
 // Routes for "Linkedin Post" Page
-Route::middleware(['auth', 'verified', 'linkedin.valid', 'linkedin.account.exist'])->group(function() {
+Route::middleware(['auth', 'verified', 'linkedin.valid', 'linkedin.account.exist', 'check.additional.info'])->group(function() {
     Route::get('/linkedin-post', [App\Http\Controllers\LinkedinPostController::class, 'index'])->name('linkedin-post');
     Route::post('/linkedin/post-text', [LinkedInController::class, 'postTextOnly']);
     Route::post('/linkedin/registermedia', [LinkedInController::class, 'registerMedia']);
@@ -75,19 +77,31 @@ Route::middleware(['auth', 'verified', 'linkedin.valid', 'linkedin.account.exist
     Route::post('/linkedin/create-campaign', [LinkedInController::class, 'createCampaign']);
 });
 
+// Route to Delete the post before it is posted on LinkedIn
 Route::delete('/linkedin/delete-post', [App\Http\Controllers\LinkedinPostController::class, 'deletePost'])->name('delete.post');
 Route::put('/linkedin/update-post', [App\Http\Controllers\LinkedinPostController::class, 'updatePost'])->name('update.post');
 Route::get('/linkedin/get-campaign-posts', [App\Http\Controllers\DashboardController::class, 'getPostsForCampaign'])->name('get.posts.campaign');
 Route::get('/linkedin/get-campaign-posts-for-day', [App\Http\Controllers\LinkedinPostController::class, 'getCampaignPostsForDay'])
     ->name('get.posts.campaign.for.day');
 
+// Route to Get User LinkedIn Data (Likes & Comments for now)
+Route::get('/linkedin/get-social-actions', [App\Http\Controllers\KpiController::class, 'getSocialActions'])->middleware('check.post.number.kpi')
+    ->name('get.social.actions');
 
-Route::get('/linkedin/get-social-actions', [App\Http\Controllers\KpiController::class, 'getSocialActions'])->name('get.social.actions');
+// Route for Adding Notifications to DB
 Route::post('/notifications', [App\Http\Controllers\DashboardController::class, 'notification'])->name('notifications');
 
+// Route to Get Notifications from DB
 Route::get('/get-notifications', [App\Http\Controllers\DashboardController::class, 'getNotifications'])->name('get.notifications');
+// Route to Mark a Notification as Read
 Route::put('/linkedin/mark-as-read', [App\Http\Controllers\NotificationsController::class, 'markAsRead'])->name('mark.as.read');
-Route::post('/boost-interaction/request', [\App\Http\Controllers\DashboardController::class, 'requestBoostInteraction'])->name('boost.interaction.request');
+// Route to Send a Boost Interaction Request to the Admin
+Route::post('/boost-interaction/request', [\App\Http\Controllers\DashboardController::class, 'requestBoostInteraction'])
+    ->name('boost.interaction.request');
+
+
+
+
 
 // Admin Routes (without admin middleware)
 Route::middleware(['auth', 'verified'])->prefix('admin')->group(function () {

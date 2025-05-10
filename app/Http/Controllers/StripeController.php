@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Coupon;
+use App\Models\LinkedinUser;
 use App\Models\UserSubscription;
 use App\Models\Subscription;
 use Illuminate\Http\Request;
@@ -86,6 +87,8 @@ class StripeController extends Controller
         $pricingMode = $request->query('pricingMode');
         $subscriptionId = $request->query('subscription_id') ?? session('subscription_id');
 
+        $userLinkedinAccount = LinkedinUser::where('user_id', $userId)->first();
+
         $subscription = Subscription::find($subscriptionId);
         if (!$subscription) {
             return redirect()->route('subscriptions')
@@ -107,6 +110,7 @@ class StripeController extends Controller
         $user = Auth::user();
         if ($user instanceof \App\Models\User) {
             $user->post_perm = ($subscription->linkedin == 1 || $subscription->whatsapp == 1) ? true : false;
+
             $user->save();
         } else {
             Log::error('Authenticated user is not an instance of the User model.');
@@ -114,13 +118,12 @@ class StripeController extends Controller
 
         session()->forget(['subscription_id', 'pricingMode']);
 
-        if ($subscription->whatsapp == 1 && $subscription->linkedin == 0) {
-            return redirect()->route('dashboard')->with('success_payment', 'Votre Abonnement est maintenant Activé!');
-        } else if ($subscription->whatsapp == 0 && $subscription->linkedin == 1) {
-            return redirect()->route('login-linkedin')->with('success_payment', 'Votre Abonnement est maintenant Activé!');
+        if(!$userLinkedinAccount) {
+            return redirect()->route('login-linkedin')
+                ->with('success_payment', 'Votre Abonnement est maintenant Activé!');
+
         } else {
-            // Will be changed later
-            return redirect()->route('home')->with('success_payment', 'Votre Abonnement  est maintenant Activé!'); 
+            return redirect()->route('dashboard')->with('success_payment', 'Votre Abonnement  est maintenant Activé!'); 
         }
     }
 

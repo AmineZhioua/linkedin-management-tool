@@ -849,17 +849,23 @@ class LinkedInController extends Controller
     }
 
 
-    public function deletePost(Request $request) {
+    // Function to Delete a Post from LinkedIn
+    public function deletePostFromLinkedin(Request $request) {
         $validated = $request->validate([
             'post_id' => 'required|integer|exists:scheduled_linkedin_posts,id',
-            'linkedin_token' => 'required|string',
+            'linkedin_user_id' => 'required|integer|exists:linkedin_users,id',
             'urn_id' => 'required|string'
         ]);
     
         $deleteUrl = "https://api.linkedin.com/v2/shares/" . $validated["urn_id"];
+        $linkedinUser = LinkedinUser::where("id", $validated['linkedin_user_id'])->first();
+    
+        if (!$linkedinUser) {
+            return response()->json(['message' => 'LinkedIn user not found'], 404);
+        }
     
         $headers = [
-            "Authorization: Bearer " . $validated['linkedin_token'],
+            "Authorization: Bearer " . $linkedinUser->linkedin_token,
             "Content-Type: application/json",
             "X-Restli-Protocol-Version: 2.0.0",
             "LinkedIn-Version: 202501"
@@ -874,7 +880,6 @@ class LinkedInController extends Controller
             CURLOPT_TIMEOUT => 1800
         ]);
     
-
         $response = curl_exec($curl);
         $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
         $errorMsg = curl_error($curl);
@@ -887,21 +892,19 @@ class LinkedInController extends Controller
     
                 if ($post) {
                     $post->delete();
-
                     return response()->json(['message' => 'Post supprimé avec succès'], 200);
-
                 } else {
-                    return response()->json(['message' => 'Post non trouvé !'], 404);
+                    return response()->json(['message' => 'Post non trouvé dans la base de données'], 404);
                 }
             } catch (\Exception $e) {
                 return response()->json([
-                    'error' => $e,
-                    'message' => 'Failed to delete post from database',
+                    'message' => 'Échec de la suppression du post dans la base de données',
+                    'error' => $e->getMessage()
                 ], 500);
             }
         } else {
             return response()->json([
-                'message' => 'Suppression échoué en raison de LinkedIn API',
+                'message' => 'Échec de la suppression via l\'API LinkedIn',
                 'error' => $errorMsg,
                 'http_code' => $httpCode
             ], 500);

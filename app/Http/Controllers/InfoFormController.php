@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\ExtraInformation;
+use App\Models\UserSubscription;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -12,14 +13,18 @@ use Illuminate\Support\Facades\Log;
 class InfoFormController extends Controller
 {
     public function index() {
-        // $userId = Auth::id();
+        $userId = Auth::id();
 
-        // $userInfo = ExtraInformation::where("user_id", $userId)->first();
+        $userInfo = ExtraInformation::where("user_id", $userId)->first();
+        $userSubscription = UserSubscription::where("user_id", $userId)->first();
 
-        // if($userInfo) {
-        //     return back()
-        //         ->with('info-exists', 'Vous pouvez modifier vos informations en accédant au paramétres.');
-        // }
+        if($userInfo && $userSubscription) {
+            return redirect()->route('dashboard')
+                ->with('info-exists', 'Vous pouvez modifier vos informations en accédant au paramétres.');
+        } else if($userInfo && !$userSubscription) {
+            return redirect()->route('subscriptions')
+                ->with('info-exists', 'Vous pouvez modifier vos informations en accédant au paramétres.');
+        }
 
         return view('info-form');
     }

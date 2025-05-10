@@ -59,7 +59,6 @@ class LinkedinPostController extends Controller
 
 
 
-
     // FUNCTION TO UPDATE A POST
     public function updatePost(Request $request) {
         $validated = $request->validate([

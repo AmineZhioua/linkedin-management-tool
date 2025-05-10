@@ -29,8 +29,31 @@
         </button>
     </div>
 
+    <div v-if="numberPostedPosts < 10" class="flex justify-content-between align-items-center p-4 bg-green-400 rounded-xl mt-2">
+        <img 
+            src="/build/assets/icons/paint.svg" 
+            alt="paint-icon" 
+            class="bg-white p-2 rounded-full mr-8 relative top-[-50px]" 
+        />
+        <div class="text-black flex-grow-1 px-2">
+            <h1 class="text-3xl fw-semibold">Totale des Posts Publié</h1>            
+            <p class="text-muted mb-0 fw-semibold">Atteindre 10 Posts publié pour activer vos <b>Indicateurs de Performance</b> !</p>
+            <h1 class="text-3xl mt-4 mb-4 text-black">{{ numberPostedPosts * 10 }}%</h1>
+            <div class="h-[10px] bg-white w-full rounded-full relative">
+                <span class="bg-black h-[10px] rounded-full absolute" :style="{width: `${numberPostedPosts * 10}%`}"></span>
+            </div>
+        </div>
+
+        <div class="task-btns flex flex-col align-items-center gap-2">
+            <button class="bg-black text-white py-2 px-4 rounded-full">
+                Finir la Tache
+            </button>
+        </div>
+    </div>
+
+
     <!-- KPIs Cards -->
-    <div class="grid grid-cols-4 gap-4">
+    <div class="grid grid-cols-4 gap-4" v-if="numberPostedPosts >= 10">
         <!-- Total Posts KPIs -->
         <div class="flex flex-col justify-between align-items-center py-8 px-3 rounded-xl" style="background-color: #FFB0C6;">
             <h1>{{ displayTotalPosts }}</h1>
@@ -87,6 +110,7 @@ export default {
             errorMsg: "",
             filtrerList: false,
             selectedType: 'all',
+            numberPostedPosts: 0,
             // Total KPIs
             totalLikes: 0 ,
             totalComments: 0,
@@ -171,12 +195,19 @@ export default {
             handler(newPosts) {
                 if (newPosts.length > 0) {
                     this.fetchAllKPIs();
+                    this.getTotalPostedPosts();
                 }
             }
         }
     },
 
     methods: {
+        getTotalPostedPosts() {
+            const postedPosts = this.allUserPosts.filter(post => post.status === 'posted');
+            this.numberPostedPosts = postedPosts.length;
+        },
+
+
         getUserLinkedinInfo(id) {
             const user = this.userLinkedinAccounts.find(user => user.id === id);
             if (user) {
@@ -257,6 +288,8 @@ export default {
                 } else if (error.response && error.response.status === 404) {
                     console.error("Post not found:", error.response.data);
                     this.errorMsg = "Post non trouvé.";
+                } else if(error.response.status === 403) {
+                    this.errorMsg = `Vous avez besoin d'au moins 10 Posts publié pour activer vos KPIs`;
                 }
                  else {
                     console.error("Request error:", error);
@@ -389,6 +422,8 @@ export default {
                 if (error.response && error.response.status === 400) {
                     console.error("Validation errors:", error.response.data.errors);
                     this.errorMsg = `Erreur de validation : ${JSON.stringify(error.response.data.errors)}`;
+                } else if(error.response.status === 403) {
+                    this.errorMsg = `Vous avez besoin d'au moins 10 Posts publié pour activer vos KPIs`;
                 } else {
                     console.error("Request error:", error);
                     this.errorMsg = "Erreur lors de la récupération des données.";
