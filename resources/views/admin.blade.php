@@ -276,30 +276,182 @@
 
                         @section('dashboard')
                             @if (Route::is('admin.dashboard'))
-                                <div class="card mb-4">
-                                    <div class="card-body">
-                                        <h3 class="card-title">Welcome to the Admin Dashboard</h3>
-                                        <p class="text-muted mb-4">Manage users and other resources from the sidebar.</p>
-                                        <div class="mb-4">
-                                            <h5>Active Users (Last Hour)</h5>
-                                            <p class="text-primary fw-bold">{{ \App\Models\User::getActiveUsersCount() }} users active in the current hour</p>
+                                <div class="row">
+                                    <!-- Active Users Card -->
+                                    <div class="col-12 col-xl-6 mb-4">
+                                        <div class="card h-100">
+                                            <div class="card-header d-flex align-items-center justify-content-between">
+                                                <h5 class="card-title m-0 me-2">Active Users (Last Hour)</h5>
+                                                <div class="dropdown">
+                                                    <button class="btn p-0" type="button" id="activeUsers" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                        <i class="ti ti-dots-vertical"></i>
+                                                    </button>
+                                                    <div class="dropdown-menu dropdown-menu-end" aria-labelledby="activeUsers">
+                                                        <a class="dropdown-item" href="javascript:void(0);">Last 24 Hours</a>
+                                                        <a class="dropdown-item" href="javascript:void(0);">Last Week</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="card-body row g-3">
+                                                <div class="col-md-6">
+                                                    <div id="activeUsersChart"></div>
+                                                </div>
+                                                <div class="col-md-6 d-flex justify-content-around align-items-center">
+                                                    <div>
+                                                        @php
+                                                            $activeUsers = \App\Models\User::getActiveUsersCount();
+                                                            $totalUsers = \App\Models\User::count();
+                                                            $activePercentage = $totalUsers > 0 ? round(($activeUsers / $totalUsers) * 100, 2) : 0;
+                                                            $inactivePercentage = $totalUsers > 0 ? round(100 - $activePercentage, 2) : 0;
+                                                        @endphp
+                                                        <div class="d-flex align-items-baseline my-3">
+                                                            <span class="text-primary me-2"><i class="ti ti-circle-filled fs-6"></i></span>
+                                                            <div>
+                                                                <p class="mb-2">Active Users</p>
+                                                                <h5>{{ $activePercentage }}%</h5>
+                                                            </div>
+                                                        </div>
+                                                        <div class="d-flex align-items-baseline my-3">
+                                                            <span class="text-secondary me-2"><i class="ti ti-circle-filled fs-6"></i></span>
+                                                            <div>
+                                                                <p class="mb-2">Inactive Users</p>
+                                                                <h5>{{ $inactivePercentage }}%</h5>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div class="d-flex flex-column gap-3 align-items-center">
-                                            <a href="{{ route('admin.users.index') }}" class="btn btn-primary d-flex align-items-center">
-                                                <i class="ti ti-users me-2"></i> Users
-                                            </a>
-                                            <a href="{{ route('admin.subscriptions.index') }}" class="btn btn-primary d-flex align-items-center">
-                                                <i class="ti ti-wallet me-2"></i> Subscriptions
-                                            </a>
-                                            <a href="{{ route('admin.coupons.index') }}" class="btn btn-primary d-flex align-items-center">
-                                                <i class="ti ti-ticket me-2"></i> Promo Codes
-                                            </a>
-                                            <a href="{{ route('admin.boostinteractions.index') }}" class="btn btn-primary d-flex align-items-center">
-                                                <i class="ti ti-rocket me-2"></i> Boost Interactions
-                                            </a>
+                                    </div>
+
+                                    <!-- Campaigns Created Today Card -->
+                                    <div class="col-12 col-xl-6 mb-4">
+                                        <div class="card h-100">
+                                            <div class="card-header d-flex align-items-center justify-content-between">
+                                                <h5 class="card-title m-0 me-2">Campaigns Created Today</h5>
+                                                <div class="dropdown">
+                                                    <button class="btn p-0" type="button" id="campaigns" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                        <i class="ti ti-dots-vertical"></i>
+                                                    </button>
+                                                    <div class="dropdown-menu dropdown-menu-end" aria-labelledby="campaigns">
+                                                        <a class="dropdown-item" href="javascript:void(0);">This Week</a>
+                                                        <a class="dropdown-item" href="javascript:void(0);">This Month</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="card-body row g-3">
+                                                <div class="col-md-6">
+                                                    <div id="campaignsChart"></div>
+                                                </div>
+                                                <div class="col-md-6 d-flex justify-content-around align-items-center">
+                                                    <div>
+                                                        @php
+                                                            $campaignsToday = \App\Models\LinkedinCampaign::getCampaignsCreatedTodayCount();
+                                                            $totalCampaigns = \App\Models\LinkedinCampaign::count();
+                                                            $todayPercentage = $totalCampaigns > 0 ? round(($campaignsToday / $totalCampaigns) * 100, 2) : 0;
+                                                            $otherPercentage = $totalCampaigns > 0 ? round(100 - $todayPercentage, 2) : 0;
+                                                        @endphp
+                                                        <div class="d-flex align-items-baseline my-3">
+                                                            <span class="text-success me-2"><i class="ti ti-circle-filled fs-6"></i></span>
+                                                            <div>
+                                                                <p class="mb-2">Campaigns Today</p>
+                                                                <h5>{{ $todayPercentage }}%</h5>
+                                                            </div>
+                                                        </div>
+                                                        <div class="d-flex align-items-baseline my-3">
+                                                            <span class="text-warning me-2"><i class="ti ti-circle-filled fs-6"></i></span>
+                                                            <div>
+                                                                <p class="mb-2">Other Campaigns</p>
+                                                                <h5>{{ $otherPercentage }}%</h5>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
+
+                                <!-- ApexCharts JavaScript -->
+                                <script>
+                                    document.addEventListener('DOMContentLoaded', function () {
+                                        // Active Users Chart
+                                        var activeUsersOptions = {
+                                            chart: {
+                                                type: 'bar',
+                                                height: 200,
+                                                stacked: false
+                                            },
+                                            plotOptions: {
+                                                bar: {
+                                                    horizontal: true
+                                                }
+                                            },
+                                            series: [{
+                                                data: [{{ $activePercentage }}, {{ $inactivePercentage }}]
+                                            }],
+                                            xaxis: {
+                                                categories: ['Active Users', 'Inactive Users'],
+                                                labels: {
+                                                    formatter: function (val) {
+                                                        return val + '%';
+                                                    }
+                                                }
+                                            },
+                                            colors: ['#7367F0', '#666EA8'],
+                                            tooltip: {
+                                                y: {
+                                                    formatter: function (val) {
+                                                        return val + '%';
+                                                    }
+                                                }
+                                            },
+                                            dataLabels: {
+                                                enabled: false
+                                            }
+                                        };
+                                        var activeUsersChart = new ApexCharts(document.querySelector("#activeUsersChart"), activeUsersOptions);
+                                        activeUsersChart.render();
+
+                                        // Campaigns Chart
+                                        var campaignsOptions = {
+                                            chart: {
+                                                type: 'bar',
+                                                height: 200,
+                                                stacked: false
+                                            },
+                                            plotOptions: {
+                                                bar: {
+                                                    horizontal: true
+                                                }
+                                            },
+                                            series: [{
+                                                data: [{{ $todayPercentage }}, {{ $otherPercentage }}]
+                                            }],
+                                            xaxis: {
+                                                categories: ['Campaigns Today', 'Other Campaigns'],
+                                                labels: {
+                                                    formatter: function (val) {
+                                                        return val + '%';
+                                                    }
+                                                }
+                                            },
+                                            colors: ['#28C76F', '#FF9F43'],
+                                            tooltip: {
+                                                y: {
+                                                    formatter: function (val) {
+                                                        return val + '%';
+                                                    }
+                                                }
+                                            },
+                                            dataLabels: {
+                                                enabled: false
+                                            }
+                                        };
+                                        var campaignsChart = new ApexCharts(document.querySelector("#campaignsChart"), campaignsOptions);
+                                        campaignsChart.render();
+                                    });
+                                </script>
                             @endif
                         @show
 

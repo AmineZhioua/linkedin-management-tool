@@ -54,7 +54,7 @@ Route::middleware(['auth', 'verified', 'linkedin.valid', 'check.additional.info'
     Route::get('/linkedin/delete', [LinkedInController::class, 'delete'])->name('linkedin.delete');
 
     Route::get('/dashboard/linkedin', [App\Http\Controllers\DashboardController::class, 'index'])
-        ->middleware('linkedin.account.exist')->name('dashboard');
+        ->middleware(['linkedin.account.exist', 'update.last.activity'])->name('dashboard');
 
     Route::delete('/linkedin/post/delete', [App\Http\Controllers\LinkedInController::class, 'deletePostFromLinkedin'])->name('delete.linkedin.post');
 });
@@ -98,10 +98,6 @@ Route::put('/linkedin/mark-as-read', [App\Http\Controllers\NotificationsControll
 // Route to Send a Boost Interaction Request to the Admin
 Route::post('/boost-interaction/request', [\App\Http\Controllers\DashboardController::class, 'requestBoostInteraction'])
     ->name('boost.interaction.request');
-
-
-
-
 
 // Admin Routes (without admin middleware)
 Route::middleware(['auth', 'verified'])->prefix('admin')->group(function () {
