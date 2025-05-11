@@ -92,9 +92,19 @@ class SubscriptionController extends Controller
     }
 
     // Active Subscriptions CRUD
-    public function active()
+    public function active(Request $request)
     {
-        $userSubscriptions = UserSubscription::with(['user', 'subscription'])->get();
+        $search = $request->input('search');
+        $query = UserSubscription::with(['user', 'subscription']);
+
+        if ($search) {
+            $query->whereHas('user', function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%");
+            });
+        }
+
+        $userSubscriptions = $query->paginate(10);
+
         return view('admin', compact('userSubscriptions'));
     }
 
@@ -232,4 +242,3 @@ class SubscriptionController extends Controller
         }
     }
 }
-?>
