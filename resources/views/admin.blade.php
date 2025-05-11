@@ -217,7 +217,7 @@
                             <li class="nav-item navbar-dropdown dropdown-user dropdown">
                                 <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
                                     <div class="avatar avatar-online">
-                                        <img src="{{ auth()->user()->image ?? asset('assets/img/avatars/1.png') }}" alt class="h-auto rounded-circle" />
+                                        <i class="fas fa-user-tie h-auto rounded-circle"></i>
                                     </div>
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end">
@@ -226,7 +226,7 @@
                                             <div class="d-flex">
                                                 <div class="flex-shrink-0 me-3">
                                                     <div class="avatar avatar-online">
-                                                        <img src="{{ auth()->user()->image ?? asset('assets/img/avatars/1.png') }}" alt class="h-auto rounded-circle" />
+                                                        <i class="fas fa-user-tie h-auto rounded-circle"></i>
                                                     </div>
                                                 </div>
                                                 <div class="flex-grow-1">
@@ -237,9 +237,7 @@
                                         </a>
                                     </li>
                                     <li><div class="dropdown-divider"></div></li>
-                                    <li><a class="dropdown-item" href="{{ route('admin.profile') }}"><i class="ti ti-user-check me-2 ti-sm"></i><span class="align-middle">My Profile</span></a></li>
-                                    <li><a class="dropdown-item" href="javascript:void(0);"><i class="ti ti-settings me-2 ti-sm"></i><span class="align-middle">Settings</span></a></li>
-                                    <li><div class="dropdown-divider"></div></li>
+                                    <li><a class="dropdown-item" href="{{ route('admin.profile') }}"><i class="ti ti-user-check me-2 ti-sm"></i><span class="align-middle">Profile</span></a></li>
                                     <li><a class="dropdown-item" href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();"><i class="ti ti-logout me-2 ti-sm"></i><span class="align-middle">Log Out</span></a></li>
                                     <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
                                         @csrf
@@ -380,7 +378,8 @@
                                             chart: {
                                                 type: 'bar',
                                                 height: 200,
-                                                stacked: false
+                                                stacked: false,
+                                                toolbar: { show: false }
                                             },
                                             plotOptions: {
                                                 bar: {
@@ -418,7 +417,8 @@
                                             chart: {
                                                 type: 'bar',
                                                 height: 200,
-                                                stacked: false
+                                                stacked: false,
+                                                toolbar: { show: false }
                                             },
                                             plotOptions: {
                                                 bar: {
@@ -584,13 +584,6 @@
                                                     <div class="text-danger mt-1">{{ $message }}</div>
                                                 @enderror
                                             </div>
-                                            <div class="mb-3">
-                                                <label for="image" class="form-label">Profile Image</label>
-                                                <input type="text" class="form-control" name="image" id="image" placeholder="Enter image URL">
-                                                @error('image')
-                                                    <div class="text-danger mt-1">{{ $message }}</div>
-                                                @enderror
-                                            </div>
                                             <div>
                                                 <button type="submit" class="btn btn-primary">Create</button>
                                                 <a href="{{ route('admin.users.index') }}" class="btn btn-link">Cancel</a>
@@ -666,16 +659,84 @@
                                                     <div class="text-danger mt-1">{{ $message }}</div>
                                                 @enderror
                                             </div>
+                                            <div>
+                                                <button type="submit" class="btn btn-primary">Update</button>
+                                                <a href="{{ route('admin.users.index') }}" class="btn btn-link">Cancel</a>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            @endif
+                        @show
+
+                        @section('profile')
+                            @if (Route::is('admin.profile'))
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5 class="card-title mb-0">Edit Profile</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <form action="{{ route('admin.profile.update') }}" method="POST">
+                                            @csrf
+                                            @method('PUT')
                                             <div class="mb-3">
-                                                <label for="image" class="form-label">Profile Image</label>
-                                                <input type="text" class="form-control" name="image" id="image" value="{{ old('image', $user->image) }}" placeholder="Enter image URL">
-                                                @error('image')
+                                                <label for="name" class="form-label">Name</label>
+                                                <input type="text" class="form-control" name="name" id="name" value="{{ old('name', auth()->user()->name) }}" required>
+                                                @error('name')
+                                                    <div class="text-danger mt-1">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="email" class="form-label">Email</label>
+                                                <input type="email" class="form-control" name="email" id="email" value="{{ old('email', auth()->user()->email) }}" required>
+                                                @error('email')
+                                                    <div class="text-danger mt-1">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="password" class="form-label">Password (leave blank to keep current)</label>
+                                                <input type="password" class="form-control" name="password" id="password">
+                                                @error('password')
+                                                    <div class="text-danger mt-1">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="password_confirmation" class="form-label">Confirm Password</label>
+                                                <input type="password" class="form-control" name="password_confirmation" id="password_confirmation">
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="role" class="form-label">Role</label>
+                                                <select class="form-select" name="role" id="role" required>
+                                                    <option value="user" {{ auth()->user()->role === 'user' ? 'selected' : '' }}>User</option>
+                                                    <option value="admin" {{ auth()->user()->role === 'admin' ? 'selected' : '' }}>Admin</option>
+                                                </select>
+                                                @error('role')
+                                                    <div class="text-danger mt-1">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="post_perm" class="form-label">Post Permission</label>
+                                                <select class="form-select" name="post_perm" id="post_perm" required>
+                                                    <option value="1" {{ auth()->user()->post_perm ? 'selected' : '' }}>Yes</option>
+                                                    <option value="0" {{ !auth()->user()->post_perm ? 'selected' : '' }}>No</option>
+                                                </select>
+                                                @error('post_perm')
+                                                    <div class="text-danger mt-1">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="boost_perm" class="form-label">Boost Permission</label>
+                                                <select class="form-select" name="boost_perm" id="boost_perm" required>
+                                                    <option value="1" {{ auth()->user()->boost_perm ? 'selected' : '' }}>Yes</option>
+                                                    <option value="0" {{ !auth()->user()->boost_perm ? 'selected' : '' }}>No</option>
+                                                </select>
+                                                @error('boost_perm')
                                                     <div class="text-danger mt-1">{{ $message }}</div>
                                                 @enderror
                                             </div>
                                             <div>
                                                 <button type="submit" class="btn btn-primary">Update</button>
-                                                <a href="{{ route('admin.users.index') }}" class="btn btn-link">Cancel</a>
+                                                <a href="{{ route('admin.dashboard') }}" class="btn btn-link">Cancel</a>
                                             </div>
                                         </form>
                                     </div>
@@ -1308,15 +1369,7 @@
                     </div>
                     <!-- / Content -->
                     <!-- Footer -->
-                    <footer class="content-footer footer bg-footer-theme">
-                        <div class="container-xxl">
-                            <div class="footer-container d-flex align-items-center justify-content-between py-2 flex-md-row flex-column">
-                                <div>
-                                    © <script>document.write(new Date().getFullYear())</script>, made with ❤️ by <a href="https://pixinvent.com" target="_blank" class="footer-link">Pixinvent</a>
-                                </div>
-                            </div>
-                        </div>
-                    </footer>
+
                     <!-- / Footer -->
 
                     <div class="content-backdrop fade"></div>
