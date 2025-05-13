@@ -109,12 +109,11 @@ class User extends Authenticatable implements MustVerifyEmail
     public static function getCachedUsers($search = null)
     {
         $cacheKey = 'users_' . md5($search ?? 'all') . '_page_' . request()->get('page', 1);
-
+    
         return Cache::remember($cacheKey, now()->addMinutes(10), function () use ($search) {
             return static::filter($search)->paginate(10);
         });
     }
-
     /**
      * Get the count of active users in the current hour, cached.
      *
