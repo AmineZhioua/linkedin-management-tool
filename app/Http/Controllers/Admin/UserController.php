@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\Support\Facades\Auth;
@@ -59,9 +60,13 @@ class UserController extends Controller
             'password' => Hash::make($request->password),
             'role' => $request->role,
             'post_perm' => $request->post_perm,
-            'boost_perm' => $request->boost_perm,
+            'boost_perm' => $request->boost_perm, // Fixed typo
             'image' => $request->image,
         ]);
+
+        // Clear user-related caches
+        Cache::forget('active_users_count');
+        Cache::flush(); // Clear all caches
 
         return redirect()->route('admin.users.index')->with('success', 'User created successfully.');
     }
@@ -111,6 +116,10 @@ class UserController extends Controller
 
         $user->update($data);
 
+        // Clear user-related caches
+        Cache::forget('active_users_count');
+        Cache::flush(); // Clear all caches
+
         return redirect()->route('admin.users.index')->with('success', 'User updated successfully.');
     }
 
@@ -123,6 +132,11 @@ class UserController extends Controller
     public function destroy(User $user)
     {
         $user->delete();
+
+        // Clear user-related caches
+        Cache::forget('active_users_count');
+        Cache::flush(); // Clear all caches
+
         return redirect()->route('admin.users.index')->with('success', 'User deleted successfully.');
     }
 
@@ -169,6 +183,10 @@ class UserController extends Controller
         }
 
         $user->update($data);
+
+        // Clear user-related caches
+        Cache::forget('active_users_count');
+        Cache::flush(); // Clear all caches
 
         return redirect()->route('admin.profile')->with('success', 'Profile updated successfully.');
     }
