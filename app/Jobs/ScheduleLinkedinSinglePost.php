@@ -2,20 +2,20 @@
 
 namespace App\Jobs;
 
-use App\Events\PostPosted;
-use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use App\Models\ScheduledLinkedInPost;
+use App\Models\ScheduledLinkedinPost;
 use App\Http\Controllers\LinkedInController;
-use App\Models\LinkedinCampaign;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
-class ScheduleLinkedInPost implements ShouldQueue
+
+
+class ScheduleLinkedinSinglePost implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -148,9 +148,9 @@ class ScheduleLinkedInPost implements ShouldQueue
                     'http_code' => $httpCode,
                 ]);
 
-                $campaign = LinkedinCampaign::find($post->campaign_id)->first();
 
-                event(new PostPosted($post, $campaign));
+                // ADD THE NECESSARY EVENT
+                // event(new PostPosted($post, $campaign));
                 
             } else {
                 Log::error("Failed to post {$post->id}", [

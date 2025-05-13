@@ -51,10 +51,12 @@ class PostPosted implements ShouldBroadcast
     {
         return [
             'user_id' => $this->post->user_id,
-            'campaign_id' => $this->campaign->id,
+            'campaign_id' => $this->campaign->id ?? null,
             'linkedin_user_id' => $this->post->linkedin_user_id,
             'event_name' => 'PostPosted',
-            'message' => "Campaign {$this->campaign->name}: Post {$this->post->id} de type {$this->post->type} a été publié avec succès !",
+            'message' => $this->campaign ? 
+                    "Campagne {$this->campaign->name}: Post {$this->post->id} de type {$this->post->type} a été publié avec succès !" 
+                    : "Post {$this->post->id} de type {$this->post->type} a été publié avec succès !",
         ];
     }
 }

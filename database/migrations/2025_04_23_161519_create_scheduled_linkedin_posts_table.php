@@ -15,12 +15,12 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('linkedin_user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('campaign_id')->constrained('linkedin_campaigns')->onDelete('cascade');
+            $table->foreignId('campaign_id')->nullable()->constrained('linkedin_campaigns')->onDelete('cascade');
             $table->foreignId('job_id')->nullable()->constrained('jobs')->onDelete('set null');
             $table->string('type');
             $table->json('content');
             $table->dateTime('scheduled_time');
-            $table->enum('status', ['queued', 'posted', 'failed'])->default('queued');
+            $table->enum('status', ['queued', 'posted', 'failed', 'draft'])->default('queued');
             $table->text('error')->nullable();
             $table->string('post_urn')->nullable();
             $table->timestamps();

@@ -325,7 +325,7 @@ export default {
                 infoData.append("telephone", this.userPhoneNumber);
                 infoData.append("nom_entreprise", this.nomEntreprise);
                 infoData.append("adresse_entreprise", this.adresseEntreprise);
-                // infoData.append("country_code", this.selectedCountry);
+                // infoData.append("country_code", this.selectedCountry); // RE-CHECK ON THIS
 
                 const infoResponse = await axios.post('/extra-info/add', infoData, {
                     headers: {

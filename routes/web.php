@@ -72,6 +72,7 @@ Route::middleware(['auth', 'verified', 'linkedin.valid', 'linkedin.account.exist
     Route::post('/linkedin/upload-media-binary', [LinkedInController::class, 'uploadMediaBinary']);
     Route::post('/linkedin/share-article', [LinkedInController::class, 'shareArticle']);
     Route::post('/linkedin/schedule-post', [LinkedInController::class, 'publish']);
+    Route::post('/linkedin/schedule-single-post', [LinkedInController::class, 'publishSinglePost']);
     Route::post('/linkedin/create-campaign', [LinkedInController::class, 'createCampaign']);
 });
 
@@ -96,6 +97,9 @@ Route::put('/linkedin/mark-as-read', [App\Http\Controllers\NotificationsControll
 // Route to Send a Boost Interaction Request to the Admin
 Route::post('/boost-interaction/request', [\App\Http\Controllers\DashboardController::class, 'requestBoostInteraction'])
     ->name('boost.interaction.request');
+
+    
+Route::get('/main/dashboard', [App\Http\Controllers\MainDashboardController::class, 'index'])->name('main.dashboard');
 
 // Admin Routes (without admin middleware)
 Route::middleware(['auth', 'verified','admin'])->prefix('admin')->group(function () {

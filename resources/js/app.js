@@ -25,6 +25,9 @@ import Toast from "vue-toastification";
 import "vue-toastification/dist/index.css";
 // Laravel Echo
 import "./echo"
+import UserPostsCard from "./components/UserPostsCard.vue";
+import LinkedinPost from "./components/LinkedinPost.vue";
+import PostPortal from "./components/PostPortal.vue";
 
 const app = createApp();
 
@@ -48,5 +51,8 @@ app.component("post-card", PostCard);
 app.component("kpi-list", KpiList);
 app.component("notification-card", NotificationCard);
 app.component("extra-info-form", ExtraInfoForm);
+app.component("user-posts-card", UserPostsCard);
+app.component("linkedin-post", LinkedinPost);
+app.component("post-portal", PostPortal);
 
 app.mount("#app");

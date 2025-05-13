@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use App\Models\ScheduledLinkedinPost;
 use App\Jobs\ScheduleLinkedInPost;
+use App\Jobs\ScheduleLinkedinSinglePost;
 use App\Jobs\CheckCampaignStartStatus;
 use App\Models\LinkedinCampaign;
 use Carbon\Carbon;
@@ -88,10 +89,11 @@ class LinkedInController extends Controller
         if (!$user->post_perm) {
             return response()->json([
                 'status' => 403,
-                'error' => 'You don\'t have permission to schedule a post'
+                'error' => 'Vous n\'avez pas la permission pour publier des Posts'
             ], 403);
         }
         
+        // TURN VALIDATION ERRORS INTO FRENCH LANGUAGE MANUALLY
         $validated = $request->validate([
             'linkedin_id' => 'required|exists:linkedin_users,id',
             'type' => 'required|in:text,image,video,article',
@@ -174,6 +176,97 @@ class LinkedInController extends Controller
         return response()->json(['message' => 'Post planifié avec succès']);
     }
 
+
+    // FUNCTION TO POST A SIGNLE POST WITHOUT ANY CAMPAIGN
+    public function publishSinglePost(Request $request) {
+        $user = Auth::user();
+
+        if (!$user->post_perm) {
+            return response()->json([
+                'status' => 403,
+                'error' => 'Vous n\'avez pas la permission pour planifier un post'
+            ], 403);
+        }
+        
+        $validated = $request->validate([
+            'linkedin_id' => 'required|exists:linkedin_users,id',
+            'type' => 'required|in:text,image,video,article',
+            'scheduled_date' => 'required|date|after:now',
+            'content' => 'required|array',
+        ]);
+        
+        switch ($validated['type']) {
+            case 'text':
+                $request->validate(['content.text' => 'required|string|max:3000']);
+                $content = ['text' => $validated['content']['text']];
+                break;
+
+            case 'image':
+            case 'video':
+                $request->validate([
+                    'content.file' => 'required|file|max:50000',
+                    'content.caption' => 'nullable|string',
+                    'content.original_filename' => 'required|string',
+                ]);
+                $file = $request->file('content.file');
+                $path = $file->store('', 'linkedin_media');
+                Log::info('Stored LinkedIn media', [
+                    'path' => $path,
+                    'full_path' => Storage::disk('linkedin_media')->path($path)
+                ]);
+                $content = [
+                    'file_path' => $path,
+                    'caption' => $validated['content']['caption'] ?? '',
+                    'original_filename' => $validated['content']['original_filename'],
+                ];
+                break;
+
+            case 'article':
+                $request->validate([
+                    'content.url' => 'required|url',
+                    'content.title' => 'required|string|max:200',
+                    'content.description' => 'nullable|string|max:500',
+                    'content.caption' => 'nullable|string',
+                ]);
+                $content = [
+                    'url' => $validated['content']['url'],
+                    'title' => $validated['content']['title'],
+                    'description' => $validated['content']['description'],
+                    'caption' => $validated['content']['caption'] ?? '',
+                ];
+                break;
+                
+            default:
+                return response()->json(['error' => 'Invalid post type'], 400);
+        }
+
+        $post = ScheduledLinkedinPost::create([
+            'user_id' => Auth::id(),
+            'linkedin_user_id' => $validated['linkedin_id'],
+            'campaign_id' => null,
+            'type' => $validated['type'],
+            'content' => json_encode($content),
+            'scheduled_time' => $validated['scheduled_date'],
+            'status' => 'queued',
+        ]);
+
+        ScheduleLinkedinSinglePost::dispatch($post)->delay(Carbon::parse($validated['scheduled_date']));
+        
+        if (config('queue.default') === 'database') {
+            $jobRecord = DB::table('jobs')
+                ->where('payload', 'like', '%ScheduleLinkedinSinglePost%')
+                ->where('payload', 'like', '%'.$post->id.'%')
+                ->orderBy('id', 'desc')
+                ->first();
+                
+            if ($jobRecord) {
+                $post->update(['job_id' => $jobRecord->id]);
+            }
+        }
+
+        return response()->json(['message' => 'Post planifié avec succès'], 200);
+
+    }
 
 
     /**
