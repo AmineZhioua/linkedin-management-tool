@@ -215,35 +215,35 @@
                             <!--/ Notification -->
                             <!-- User -->
                             <li class="nav-item navbar-dropdown dropdown-user dropdown">
-                                <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
-                                    <div class="avatar avatar-online">
-                                        <i class="fas fa-user-tie h-auto rounded-circle"></i>
-                                    </div>
-                                </a>
-                                <ul class="dropdown-menu dropdown-menu-end">
-                                    <li>
-                                        <a class="dropdown-item" href="javascript:void(0);">
-                                            <div class="d-flex">
-                                                <div class="flex-shrink-0 me-3">
-                                                    <div class="avatar avatar-online">
-                                                        <i class="fas fa-user-tie h-auto rounded-circle"></i>
-                                                    </div>
-                                                </div>
-                                                <div class="flex-grow-1">
-                                                    <span class="fw-medium d-block">{{ auth()->user()->name }}</span>
-                                                    <small class="text-muted">{{ ucfirst(auth()->user()->role) }}</small>
-                                                </div>
-                                            </div>
-                                        </a>
-                                    </li>
-                                    <li><div class="dropdown-divider"></div></li>
-                                    <li><a class="dropdown-item" href="{{ route('admin.profile') }}"><i class="ti ti-user-check me-2 ti-sm"></i><span class="align-middle">Profile</span></a></li>
-                                    <li><a class="dropdown-item" href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();"><i class="ti ti-logout me-2 ti-sm"></i><span class="align-middle">Log Out</span></a></li>
-                                    <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-                                        @csrf
-                                    </form>
-                                </ul>
-                            </li>
+    <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
+        <div class="avatar avatar-online">
+            <i class="fas fa-user-tie"></i>
+        </div>
+    </a>
+    <ul class="dropdown-menu dropdown-menu-end">
+        <li>
+            <a class="dropdown-item" href="javascript:void(0);">
+                <div class="d-flex">
+                    <div class="flex-shrink-0 me-3">
+                        <div class="avatar avatar-online">
+                            <i class="fas fa-user-tie"></i>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1">
+                        <span class="fw-medium d-block">{{ auth()->user()->name }}</span>
+                        <small class="text-muted">{{ ucfirst(auth()->user()->role) }}</small>
+                    </div>
+                </div>
+            </a>
+        </li>
+        <li><div class="dropdown-divider"></div></li>
+        <li><a class="dropdown-item" href="{{ route('admin.profile') }}"><i class="ti ti-user-check me-2 ti-sm"></i><span class="align-middle">Profile</span></a></li>
+        <li><a class="dropdown-item" href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();"><i class="ti ti-logout me-2 ti-sm"></i><span class="align-middle">Log Out</span></a></li>
+        <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+            @csrf
+        </form>
+    </ul>
+</li>
                             <!--/ User -->
                         </ul>
                     </div>

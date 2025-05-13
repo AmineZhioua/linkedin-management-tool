@@ -14,7 +14,7 @@
 
         <!-- WhatsApp Dashboard -->
         <a class="dropdown-item block px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200 border-b border-gray-100" 
-            href="{{ route('home') }}">
+            href="{{ route('welcome') }}">
             <div class="flex items-center gap-2">
                 <img src="/build/assets/icons/whatsapp-green.svg" alt="WhatsApp Icon" height="20" width="20" />
                 <span>WhatsApp Dashboard</span>

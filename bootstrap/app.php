@@ -19,6 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'update.last.activity' => \App\Http\Middleware\UpdateLastActivity::class,
             'check.additional.info' => \App\Http\Middleware\CheckAdditionalInfo::class,
             'check.post.number.kpi' => \App\Http\Middleware\CheckPostNumberForKpis::class,
+            'admin' => \App\Http\Middleware\Admin::class,
 
         ]);
     })

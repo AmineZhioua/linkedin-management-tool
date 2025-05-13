@@ -23,8 +23,6 @@ Route::get('auth/google/redirect', [GoogleController::class, 'redirect'])->name(
 Route::get('auth/google/callback', [GoogleController::class, 'callback']);
 
 // Home Page route with middleware for checking if user is verified and has subscription
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home')
-    ->middleware(['verified', 'auth', 'check.subscriptions', 'check.additional.info']);
 
 // Route for Handling Subscription page, Payment and Cancelation
 Route::middleware(['auth', 'verified', 'check.additional.info'])->group(function () {
@@ -100,7 +98,7 @@ Route::post('/boost-interaction/request', [\App\Http\Controllers\DashboardContro
     ->name('boost.interaction.request');
 
 // Admin Routes (without admin middleware)
-Route::middleware(['auth', 'verified'])->prefix('admin')->group(function () {
+Route::middleware(['auth', 'verified','admin'])->prefix('admin')->group(function () {
     Route::get('/dashboard', function () {
         return view('admin');
     })->name('admin.dashboard');
