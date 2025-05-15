@@ -136,8 +136,9 @@
             :selected-account="selectedAccount"
             :selected-post="selectedPost"
             :all-linkedin-accounts="userLinkedinAccounts"
+            :campaign-post-error="campaignPostError"
             :on-save="saveChanges"
-            @close="showCampaignPostPortal = false; selectedPost = null"
+            @close="showCampaignPostPortal = false; selectedPost = null; campaignPostError = ''"
         />
     </div>
 </template>
@@ -175,6 +176,7 @@ export default {
             descriptionCampagne: '',
             couleurCampagne: '',
             nomCampagne: '',
+            campaignPostError: '',
         };
     },
 
@@ -246,42 +248,42 @@ export default {
             const end = new Date(this.campaignEndDateTime);
 
             if (scheduled < now) {
-                console.error("Cannot schedule a post in the past");
+                this.campaignPostError = "La date de publication ne peut pas être dans le passé!";
                 return;
             }
             if (scheduled < start || scheduled > end) {
-                console.error("Scheduled time must be within campaign dates");
+                this.campaignPostError = `La date de publication doit être comprise entre ${this.campaignDateTimeOutput(this.campaignStartDateTime)} et ${this.campaignDateTimeOutput(this.campaignEndDateTime)} !`;
                 return;
             }
 
             // Validation logic (unchanged)
             if (updatedPost.type === "text" && updatedPost.content.text.trim() === "") {
-                console.log('Text cannot be empty');
+                this.campaignPostError = "Le contenu du post ne peut pas être vide !";
                 return;
             } else if (updatedPost.type === "text" && updatedPost.content.text.length > 3000) {
-                console.log('Text exceeds 3000 characters');
+                this.campaignPostError = "Le contenu du post ne peut pas dépasser 3000 caractères !";
                 return;
             } else if (updatedPost.type === "text" && updatedPost.content.text.length < 50) {
-                console.log('Text must be at least 50 characters');
+                this.campaignPostError = "Le contenu du post doit contenir au moins 50 caractères !";
                 return;
             }
             if ((updatedPost.type === "image" || updatedPost.type === "video") && !updatedPost.content.file) {
-                console.log('File required for image/video');
+                this.campaignPostError = "Veuillez sélectionner un fichier pour le publier !";
                 return;
             }
             if (updatedPost.type === "article") {
                 const { url, title } = updatedPost.content;
                 if (!url.trim() || !title.trim()) {
-                    console.log('URL and title required for article');
+                    this.campaignPostError = "Veuillez remplir au moins l'URL et le titre de l'article.";
                     return;
                 } else if (!url.startsWith("https://")) {
-                    console.log('URL must start with https://');
+                    this.campaignPostError = "L'URL de l'article doit commencer par 'https://'";
                     return;
                 } else if (title.length > 200) {
-                    console.log('Title exceeds 200 characters');
+                    this.campaignPostError = "Le titre de l'article ne peut pas dépasser 200 caractères !";
                     return;
                 } else if (title.length < 5) {
-                    console.log('Title must be at least 5 characters');
+                    this.campaignPostError = "Le titre de l'article doit contenir au moins 5 caractères !";
                     return;
                 }
             }
@@ -291,7 +293,6 @@ export default {
                 postToSave.content = { ...updatedPost.content };
                 if (updatedPost.content.file) {
                     postToSave.content.file = updatedPost.content.file;
-                    console.log('Saving file:', postToSave.content.file);
                 }
             }
 
@@ -323,6 +324,19 @@ export default {
             this.descriptionCampagne = formData.descriptionCampagne;
             this.couleurCampagne = formData.couleurCampagne;
             this.nomCampagne = formData.nomCampagne;
+        },
+
+        // Refine the date output for the campaign start & end dates
+        campaignDateTimeOutput(date) {
+            const dateTime = new Date(date);
+            
+            const year = dateTime.getFullYear();
+            const month = String(dateTime.getMonth() + 1).padStart(2, '0');
+            const day = String(dateTime.getDate()).padStart(2, '0');
+            const hours = String(dateTime.getHours()).padStart(2, '0');
+            const minutes = String(dateTime.getMinutes()).padStart(2, '0');
+            
+            return `${month}/${day}/${year} ${hours}:${minutes}`;
         },
     },
 }

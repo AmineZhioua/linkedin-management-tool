@@ -148,6 +148,17 @@
                 <!-- Display the Generated Posts -->
                 <div class="flex flex-col gap-2 min-w-[400px] items-start" v-if="currentStep === 2">
                     <h3 class="text-lg">Les Posts de votre Campagne :</h3>
+
+                    <p v-if="submissionError" class="text-red-500 text-sm mb-2 w-full px-2 py-3 rounded-lg bg-red-200">
+                        <i class="fa-solid fa-circle-exclamation mx-2 text-xl" style="color: red;"></i>
+                        {{ submissionError }}
+                    </p>
+
+                    <p v-if="successMessage" class="text-white text-sm mb-2 px-2 py-3 w-full rounded-lg bg-green-500">
+                        <i class="fa-solid fa-circle-check text-xl mx-2 text-green-200"></i>
+                        {{ successMessage }}
+                    </p>
+
                     <div class="flex flex-col w-full items-center gap-2 max-h-[400px] overflow-y-scroll">
                         <div 
                             v-for="post in postCards" 
@@ -165,18 +176,38 @@
                         </div>
                     </div>
 
-                    <button 
-                        class="bg-gray-300 rounded-lg px-3 py-2 mt-4"
-                        @click="prevStep"
-                    >
-                        Précédent
-                    </button>
+                    <div class="flex items-center justify-between w-full">
+                        <button 
+                            class="bg-gray-300 rounded-lg px-3 py-2 mt-4"
+                            @click="prevStep"
+                        >
+                            Précédent
+                        </button>
+
+                        <!-- Loader Spinner -->
+                        <button
+                            v-if="isSubmitting"
+                            class="bg-white rounded-lg px-3 py-2 mt-4 loader"
+                        >
+                        </button>
+
+                        <button
+                            v-else
+                            class="bg-blue-500 text-white rounded-lg px-3 py-2 mt-4"
+                            :disabled="!areAllPostsValid"
+                            @click="submitAllPosts"
+                        >
+                            Commencez la campagne
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
   </template>
   
 <script>
+import axios from 'axios';
+
 export default {
     name: 'CampaignPortal',
     props: {
@@ -195,6 +226,9 @@ export default {
 
         return {
             currentStep: 1,
+            isSubmitting: false,
+            submissionError: null,
+            successMessage: null,
             todayDate: this.formatDateTime(today),
             startDate: this.formatDateTime(today),
             endDate: this.formatDateTime(tomorrow),
@@ -311,6 +345,34 @@ export default {
                 couleurCampagne: this.couleurCampagne,
                 nomCampagne: this.nomCampagne,
             };
+        },
+
+        areAllPostsValid() {
+            return this.postCards.every((post) => {
+                if (!post.scheduledDateTime) {
+                    return false;
+                }
+
+                const postDateTime = new Date(post.scheduledDateTime);
+                const startDateTime = new Date(this.campaignStartDateTime);
+                const endDateTime = new Date(this.campaignEndDateTime);
+
+                if (postDateTime < startDateTime || postDateTime > endDateTime) {
+                    return false;
+                }
+
+                switch (post.type) {
+                    case "text":
+                        return post.content.text.trim() !== "";
+                    case "image":
+                    case "video":
+                        return !!post.content.file;
+                    case "article":
+                        return !!post.content.url;
+                    default:
+                        return false;
+                }
+            });
         },
     },
 
@@ -501,6 +563,120 @@ export default {
                 endDate: this.endDate
             });
         },
+
+        // SUBMIT, VALIDATE & SCHEDULE MEDIA METHODS
+        async submitAllPosts() {
+            this.isSubmitting = true;
+            this.submissionError = null;
+
+            try {
+                if (!this.isTokenValid()) {
+                    this.submissionError = "Votre jeton d'accès LinkedIn a expiré. Veuillez reconnecter votre compte.";
+                    this.isSubmitting = false;
+                    return;
+                }
+
+                const sortedPosts = [...this.postCards].sort((a, b) => {
+                    return new Date(a.scheduledDateTime) - new Date(b.scheduledDateTime);
+                });
+
+                const campaignFormData = new FormData();
+
+                campaignFormData.append("linkedin_id", this.selectedAccount.id);
+                campaignFormData.append("name", this.nomCampagne);
+                campaignFormData.append("description", this.descriptionCampagne || '');
+                campaignFormData.append("target_audience", this.selectedCible);
+                campaignFormData.append("frequency_per_day", this.frequenceParJour);
+                campaignFormData.append("couleur", this.couleurCampagne);
+                campaignFormData.append("start_date", this.startDate);
+                campaignFormData.append("end_date", this.endDate);
+
+                const campaignResponse = await axios.post("/linkedin/create-campaign", campaignFormData, {
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                        "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
+                    },
+                });
+
+                if(campaignResponse.data.status !== 201) {
+                    throw new Error("Échec de la création de la campagne");
+                }
+                    
+                const campaignId = campaignResponse.data.id;
+                
+
+                for(const post of sortedPosts) {
+                    let formData = new FormData();
+                    formData.append("linkedin_id", this.selectedAccount.id);
+                    formData.append("type", post.type);
+                    formData.append("scheduled_date", post.scheduledDateTime);
+                    formData.append("campaign_id", campaignId);
+
+                    switch (post.type) {
+                        case "text":
+                            formData.append("content[text]", post.content.text.trim());
+                            break;
+                        case "image":
+                        case "video":
+                            formData.append("content[file]", post.content.file);
+                            formData.append("content[caption]", post.content.caption.trim());
+                            formData.append("content[original_filename]", post.content.file.name);
+                            break;
+                        case "article":
+                            formData.append("content[url]", post.content.url);
+                            formData.append("content[title]", post.content.title);
+                            formData.append("content[description]", post.content.description);
+                            formData.append("content[caption]", post.content.caption.trim());
+                            break;
+                        default:
+                            throw new Error("Type de publication invalide");
+                    }
+
+                    await axios.post("/linkedin/schedule-post", formData, {
+                        headers: {
+                            "Content-Type": "multipart/form-data",
+                            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
+                        },
+                    });
+                }
+
+                // this.showSuccessPopup = true;
+                this.successMessage = "Tous vos posts ont été programmés avec succès!";
+
+                // Redirect to the Dasboard
+                setTimeout(() => {
+                    window.location = "/dashboard/linkedin";
+                }, 2000)
+            } catch (error) {
+                console.error("Error submitting posts:", error);
+                if (error.response?.status === 401 || 
+                    (error.response?.data?.error && error.response?.data?.error.toLowerCase().includes("token")) ||
+                    (error.message && error.message.toLowerCase().includes("token"))) {
+                    this.submissionError = "Votre jeton d'accès LinkedIn a expiré. Veuillez reconnecter votre compte.";
+                } else if (error.response?.data?.error) {
+                    this.submissionError = error.response.data.error;
+                } else if (error.response?.data?.message) {
+                    this.submissionError = error.response.data.message;
+                } else if (error.message) {
+                    this.submissionError = error.message;
+                } else {
+                    this.submissionError = "Une erreur s'est produite lors de la publication des posts";
+                }
+            } finally {
+                this.isSubmitting = false;
+            }
+        },
+
+
+        isTokenValid() {
+            if(!this.selectedAccount) {
+                return false;
+            }
+            const tokenExpirationDate = new Date(this.selectedAccount.expire_at);
+            const now = new Date();
+            
+            return tokenExpirationDate > now;
+        },
     },
 };
 </script>
@@ -517,5 +693,23 @@ export default {
 
 ::-webkit-scrollbar-thumb {
     background: linear-gradient(135deg, rgb(255 16 185) 0%, rgb(255 125 82) 100%);
+}
+
+.loader {
+    border: 5px solid rgba(128, 128, 128, 0.411);
+    border-radius: 50%;
+    border-top: 5px solid gray;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
 }
 </style>

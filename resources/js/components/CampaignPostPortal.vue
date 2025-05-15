@@ -31,6 +31,15 @@
                     </select>
                 </div>
 
+                <!-- Error Messages -->
+                <p 
+                    v-if="campaignPostError" 
+                    class="bg-red-200 text-red-500 py-2 px-3 rounded-lg mb-0"
+                >
+                    <i class="fa-solid fa-circle-exclamation mr-2 text-xl" style="color: red;"></i>
+                    <span class="text-md">{{ campaignPostError }}</span>
+                </p>
+
                 <!-- LinkedIn Icon & Textarea -->
                 <div class="w-full flex gap-2 relative">
                     <div 
@@ -321,6 +330,11 @@ export default {
             type: String,
         },
 
+        campaignPostError: {
+            type: String,
+            required: true,
+        },
+
         onSave: Function,
     },
 
@@ -331,6 +345,7 @@ export default {
 
         return {
             postToEdit: this.deepCopyPost(this.selectedPost),
+            postError: this.campaignPostError, 
             imagePreviewUrl: null,
             videoPreviewUrl: null,
             postTypes: [
@@ -344,35 +359,33 @@ export default {
     },
 
     watch: {
-    selectedPost: {
-        handler(newPost) {
-            this.postToEdit = this.deepCopyPost(newPost);
-            console.log('Watcher: newPost.content:', newPost.content);
-            if (newPost.content.file) {
-                if (newPost.type === 'image') {
-                    this.imagePreviewUrl = URL.createObjectURL(newPost.content.file);
-                    // console.log('Set imagePreviewUrl from file:', this.imagePreviewUrl);
-                } else if (newPost.type === 'video') {
-                    this.videoPreviewUrl = URL.createObjectURL(newPost.content.file);
-                    // console.log('Set videoPreviewUrl from file:', this.videoPreviewUrl);
+        selectedPost: {
+            handler(newPost) {
+                this.postToEdit = this.deepCopyPost(newPost);
+                if (newPost.content.file) {
+                    if (newPost.type === 'image') {
+                        this.imagePreviewUrl = URL.createObjectURL(newPost.content.file);
+                        // console.log('Set imagePreviewUrl from file:', this.imagePreviewUrl);
+                    } else if (newPost.type === 'video') {
+                        this.videoPreviewUrl = URL.createObjectURL(newPost.content.file);
+                        // console.log('Set videoPreviewUrl from file:', this.videoPreviewUrl);
+                    }
+                } else if (newPost.content.file_path) {
+                    if (newPost.type === 'image') {
+                        this.imagePreviewUrl = this.getMediaUrl(newPost.content.file_path);
+                        // console.log('Set imagePreviewUrl from file_path:', this.imagePreviewUrl);
+                    } else if (newPost.type === 'video') {
+                        this.videoPreviewUrl = this.getMediaUrl(newPost.content.file_path);
+                        // console.log('Set videoPreviewUrl from file_path:', this.videoPreviewUrl);
+                    }
+                } else {
+                    this.imagePreviewUrl = null;
+                    this.videoPreviewUrl = null;
                 }
-            } else if (newPost.content.file_path) {
-                if (newPost.type === 'image') {
-                    this.imagePreviewUrl = this.getMediaUrl(newPost.content.file_path);
-                    // console.log('Set imagePreviewUrl from file_path:', this.imagePreviewUrl);
-                } else if (newPost.type === 'video') {
-                    this.videoPreviewUrl = this.getMediaUrl(newPost.content.file_path);
-                    // console.log('Set videoPreviewUrl from file_path:', this.videoPreviewUrl);
-                }
-            } else {
-                this.imagePreviewUrl = null;
-                this.videoPreviewUrl = null;
-                console.log('No file or file_path, cleared preview URLs');
-            }
+            },
+            immediate: true,
         },
-        immediate: true,
     },
-},
     
 
     methods: {
@@ -452,9 +465,8 @@ export default {
 
         savePostChanges() {
             const postToSave = this.deepCopyPost(this.postToEdit);
-            
+
             this.onSave(postToSave);
-            this.confirmExit();
         },
 
         handleClose() {
