@@ -1,5 +1,5 @@
 <template>
-    <div class="bg-white rounded-lg h-fit py-2 relative">
+    <div class="bg-white rounded-lg h-fit py-2 relative shadow-md">
         <!-- Header of the Post Card -->
         <div class="flex items-center gap-2 px-3 py-2">
             <img 
@@ -45,7 +45,7 @@
 
                 <ul 
                     v-if="postDropdown"
-                    class="absolute border top-[30px] right-0 min-w-[150px] rounded-lg px-0 bg-white"
+                    class="absolute border top-[30px] right-0 min-w-[150px] rounded-lg px-0 bg-white z-50"
                 >
                     <li class="w-full text-center transition-all duration-200 px-4 py-3 hover:bg-gray-200">
                         <button 
@@ -241,6 +241,7 @@ export default {
         },
 
         async deletePost(postId) {
+            this.postDropdown = false;
             this.isLoading = true;
             try {
                 const response = await axios.delete("/linkedin/delete-post", {
@@ -268,6 +269,7 @@ export default {
         },
 
         isEditing() {
+            this.postDropdown = false;
             this.$emit('isEditing', this.post);
         },
     },  

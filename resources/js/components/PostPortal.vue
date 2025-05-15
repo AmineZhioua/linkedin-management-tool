@@ -106,7 +106,7 @@
                             <div v-if="newPost.content.file_path">
                                 <p>Current file:</p>
                                 <img v-if="newPost.type === 'image'" :src="getMediaUrl(newPost.content.file_path)" alt="Current Image" style="max-width: 100px;" />
-                                <video v-if="newPost.type === 'video'" controls style="max-width: 100px;">
+                                <video v-if="newPost.type === 'video'" controls style="max-width: 100px; z-index: 10;">
                                     <source :src="getMediaUrl(newPost.content.file_path)" type="video/mp4">
                                 </video>
                             </div>
@@ -165,7 +165,18 @@
                 <!-- Buttons -->
                 <div class="flex flex-row-reverse items-center justify-between gap-4">
                     <div class="flex flex-row-reverse items-center gap-2">
+                        <!-- Update Button -->
                         <button 
+                            v-if="selectedPost"
+                            @click="updatePost"
+                            class="bg-blue-600 text-white py-2 px-3 rounded-md text-md fw-semibold"
+                        >
+                            Modifier
+                        </button>
+
+                        <!-- Schedule Button -->
+                        <button 
+                            v-else
                             @click="submitSinglePost"
                             class="bg-blue-600 text-white py-2 px-3 rounded-md text-md fw-semibold"
                         >
@@ -238,7 +249,7 @@
 
                 <!-- Preview Content -->
                 <!-- Text Type Preview -->
-                <div v-if="newPost.type === 'text'" class="px-2 my-2">
+                <div v-if="newPost.type === 'text'" class="px-2 my-2 max-h-[300px] overflow-y-scroll">
                     <p class="mb-0 text-black">{{ newPost.content.text }}</p>
                 </div>
 
@@ -316,7 +327,7 @@
             v-if="showConfirmExit"
             class="absolute w-full h-full inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" 
             @click.self="showConfirmExit = false"
-        > 
+        >
             <div class="absolute bg-white p-4 rounded-lg">
                 <h3 class="text-xl fw-bold mb-4">Annuler les Modifications ?</h3>
                 <p style="font-size: 15px;">Vous perdrez définitivement toutes les modifications que vous avez apportées</p>
@@ -332,6 +343,7 @@
 <script>
 import axios from 'axios';
 import { useToast } from "vue-toastification";
+import Swal from 'sweetalert2';
 
 export default {
     name: 'PostPortal',
@@ -388,9 +400,12 @@ export default {
         selectedPost: {
             handler(newPost) {
                 if (newPost) {
-                    const parsedContent = JSON.parse(newPost.content || '{}');
+                    const parsedContent = typeof newPost.content === 'string' ? JSON.parse(newPost.content) : newPost.content || {};
+                    
+                    let scheduledDateTime = this.utcToLocalForInput(newPost.scheduled_date);
+                    
                     this.newPost = {
-                        scheduledDateTime: newPost.scheduled_date,
+                        scheduledDateTime: scheduledDateTime,
                         type: newPost.type,
                         content: {
                             text: parsedContent.text || '',
@@ -431,7 +446,6 @@ export default {
             immediate: true,
         },
     },
-
     methods: {
         selectLinkedinAccount(account) {
             this.selectedAccount = account;
@@ -450,6 +464,23 @@ export default {
 
         getMediaUrl(filePath) {
             return filePath ? `/linkedin/${filePath}` : '';
+        },
+
+        utcToLocalForInput(utcString) {
+            if (!utcString) return this.formatDateTime(new Date());
+            
+            const date = new Date(utcString);
+            if (isNaN(date.getTime())) {
+                console.error("Invalid date format:", utcString);
+                return this.formatDateTime(new Date());
+            }
+            
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            return `${year}-${month}-${day}T${hours}:${minutes}`;
         },
 
         handleFileUpload(event) {
@@ -619,6 +650,140 @@ export default {
                         rtl: false
                     });
                 }
+            }
+        },
+
+        async updatePost() {
+            try {
+                if (!this.isTokenValid()) {
+                    return;
+                }
+
+                const updateData = new FormData();
+
+                updateData.append("post_id", this.selectedPost.id);
+                updateData.append("linkedin_user_id", this.selectedAccount.id);
+                updateData.append('job_id', this.selectedPost.job_id);
+                updateData.append("type", this.newPost.type);
+                updateData.append("scheduled_time", this.newPost.scheduledDateTime);
+                
+                let contentObj = {};
+                
+                let existingContent = {};
+                try {
+                    if (this.selectedPost.content) {
+                        existingContent = JSON.parse(this.selectedPost.content);
+                    }
+                } catch (e) {
+                    console.warn("Failed to parse existing content:", e);
+                }
+                
+                contentObj = { ...existingContent };
+                
+                switch (this.newPost.type) {
+                    case "text":
+                        if (this.newPost.content.text.trim() === '') {
+                            this.toast.error(`Le contenu du post ne peut pas être vide`, {
+                                position: "bottom-right",
+                                timeout: 3000,
+                                closeOnClick: true,
+                                pauseOnFocusLoss: true,
+                                pauseOnHover: true,
+                                draggable: true,
+                                draggablePercent: 0.6,
+                                showCloseButtonOnHover: false,
+                                hideProgressBar: false,
+                                closeButton: "button",
+                                icon: true,
+                                rtl: false
+                            });
+                            return;
+                        }
+                        contentObj.text = this.newPost.content.text.trim();
+                        break;
+                        
+                    case "image":
+                    case "video":
+                        contentObj.caption = this.newPost.content.caption.trim();
+                        
+                        if (this.newPost.content.file) {
+                            contentObj.original_filename = this.newPost.content.file.name;
+                        } 
+                        else if (this.newPost.content.file_path) {
+                            contentObj.file_path = this.newPost.content.file_path;
+
+                            if (!contentObj.original_filename) {
+                                contentObj.original_filename = contentObj.file_path.split('/').pop() || 'file';
+                            }
+                        }
+                        break;
+                        
+                    case "article":
+                        contentObj.url = this.newPost.content.url;
+                        contentObj.title = this.newPost.content.title;
+                        contentObj.description = this.newPost.content.description;
+                        contentObj.caption = this.newPost.content.caption.trim();
+                        break;
+                }
+
+                updateData.append("content", JSON.stringify(contentObj));
+                updateData.append('_method', 'PUT');
+
+                if (this.newPost.content.file) {
+                    updateData.append('file', this.newPost.content.file);
+                }
+
+                const updateResponse = await axios.post('/linkedin/update-post', updateData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    },
+                });
+
+                if (updateResponse.status === 200) {
+                    Swal.fire({
+                        icon: "success",
+                        html: `<p class='fw-semibold'>Post mis à jour avec succès !</p>`,
+                        allowOutsideClick: false,
+                        timer: 3000,
+                        timerProgressBar: true,
+                        showConfirmButton: false,
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                } else {
+                    throw new Error("Failed to update post");
+                }
+            } catch (error) {
+                console.error("Error updating post:", error);
+                
+                if (error.response) {
+                    console.error("Response data:", error.response.data);
+                    console.error("Response status:", error.response.status);
+                    console.error("Response headers:", error.response.headers);
+                }
+                
+                let errorMessage = "Une erreur s'est produite lors de la mise à jour du post.";
+                if (error.response?.data?.errors) {
+                    errorMessage = Object.values(error.response.data.errors).join(' ');
+                } else if (error.response?.data?.message) {
+                    errorMessage = error.response.data.message;
+                }
+                
+                this.toast.error(errorMessage, {
+                    position: "bottom-right",
+                    timeout: 3000,
+                    closeOnClick: true,
+                    pauseOnFocusLoss: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    draggablePercent: 0.6,
+                    showCloseButtonOnHover: false,
+                    hideProgressBar: false,
+                    closeButton: "button",
+                    icon: true,
+                    rtl: false
+                });
             }
         },
 

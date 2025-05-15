@@ -1,132 +1,132 @@
 <template>
     <div class="w-[80%]">
-      <h1 class="text-center text-lg font-bold mb-4">Formulaire du Campagne</h1>
-      <form>
-        <!-- Durée du Campagne -->
-        <div class="flex flex-col md:flex-row justify-between gap-4 mb-4">
-          <!-- Date de Debut -->
-          <div class="w-full">
-            <label for="startDate" class="block text-md mb-2">
-              Date de Début <span class="text-red-500">*</span> :
-            </label>
-            <input
-                type="datetime-local"
-                id="startDate"
-                v-model="startDate"
-                class="w-full border rounded-lg p-2 mb-1"
-                :class="{'border-red-500': startDateErrorMessage}"
-                :min="todayDate"
-                @change="updateDates"
-            />
-            <p v-if="startDateErrorMessage" class="text-red-500 text-sm mb-2">
-                {{ startDateErrorMessage }}
-            </p>
-          </div>
-  
-          <!-- Date de Fin -->
-          <div class="w-full">
-            <label for="endDate" class="block text-md mb-2">
-              Date de Fin <span class="text-red-500">*</span> :
-            </label>
-            <input
-                type="datetime-local"
-                id="endDate"
-                v-model="endDate"
-                class="w-full border rounded-lg p-2 mb-1"
-                :class="{'border-red-500': endDateErrorMessage}"
-                :min="startDate"
-            />
-            <p v-if="endDateErrorMessage" class="text-red-500 text-sm mb-2">
-              {{ endDateErrorMessage }}
-            </p>
-          </div>
-        </div>
-  
-        <!-- Audience Cible -->
-        <div class="mb-4">
-            <label for="cible" class="block text-md mb-2">
-                Choissisez votre Audience cible <span class="text-red-500">*</span> :
-            </label>
-            <select
-                id="cible"
-                v-model="selectedCible"
-                class="w-full border rounded-lg p-2 mb-1"
-                :class="{'border-red-500': cibleErrorMessage}"
-            >
-                <option value="" disabled>Choisissez votre audience</option>
-                <option v-for="cible in cibles" :key="cible.id" :value="cible.id">
-                    {{ cible.name }}
-                </option>
-            </select>
-            <p v-if="cibleErrorMessage" class="text-red-500 text-sm mb-2">
-                {{ cibleErrorMessage }}
-            </p>
-        </div>
-  
-        <!-- Frequence des Posts -->
-        <div class="mb-4">
-            <label for="frequence" class="block text-md mb-2">Fréquence des Posts <span style="color: red;">*</span> :</label>
-            <div class="relative">
-                <input
-                    type="number"
-                    id="frequence"
-                    v-model="frequenceParJour"
-                    class="w-full border rounded-lg p-2 px-4"
-                    placeholder="Nombre de Posts"
-                    min="1"
-                    max="10"
-                />
-                <button
-                    class="bg-black text-white absolute right-0 top-0 bottom-0 py-2 px-3"
-                    style="border-top-right-radius: 8px; border-bottom-right-radius: 8px;"
-                    disabled
+        <h1 class="text-center text-lg font-bold mb-4">Formulaire du Campagne</h1>
+        <form>
+            <!-- Durée du Campagne -->
+            <div class="flex flex-col md:flex-row justify-between gap-4 mb-4">
+                <!-- Date de Debut -->
+                <div class="w-full">
+                    <label for="startDate" class="block text-md mb-2">
+                        Date de Début <span class="text-red-500">*</span> :
+                    </label>
+                    <input
+                        type="datetime-local"
+                        id="startDate"
+                        v-model="startDate"
+                        class="w-full border rounded-lg p-2 mb-1"
+                        :class="{'border-red-500': startDateErrorMessage}"
+                        :min="todayDate"
+                        @change="updateDates"
+                    />
+                    <p v-if="startDateErrorMessage" class="text-red-500 text-sm mb-2">
+                        {{ startDateErrorMessage }}
+                    </p>
+                </div>
+        
+                <!-- Date de Fin -->
+                <div class="w-full">
+                    <label for="endDate" class="block text-md mb-2">
+                    Date de Fin <span class="text-red-500">*</span> :
+                    </label>
+                    <input
+                        type="datetime-local"
+                        id="endDate"
+                        v-model="endDate"
+                        class="w-full border rounded-lg p-2 mb-1"
+                        :class="{'border-red-500': endDateErrorMessage}"
+                        :min="startDate"
+                    />
+                    <p v-if="endDateErrorMessage" class="text-red-500 text-sm mb-2">
+                    {{ endDateErrorMessage }}
+                    </p>
+                </div>
+            </div>
+    
+            <!-- Audience Cible -->
+            <div class="mb-4">
+                <label for="cible" class="block text-md mb-2">
+                    Choissisez votre Audience cible <span class="text-red-500">*</span> :
+                </label>
+                <select
+                    id="cible"
+                    v-model="selectedCible"
+                    class="w-full border rounded-lg p-2 mb-1"
+                    :class="{'border-red-500': cibleErrorMessage}"
                 >
-                    par Jour
-                </button>
+                    <option value="" disabled>Choisissez votre audience</option>
+                    <option v-for="cible in cibles" :key="cible.id" :value="cible.id">
+                        {{ cible.name }}
+                    </option>
+                </select>
+                <p v-if="cibleErrorMessage" class="text-red-500 text-sm mb-2">
+                    {{ cibleErrorMessage }}
+                </p>
             </div>
-        </div>
+    
+            <!-- Frequence des Posts -->
+            <div class="mb-4">
+                <label for="frequence" class="block text-md mb-2">Fréquence des Posts <span style="color: red;">*</span> :</label>
+                <div class="relative">
+                    <input
+                        type="number"
+                        id="frequence"
+                        v-model="frequenceParJour"
+                        class="w-full border rounded-lg p-2 px-4"
+                        placeholder="Nombre de Posts"
+                        min="1"
+                        max="10"
+                    />
+                    <button
+                        class="bg-black text-white absolute right-0 top-0 bottom-0 py-2 px-3"
+                        style="border-top-right-radius: 8px; border-bottom-right-radius: 8px;"
+                        disabled
+                    >
+                        par Jour
+                    </button>
+                </div>
+            </div>
 
-        <div class="flex items-center flex-wrap gap-5">
-            <!-- Nom de Campagne -->
-            <div class="mb-2 flex-1">
-                <label for="couleurCampgne" class="block text-md mb-2">Nom de Campagne <span style="color: red;">*</span> :</label>
-                <input
-                    type="text"
-                    id="nomCampagne"
-                    v-model="nomCampagne"
-                    placeholder="e.g: Campagne de Noël"
-                    class="min-w-[300px] w-full h-[50px] border rounded-xl p-3 bg-white mb-1"
-                />
+            <div class="flex items-center flex-wrap gap-5">
+                <!-- Nom de Campagne -->
+                <div class="mb-2 flex-1">
+                    <label for="couleurCampgne" class="block text-md mb-2">Nom de Campagne <span style="color: red;">*</span> :</label>
+                    <input
+                        type="text"
+                        id="nomCampagne"
+                        v-model="nomCampagne"
+                        placeholder="e.g: Campagne de Noël"
+                        class="min-w-[300px] w-full h-[50px] border rounded-xl p-3 bg-white mb-1"
+                    />
+                </div>
+                <!-- Couleur du Campagne -->
+                <div class="mb-2">
+                    <label for="couleurCampgne" class="block text-md mb-2">Choissisez un couleur spécial <span style="color: red;">*</span> :</label>
+                    <input
+                        type="color"
+                        id="couleurCampgne"
+                        v-model="couleurCampagne"
+                        class="min-w-[300px] max-w-[500px] h-[50px] border rounded-xl p-2 bg-white mb-1"
+                    />
+                </div>
             </div>
-            <!-- Couleur du Campagne -->
-            <div class="mb-2">
-                <label for="couleurCampgne" class="block text-md mb-2">Choissisez un couleur spécial <span style="color: red;">*</span> :</label>
-                <input
-                    type="color"
-                    id="couleurCampgne"
-                    v-model="couleurCampagne"
-                    class="min-w-[300px] max-w-[500px] h-[50px] border rounded-xl p-2 bg-white mb-1"
-                />
-            </div>
-        </div>
-  
-        <!-- Description du Campagne -->
-        <div class="mb-4">
-            <label for="descriptionCampagne" class="block text-md mb-2">Description <span style="color: red;">*</span> :</label>
-            <textarea
-                id="descriptionCampagne"
-                v-model="descriptionCampagne"
-                class="w-full border rounded-lg p-3 h-32"
-                placeholder="Décrivez votre Campagne ici..."
-                min="10"
-                max="500"
-            ></textarea>
 
-            <p v-if="descriptionErrorMessage" class="text-red-500 text-sm mb-2">
-                {{ descriptionErrorMessage }}
-            </p>
-        </div>
-      </form>
+            <!-- Description du Campagne -->
+            <div class="mb-4">
+                <label for="descriptionCampagne" class="block text-md mb-2">Description <span style="color: red;">*</span> :</label>
+                <textarea
+                    id="descriptionCampagne"
+                    v-model="descriptionCampagne"
+                    class="w-full border rounded-lg p-3 h-32"
+                    placeholder="Décrivez votre Campagne ici..."
+                    min="10"
+                    max="500"
+                ></textarea>
+
+                <p v-if="descriptionErrorMessage" class="text-red-500 text-sm mb-2">
+                    {{ descriptionErrorMessage }}
+                </p>
+            </div>
+        </form>
     </div>
   </template>
   
@@ -299,7 +299,6 @@ export default {
             const now = new Date();
             this.todayDate = this.formatDateTime(now);
             
-            // If user hasn't selected an end date yet, update it based on start date
             if (this.startDate && (!this.endDate || new Date(this.endDate) < new Date(this.startDate))) {
                 const suggestedStart = new Date(this.startDate);
                 const suggestedEnd = new Date(suggestedStart);

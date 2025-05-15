@@ -28,6 +28,8 @@ import "./echo"
 import UserPostsCard from "./components/UserPostsCard.vue";
 import LinkedinPost from "./components/LinkedinPost.vue";
 import PostPortal from "./components/PostPortal.vue";
+import CampaignPortal from "./components/CampaignPortal.vue";
+import CampaignPostPortal from "./components/CampaignPostPortal.vue";
 
 const app = createApp();
 
@@ -54,5 +56,7 @@ app.component("extra-info-form", ExtraInfoForm);
 app.component("user-posts-card", UserPostsCard);
 app.component("linkedin-post", LinkedinPost);
 app.component("post-portal", PostPortal);
+app.component("campaign-portal", CampaignPortal);
+app.component("campaign-post-portal", CampaignPostPortal);
 
 app.mount("#app");
