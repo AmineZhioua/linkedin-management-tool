@@ -14,6 +14,11 @@ Route::get('/', function () {
     return view('welcome');
 })->name('welcome');
 
+// Route for the suspension page
+Route::get('/suspended', function () {
+    return view('suspend');
+})->name('suspended');
+
 Auth::routes([
     'verify' => true,
 ]);
@@ -22,10 +27,8 @@ Auth::routes([
 Route::get('auth/google/redirect', [GoogleController::class, 'redirect'])->name('google-auth');
 Route::get('auth/google/callback', [GoogleController::class, 'callback']);
 
-// Home Page route with middleware for checking if user is verified and has subscription
-
 // Route for Handling Subscription page, Payment and Cancelation
-Route::middleware(['auth', 'verified', 'check.additional.info'])->group(function () {
+Route::middleware(['auth', 'verified', 'check.additional.info', 'suspend'])->group(function () {
     Route::post('/session', [StripeController::class, 'session'])->name('session');
     Route::get('/success', [StripeController::class, 'success'])->name('success');
     Route::get('/cancel', [StripeController::class, 'cancel'])->name('cancel');
@@ -36,7 +39,7 @@ Route::middleware(['auth', 'verified', 'check.additional.info'])->group(function
 });
 
 // Routes & Middleware for the User Additional Information Page and requests
-Route::middleware(['auth', 'verified'])->group(function() {
+Route::middleware(['auth', 'verified', 'suspend'])->group(function() {
     // Route for ADDITIONAL INFORMATION
     Route::get('/user/additional-infomation', [App\Http\Controllers\InfoFormController::class, 'index'])->name('additional.info');
     // Route for the post request
@@ -44,7 +47,7 @@ Route::middleware(['auth', 'verified'])->group(function() {
 });
 
 // LinkedIn Auth Page Routes
-Route::middleware(['auth', 'verified', 'linkedin.valid', 'check.additional.info'])->group(function() {
+Route::middleware(['auth', 'verified', 'linkedin.valid', 'check.additional.info', 'suspend'])->group(function() {
     Route::get('/login-linkedin', [LinkedInController::class, 'index'])->name('login-linkedin');
     Route::get('/linkedin/auth', [LinkedInController::class, 'redirect'])->name('linkedin.auth');
     Route::get('/linkedin/callback', [LinkedInController::class, 'callback'])->name('linkedin.callback');
@@ -58,14 +61,14 @@ Route::middleware(['auth', 'verified', 'linkedin.valid', 'check.additional.info'
 });
 
 // Routes for "Plateforme de Marque" Page
-Route::middleware(['auth', 'verified', 'check.subscriptions', 'check.additional.info'])->group(function() {
+Route::middleware(['auth', 'verified', 'check.subscriptions', 'check.additional.info', 'suspend'])->group(function() {
     Route::get('/plateforme-marque', [App\Http\Controllers\PlateformeMarqueController::class, 'index'])->name('plateforme-marque');
     Route::post('/save-platform-info', [App\Http\Controllers\PlateformeMarqueController::class, 'store'])->name('plateforme.store');
     Route::get('/marque', [App\Http\Controllers\PlateformeMarqueController::class, 'showMarque'])->name('marque.show');
 });
 
 // Routes for "Linkedin Post" Page
-Route::middleware(['auth', 'verified', 'linkedin.valid', 'linkedin.account.exist', 'check.additional.info'])->group(function() {
+Route::middleware(['auth', 'verified', 'linkedin.valid', 'linkedin.account.exist', 'check.additional.info', 'suspend'])->group(function() {
     Route::get('/linkedin-post', [App\Http\Controllers\LinkedinPostController::class, 'index'])->name('linkedin-post');
     Route::post('/linkedin/post-text', [LinkedInController::class, 'postTextOnly']);
     Route::post('/linkedin/registermedia', [LinkedInController::class, 'registerMedia']);
@@ -98,11 +101,10 @@ Route::put('/linkedin/mark-as-read', [App\Http\Controllers\NotificationsControll
 Route::post('/boost-interaction/request', [\App\Http\Controllers\DashboardController::class, 'requestBoostInteraction'])
     ->name('boost.interaction.request');
 
-    
-Route::get('/main/dashboard', [App\Http\Controllers\MainDashboardController::class, 'index'])->name('main.dashboard');
+Route::get('/main/dashboard', [App\Http\Controllers\MainDashboardController::class, 'index'])->name('main.dashboard')->middleware('suspend');
 
-// Admin Routes (without admin middleware)
-Route::middleware(['auth', 'verified','admin'])->prefix('admin')->group(function () {
+// Admin Routes (with admin middleware)
+Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->group(function () {
     Route::get('/dashboard', function () {
         return view('admin');
     })->name('admin.dashboard');
@@ -149,4 +151,6 @@ Route::middleware(['auth', 'verified','admin'])->prefix('admin')->group(function
 
     Route::get('/profile', [UserController::class, 'profile'])->name('admin.profile');
     Route::put('/profile', [UserController::class, 'updateProfile'])->name('admin.profile.update');
+    Route::post('/users/suspend', [UserController::class, 'suspend'])->name('admin.users.suspend');
+    Route::post('/users/remove-suspension', [UserController::class, 'removeSuspension'])->name('admin.users.remove-suspension');
 });

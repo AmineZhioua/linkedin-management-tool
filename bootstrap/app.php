@@ -20,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'check.additional.info' => \App\Http\Middleware\CheckAdditionalInfo::class,
             'check.post.number.kpi' => \App\Http\Middleware\CheckPostNumberForKpis::class,
             'admin' => \App\Http\Middleware\Admin::class,
+            'suspend' => \App\Http\Middleware\CheckSuspended::class,
 
         ]);
     })

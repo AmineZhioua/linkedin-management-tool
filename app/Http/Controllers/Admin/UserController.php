@@ -52,6 +52,7 @@ class UserController extends Controller
             'post_perm' => ['required', 'boolean'],
             'boost_perm' => ['required', 'boolean'],
             'image' => ['nullable', 'string', 'max:255'],
+            'suspend_end' => ['nullable', 'date', 'after_or_equal:today'],
         ]);
 
         User::create([
@@ -60,8 +61,9 @@ class UserController extends Controller
             'password' => Hash::make($request->password),
             'role' => $request->role,
             'post_perm' => $request->post_perm,
-            'boost_perm' => $request->boost_perm, // Fixed typo
+            'boost_perm' => $request->boost_perm,
             'image' => $request->image,
+            'suspend_end' => $request->suspend_end,
         ]);
 
         // Clear user-related caches
@@ -99,6 +101,7 @@ class UserController extends Controller
             'boost_perm' => ['required', 'boolean'],
             'image' => ['nullable', 'string', 'max:255'],
             'password' => ['nullable', 'confirmed', Rules\Password::defaults()],
+            'suspend_end' => ['nullable', 'date', 'after_or_equal:today'],
         ]);
 
         $data = [
@@ -108,6 +111,7 @@ class UserController extends Controller
             'post_perm' => $request->post_perm,
             'boost_perm' => $request->boost_perm,
             'image' => $request->image,
+            'suspend_end' => $request->suspend_end,
         ];
 
         if ($request->filled('password')) {
@@ -168,6 +172,7 @@ class UserController extends Controller
             'post_perm' => ['required', 'boolean'],
             'boost_perm' => ['required', 'boolean'],
             'password' => ['nullable', 'confirmed', Rules\Password::defaults()],
+            'suspend_end' => ['nullable', 'date', 'after_or_equal:today'],
         ]);
 
         $data = [
@@ -176,6 +181,7 @@ class UserController extends Controller
             'role' => $request->role,
             'post_perm' => $request->post_perm,
             'boost_perm' => $request->boost_perm,
+            'suspend_end' => $request->suspend_end,
         ];
 
         if ($request->filled('password')) {
@@ -189,5 +195,54 @@ class UserController extends Controller
         Cache::flush(); // Clear all caches
 
         return redirect()->route('admin.profile')->with('success', 'Profile updated successfully.');
+    }
+
+    /**
+     * Suspend a user by setting the suspension end date.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function suspend(Request $request)
+    {
+        $request->validate([
+            'user_id' => ['required', 'exists:users,id'],
+            'suspend_date' => ['required', 'date', 'after_or_equal:today'],
+        ]);
+
+        $user = User::findOrFail($request->user_id);
+        $user->update([
+            'suspend_end' => $request->suspend_date,
+        ]);
+
+        // Clear user-related caches
+        Cache::forget('active_users_count');
+        Cache::flush(); // Clear all caches
+
+        return redirect()->route('admin.users.index')->with('success', 'User suspended successfully.');
+    }
+
+    /**
+     * Remove suspension from a user by setting suspend_end to null.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function removeSuspension(Request $request)
+    {
+        $request->validate([
+            'user_id' => ['required', 'exists:users,id'],
+        ]);
+
+        $user = User::findOrFail($request->user_id);
+        $user->update([
+            'suspend_end' => null,
+        ]);
+
+        // Clear user-related caches
+        Cache::forget('active_users_count');
+        Cache::flush(); // Clear all caches
+
+        return redirect()->route('admin.users.index')->with('success', 'User suspension removed successfully.');
     }
 }
