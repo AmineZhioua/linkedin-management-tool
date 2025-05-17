@@ -29,6 +29,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'boost_perm',
         'image',
         'last_activity',
+        'suspend_end',
     ];
 
     /**
@@ -54,6 +55,7 @@ class User extends Authenticatable implements MustVerifyEmail
             'post_perm' => 'boolean',
             'boost_perm' => 'boolean',
             'last_activity' => 'datetime',
+            'suspend_end' => 'datetime',
         ];
     }
 
@@ -101,6 +103,20 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
+     * Scope a query to get non-suspended users.
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeNotSuspended($query)
+    {
+        return $query->where(function ($query) {
+            $query->whereNull('suspend_end')
+                  ->orWhere('suspend_end', '<', now());
+        });
+    }
+
+    /**
      * Get cached users with optional search.
      *
      * @param string|null $search
@@ -114,6 +130,7 @@ class User extends Authenticatable implements MustVerifyEmail
             return static::filter($search)->paginate(10);
         });
     }
+
     /**
      * Get the count of active users in the current hour, cached.
      *
@@ -122,7 +139,17 @@ class User extends Authenticatable implements MustVerifyEmail
     public static function getActiveUsersCount()
     {
         return Cache::remember('active_users_count', now()->addMinutes(5), function () {
-            return static::activeInCurrentHour()->count();
+            return static::activeInCurrentHour()->notSuspended()->count();
         });
+    }
+
+    /**
+     * Check if the user is currently suspended.
+     *
+     * @return bool
+     */
+    public function isSuspended()
+    {
+        return $this->suspend_end && now()->lessThan($this->suspend_end);
     }
 }

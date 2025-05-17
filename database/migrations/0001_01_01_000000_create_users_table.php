@@ -24,6 +24,7 @@ return new class extends Migration
             $table->boolean('boost_perm')->default(false)->comment('Permission to boost interactions');
             $table->string('image')->nullable()->comment('Profile image URL');
             $table->timestamp('last_activity')->nullable()->index()->comment('Last user activity timestamp');
+            $table->timestamp('suspend_end')->nullable()->comment('Timestamp when suspension ends, null if not suspended');
             $table->rememberToken()->comment('Token for remember me functionality');
             $table->timestamp('created_at')->nullable()->comment('Record creation timestamp');
             $table->timestamp('updated_at')->nullable()->comment('Record update timestamp');

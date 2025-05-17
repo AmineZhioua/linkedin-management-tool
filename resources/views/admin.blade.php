@@ -215,35 +215,35 @@
                             <!--/ Notification -->
                             <!-- User -->
                             <li class="nav-item navbar-dropdown dropdown-user dropdown">
-    <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
-        <div class="avatar avatar-online">
-            <i class="fas fa-user-tie"></i>
-        </div>
-    </a>
-    <ul class="dropdown-menu dropdown-menu-end">
-        <li>
-            <a class="dropdown-item" href="javascript:void(0);">
-                <div class="d-flex">
-                    <div class="flex-shrink-0 me-3">
-                        <div class="avatar avatar-online">
-                            <i class="fas fa-user-tie"></i>
-                        </div>
-                    </div>
-                    <div class="flex-grow-1">
-                        <span class="fw-medium d-block">{{ auth()->user()->name }}</span>
-                        <small class="text-muted">{{ ucfirst(auth()->user()->role) }}</small>
-                    </div>
-                </div>
-            </a>
-        </li>
-        <li><div class="dropdown-divider"></div></li>
-        <li><a class="dropdown-item" href="{{ route('admin.profile') }}"><i class="ti ti-user-check me-2 ti-sm"></i><span class="align-middle">Profile</span></a></li>
-        <li><a class="dropdown-item" href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();"><i class="ti ti-logout me-2 ti-sm"></i><span class="align-middle">Log Out</span></a></li>
-        <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-            @csrf
-        </form>
-    </ul>
-</li>
+                                <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
+                                    <div class="avatar avatar-online">
+                                        <i class="fas fa-user-tie"></i>
+                                    </div>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li>
+                                        <a class="dropdown-item" href="javascript:void(0);">
+                                            <div class="d-flex">
+                                                <div class="flex-shrink-0 me-3">
+                                                    <div class="avatar avatar-online">
+                                                        <i class="fas fa-user-tie"></i>
+                                                    </div>
+                                                </div>
+                                                <div class="flex-grow-1">
+                                                    <span class="fw-medium d-block">{{ auth()->user()->name }}</span>
+                                                    <small class="text-muted">{{ ucfirst(auth()->user()->role) }}</small>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </li>
+                                    <li><div class="dropdown-divider"></div></li>
+                                    <li><a class="dropdown-item" href="{{ route('admin.profile') }}"><i class="ti ti-user-check me-2 ti-sm"></i><span class="align-middle">Profile</span></a></li>
+                                    <li><a class="dropdown-item" href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();"><i class="ti ti-logout me-2 ti-sm"></i><span class="align-middle">Log Out</span></a></li>
+                                    <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                                        @csrf
+                                    </form>
+                                </ul>
+                            </li>
                             <!--/ User -->
                         </ul>
                     </div>
@@ -478,6 +478,7 @@
                                                     <th>Role</th>
                                                     <th>Post Permission</th>
                                                     <th>Boost Permission</th>
+                                                    <th>Suspension End</th>
                                                     <th>Last Activity</th>
                                                     <th>Actions</th>
                                                 </tr>
@@ -499,14 +500,25 @@
                                                                 {{ $user->boost_perm ? 'Yes' : 'No' }}
                                                             </span>
                                                         </td>
+                                                        <td>{{ $user->suspend_end ? $user->suspend_end->format('Y-m-d') : 'None' }}</td>
                                                         <td>{{ $user->last_activity ? $user->last_activity->format('Y-m-d H:i:s') : 'Never' }}</td>
                                                         <td>
                                                             <a href="{{ route('admin.users.edit', $user) }}" class="btn btn-sm btn-outline-primary me-2">Edit</a>
                                                             <form action="{{ route('admin.users.destroy', $user) }}" method="POST" style="display: inline;">
                                                                 @csrf
                                                                 @method('DELETE')
-                                                                <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure?')">Delete</button>
+                                                                <button type="submit" class="btn btn-sm btn-outline-danger me-2" onclick="return confirm('Are you sure?')">Delete</button>
                                                             </form>
+                                                            <button type="button" class="btn btn-sm btn-outline-warning me-2 suspend-btn" data-bs-toggle="modal" data-bs-target="#suspendModal" data-user-id="{{ $user->id }}" data-user-name="{{ $user->name }}">
+                                                                Suspend
+                                                            </button>
+                                                            @if ($user->suspend_end)
+                                                                <form action="{{ route('admin.users.remove-suspension') }}" method="POST" style="display: inline;">
+                                                                    @csrf
+                                                                    <input type="hidden" name="user_id" value="{{ $user->id }}">
+                                                                    <button type="submit" class="btn btn-sm btn-outline-success" onclick="return confirm('Are you sure you want to remove the suspension for {{ $user->name }}?')">Remove Suspension</button>
+                                                                </form>
+                                                            @endif
                                                         </td>
                                                     </tr>
                                                 @endforeach
@@ -517,6 +529,46 @@
                                         </div>
                                     </div>
                                 </div>
+
+                                <!-- Suspend Modal -->
+                                <div class="modal fade" id="suspendModal" tabindex="-1" aria-labelledby="suspendModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="suspendModalLabel">Suspend User</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <form id="suspendForm" action="{{ route('admin.users.suspend') }}" method="POST">
+                                                    @csrf
+                                                    <input type="hidden" name="user_id" id="suspendUserId">
+                                                    <div class="mb-3">
+                                                        <label for="suspendDate" class="form-label">Select Suspension End Date</label>
+                                                        <input type="date" class="form-control" name="suspend_date" id="suspendDate" required min="{{ now()->format('Y-m-d') }}">
+                                                    </div>
+                                                    <p>Are you sure you want to suspend <strong id="suspendUserName"></strong> until the selected date?</p>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                        <button type="submit" class="btn btn-warning">Suspend</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- JavaScript for Modal -->
+                                <script>
+                                    document.querySelectorAll('.suspend-btn').forEach(button => {
+                                        button.addEventListener('click', function() {
+                                            const userId = this.getAttribute('data-user-id');
+                                            const userName = this.getAttribute('data-user-name');
+                                            document.getElementById('suspendUserId').value = userId;
+                                            document.getElementById('suspendUserName').textContent = userName;
+                                            document.getElementById('suspendDate').value = ''; // Reset date field
+                                        });
+                                    });
+                                </script>
                             @endif
                         @show
 
@@ -1012,10 +1064,10 @@
                                                 @foreach ($userSubscriptions ?? [] as $userSubscription)
                                                     <tr>
                                                         <td>{{ $userSubscription->id }}</td>
-                                                        <td>{{ $userSubscription->user->name ?? 'Unknown User' }}</td>
-                                                        <td>{{ $userSubscription->subscription->name ?? 'Unknown Subscription' }}</td>
+                                                        <td>{{ $userSubscription->user->name ?? 'N/A' }}</td>
+                                                        <td>{{ $userSubscription->subscription->name ?? 'N/A' }}</td>
                                                         <td>{{ ucfirst($userSubscription->pricing_mode) }}</td>
-                                                        <td>{{ $userSubscription->date_expiration ? $userSubscription->date_expiration->format('Y-m-d') : 'Unlimited' }}</td>
+                                                        <td>{{ $userSubscription->expires_at ? $userSubscription->expires_at->format('Y-m-d') : 'N/A' }}</td>
                                                         <td>
                                                             <a href="{{ route('admin.subscriptions.active.edit', $userSubscription) }}" class="btn btn-sm btn-outline-primary me-2">Edit</a>
                                                             <form action="{{ route('admin.subscriptions.active.destroy', $userSubscription) }}" method="POST" style="display: inline;">
@@ -1049,8 +1101,8 @@
                                                 <label for="user_id" class="form-label">User</label>
                                                 <select class="form-select" name="user_id" id="user_id" required>
                                                     <option value="">Select a user</option>
-                                                    @foreach ($users as $user)
-                                                        <option value="{{ $user->id }}">{{ $user->name }}</option>
+                                                    @foreach (\App\Models\User::all() as $user)
+                                                        <option value="{{ $user->id }}">{{ $user->name }} ({{ $user->email }})</option>
                                                     @endforeach
                                                 </select>
                                                 @error('user_id')
@@ -1061,7 +1113,7 @@
                                                 <label for="subscription_id" class="form-label">Subscription</label>
                                                 <select class="form-select" name="subscription_id" id="subscription_id" required>
                                                     <option value="">Select a subscription</option>
-                                                    @foreach ($subscriptions as $subscription)
+                                                    @foreach (\App\Models\Subscription::all() as $subscription)
                                                         <option value="{{ $subscription->id }}">{{ $subscription->name }}</option>
                                                     @endforeach
                                                 </select>
@@ -1080,9 +1132,9 @@
                                                 @enderror
                                             </div>
                                             <div class="mb-3">
-                                                <label for="date_expiration" class="form-label">Expiration Date (leave blank for unlimited)</label>
-                                                <input type="date" class="form-control" name="date_expiration" id="date_expiration">
-                                                @error('date_expiration')
+                                                <label for="expires_at" class="form-label">Expiration Date</label>
+                                                <input type="date" class="form-control" name="expires_at" id="expires_at" required>
+                                                @error('expires_at')
                                                     <div class="text-danger mt-1">{{ $message }}</div>
                                                 @enderror
                                             </div>
@@ -1110,8 +1162,10 @@
                                                 <label for="user_id" class="form-label">User</label>
                                                 <select class="form-select" name="user_id" id="user_id" required>
                                                     <option value="">Select a user</option>
-                                                    @foreach ($users as $user)
-                                                        <option value="{{ $user->id }}" {{ $userSubscription->user_id === $user->id ? 'selected' : '' }}>{{ $user->name }}</option>
+                                                    @foreach (\App\Models\User::all() as $user)
+                                                        <option value="{{ $user->id }}" {{ $userSubscription->user_id == $user->id ? 'selected' : '' }}>
+                                                            {{ $user->name }} ({{ $user->email }})
+                                                        </option>
                                                     @endforeach
                                                 </select>
                                                 @error('user_id')
@@ -1122,8 +1176,10 @@
                                                 <label for="subscription_id" class="form-label">Subscription</label>
                                                 <select class="form-select" name="subscription_id" id="subscription_id" required>
                                                     <option value="">Select a subscription</option>
-                                                    @foreach ($subscriptions as $subscription)
-                                                        <option value="{{ $subscription->id }}" {{ $userSubscription->subscription_id === $subscription->id ? 'selected' : '' }}>{{ $subscription->name }}</option>
+                                                    @foreach (\App\Models\Subscription::all() as $subscription)
+                                                        <option value="{{ $subscription->id }}" {{ $userSubscription->subscription_id == $subscription->id ? 'selected' : '' }}>
+                                                            {{ $subscription->name }}
+                                                        </option>
                                                     @endforeach
                                                 </select>
                                                 @error('subscription_id')
@@ -1133,17 +1189,17 @@
                                             <div class="mb-3">
                                                 <label for="pricing_mode" class="form-label">Pricing Mode</label>
                                                 <select class="form-select" name="pricing_mode" id="pricing_mode" required>
-                                                    <option value="monthly" {{ $userSubscription->pricing_mode === 'monthly' ? 'selected' : '' }}>Monthly</option>
-                                                    <option value="yearly" {{ $userSubscription->pricing_mode === 'yearly' ? 'selected' : '' }}>Yearly</option>
+                                                    <option value="monthly" {{ $userSubscription->pricing_mode == 'monthly' ? 'selected' : '' }}>Monthly</option>
+                                                    <option value="yearly" {{ $userSubscription->pricing_mode == 'yearly' ? 'selected' : '' }}>Yearly</option>
                                                 </select>
                                                 @error('pricing_mode')
                                                     <div class="text-danger mt-1">{{ $message }}</div>
                                                 @enderror
                                             </div>
                                             <div class="mb-3">
-                                                <label for="date_expiration" class="form-label">Expiration Date (leave blank for unlimited)</label>
-                                                <input type="date" class="form-control" name="date_expiration" id="date_expiration" value="{{ old('date_expiration', $userSubscription->date_expiration ? $userSubscription->date_expiration->format('Y-m-d') : '') }}">
-                                                @error('date_expiration')
+                                                <label for="expires_at" class="form-label">Expiration Date</label>
+                                                <input type="date" class="form-control" name="expires_at" id="expires_at" value="{{ $userSubscription->expires_at ? $userSubscription->expires_at->format('Y-m-d') : '' }}" required>
+                                                @error('expires_at')
                                                     <div class="text-danger mt-1">{{ $message }}</div>
                                                 @enderror
                                             </div>
@@ -1170,11 +1226,8 @@
                                                 <tr>
                                                     <th>ID</th>
                                                     <th>Code</th>
-                                                    <th>Discount</th>
-                                                    <th>Type</th>
-                                                    <th>Expires At</th>
-                                                    <th>Created At</th>
-                                                    <th>Updated At</th>
+                                                    <th>Discount (%)</th>
+                                                    <th>Expiration Date</th>
                                                     <th>Actions</th>
                                                 </tr>
                                             </thead>
@@ -1183,11 +1236,8 @@
                                                     <tr>
                                                         <td>{{ $coupon->id }}</td>
                                                         <td>{{ $coupon->code }}</td>
-                                                        <td>{{ number_format($coupon->discount, 2) }} {{ $coupon->type === 'percentage' ? '%' : 'USD' }}</td>
-                                                        <td>{{ ucfirst($coupon->type) }}</td>
-                                                        <td>{{ $coupon->expires_at ? $coupon->expires_at->format('Y-m-d') : 'Never' }}</td>
-                                                        <td>{{ $coupon->created_at->format('Y-m-d H:i:s') }}</td>
-                                                        <td>{{ $coupon->updated_at->format('Y-m-d H:i:s') }}</td>
+                                                        <td>{{ number_format($coupon->discount, 2) }}</td>
+                                                        <td>{{ $coupon->expires_at ? $coupon->expires_at->format('Y-m-d') : 'N/A' }}</td>
                                                         <td>
                                                             <a href="{{ route('admin.coupons.edit', $coupon) }}" class="btn btn-sm btn-outline-primary me-2">Edit</a>
                                                             <form action="{{ route('admin.coupons.destroy', $coupon) }}" method="POST" style="display: inline;">
@@ -1222,24 +1272,14 @@
                                                 @enderror
                                             </div>
                                             <div class="mb-3">
-                                                <label for="discount" class="form-label">Discount</label>
+                                                <label for="discount" class="form-label">Discount (%)</label>
                                                 <input type="number" step="0.01" class="form-control" name="discount" id="discount" required>
                                                 @error('discount')
                                                     <div class="text-danger mt-1">{{ $message }}</div>
                                                 @enderror
                                             </div>
                                             <div class="mb-3">
-                                                <label for="type" class="form-label">Type</label>
-                                                <select class="form-select" name="type" id="type" required>
-                                                    <option value="percentage">Percentage</option>
-                                                    <option value="fixed">Fixed</option>
-                                                </select>
-                                                @error('type')
-                                                    <div class="text-danger mt-1">{{ $message }}</div>
-                                                @enderror
-                                            </div>
-                                            <div class="mb-3">
-                                                <label for="expires_at" class="form-label">Expires At (leave blank for no expiration)</label>
+                                                <label for="expires_at" class="form-label">Expiration Date</label>
                                                 <input type="date" class="form-control" name="expires_at" id="expires_at">
                                                 @error('expires_at')
                                                     <div class="text-danger mt-1">{{ $message }}</div>
@@ -1273,24 +1313,14 @@
                                                 @enderror
                                             </div>
                                             <div class="mb-3">
-                                                <label for="discount" class="form-label">Discount</label>
+                                                <label for="discount" class="form-label">Discount (%)</label>
                                                 <input type="number" step="0.01" class="form-control" name="discount" id="discount" value="{{ old('discount', $coupon->discount) }}" required>
                                                 @error('discount')
                                                     <div class="text-danger mt-1">{{ $message }}</div>
                                                 @enderror
                                             </div>
                                             <div class="mb-3">
-                                                <label for="type" class="form-label">Type</label>
-                                                <select class="form-select" name="type" id="type" required>
-                                                    <option value="percentage" {{ $coupon->type === 'percentage' ? 'selected' : '' }}>Percentage</option>
-                                                    <option value="fixed" {{ $coupon->type === 'fixed' ? 'selected' : '' }}>Fixed</option>
-                                                </select>
-                                                @error('type')
-                                                    <div class="text-danger mt-1">{{ $message }}</div>
-                                                @enderror
-                                            </div>
-                                            <div class="mb-3">
-                                                <label for="expires_at" class="form-label">Expires At (leave blank for no expiration)</label>
+                                                <label for="expires_at" class="form-label">Expiration Date</label>
                                                 <input type="date" class="form-control" name="expires_at" id="expires_at" value="{{ old('expires_at', $coupon->expires_at ? $coupon->expires_at->format('Y-m-d') : '') }}">
                                                 @error('expires_at')
                                                     <div class="text-danger mt-1">{{ $message }}</div>
@@ -1309,15 +1339,8 @@
                         @section('boostinteractions-index')
                             @if (Route::is('admin.boostinteractions.index'))
                                 <div class="card">
-                                    <div class="card-header d-flex align-items-center justify-content-between">
-                                        <h5 class="card-title m-0 me-2">Boost Interactions</h5>
-                                        <div class="d-flex align-items-center">
-                                            <select class="form-select" id="statusFilter" style="width: 200px;">
-                                                <option value="pending" {{ request('status', 'pending') === 'pending' ? 'selected' : '' }}>Pending</option>
-                                                <option value="accepted" {{ request('status') === 'accepted' ? 'selected' : '' }}>Accepted</option>
-                                                <option value="declined" {{ request('status') === 'declined' ? 'selected' : '' }}>Declined</option>
-                                            </select>
-                                        </div>
+                                    <div class="card-header">
+                                        <h5 class="card-title m-0 me-2">Boost Interaction Requests</h5>
                                     </div>
                                     <div class="table-responsive">
                                         <table class="table table-borderless border-top">
@@ -1327,32 +1350,40 @@
                                                     <th>User</th>
                                                     <th>Post URL</th>
                                                     <th>Status</th>
+                                                    <th>Created At</th>
                                                     <th>Actions</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                @foreach ($boostinteractions ?? [] as $boostinteraction)
+                                                @foreach ($boostInteractions ?? [] as $boostInteraction)
                                                     <tr>
-                                                        <td>{{ $boostinteraction->id }}</td>
-                                                        <td>{{ $boostinteraction->user->name ?? 'Unknown User' }}</td>
-                                                        <td><a href="{{ $boostinteraction->post_url }}" target="_blank">{{ Illuminate\Support\Str::limit($boostinteraction->post_url, 30) }}</a></td>
-                                                        <td>{{ ucfirst($boostinteraction->status) }}</td>
+                                                        <td>{{ $boostInteraction->id }}</td>
+                                                        <td>{{ $boostInteraction->user->name ?? 'N/A' }}</td>
                                                         <td>
-                                                            @if ($boostinteraction->status === 'pending')
-                                                                <form action="{{ route('admin.boostinteractions.update', $boostinteraction) }}" method="POST" style="display: inline;">
+                                                            <a href="{{ $boostInteraction->post_url }}" target="_blank">{{ Str::limit($boostInteraction->post_url, 30) }}</a>
+                                                        </td>
+                                                        <td>
+                                                            <span class="badge {{ $boostInteraction->status == 'pending' ? 'bg-warning' : ($boostInteraction->status == 'approved' ? 'bg-success' : 'bg-danger') }}">
+                                                                {{ ucfirst($boostInteraction->status) }}
+                                                            </span>
+                                                        </td>
+                                                        <td>{{ $boostInteraction->created_at->format('Y-m-d H:i:s') }}</td>
+                                                        <td>
+                                                            @if ($boostInteraction->status == 'pending')
+                                                                <form action="{{ route('admin.boostinteractions.update', $boostInteraction) }}" method="POST" style="display: inline;">
                                                                     @csrf
                                                                     @method('PUT')
-                                                                    <input type="hidden" name="status" value="accepted">
-                                                                    <button type="submit" class="btn btn-sm btn-outline-success me-2">Accept</button>
+                                                                    <input type="hidden" name="status" value="approved">
+                                                                    <button type="submit" class="btn btn-sm btn-outline-success me-2">Approve</button>
                                                                 </form>
-                                                                <form action="{{ route('admin.boostinteractions.update', $boostinteraction) }}" method="POST" style="display: inline;">
+                                                                <form action="{{ route('admin.boostinteractions.update', $boostInteraction) }}" method="POST" style="display: inline;">
                                                                     @csrf
                                                                     @method('PUT')
-                                                                    <input type="hidden" name="status" value="declined">
-                                                                    <button type="submit" class="btn btn-sm btn-outline-danger me-2">Decline</button>
+                                                                    <input type="hidden" name="status" value="rejected">
+                                                                    <button type="submit" class="btn btn-sm btn-outline-danger me-2">Reject</button>
                                                                 </form>
                                                             @endif
-                                                            <form action="{{ route('admin.boostinteractions.destroy', $boostinteraction) }}" method="POST" style="display: inline;">
+                                                            <form action="{{ route('admin.boostinteractions.destroy', $boostInteraction) }}" method="POST" style="display: inline;">
                                                                 @csrf
                                                                 @method('DELETE')
                                                                 <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure?')">Delete</button>
@@ -1362,19 +1393,38 @@
                                                 @endforeach
                                             </tbody>
                                         </table>
+                                        <div class="mt-3">
+                                            {{ $boostInteractions->links() }}
+                                        </div>
                                     </div>
                                 </div>
                             @endif
                         @show
+
                     </div>
                     <!-- / Content -->
-                    <!-- Footer -->
 
+                    <!-- Footer -->
+                    <footer class="content-footer footer bg-footer-theme">
+                        <div class="container-xxl">
+                            <div class="footer-container d-flex align-items-center justify-content-between py-2 flex-md-row flex-column">
+                                <div>
+                                    © <script>document.write(new Date().getFullYear())</script>, made with ❤️ by <a href="https://pixinvent.com" target="_blank" class="footer-link text-primary fw-medium">Pixinvent</a>
+                                </div>
+                                <div class="d-none d-lg-inline-block">
+                                    <a href="https://themeforest.net/licenses/standard" class="footer-link me-4" target="_blank">License</a>
+                                    <a href="https://1.envato.market/pixinvent_portfolio" target="_blank" class="footer-link me-4">More Themes</a>
+                                    <a href="https://demos.pixinvent.com/vuexy-html-admin-template/documentation/" target="_blank" class="footer-link me-4">Documentation</a>
+                                    <a href="https://pixinvent.ticksy.com/" target="_blank" class="footer-link d-none d-sm-inline-block">Support</a>
+                                </div>
+                            </div>
+                        </div>
+                    </footer>
                     <!-- / Footer -->
 
                     <div class="content-backdrop fade"></div>
                 </div>
-                <!-- Content wrapper -->
+                <!-- / Content wrapper -->
             </div>
             <!-- / Layout page -->
         </div>
@@ -1400,18 +1450,4 @@
 
     <!-- Vendors JS -->
     <script src="{{ asset('assets/vendor/libs/moment/moment.js') }}"></script>
-    <script src="{{ asset('assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js') }}"></script>
-    <script src="{{ asset('assets/vendor/libs/apex-charts/apexcharts.js') }}"></script>
-
-    <!-- Main JS -->
-    <script src="{{ asset('assets/js/main.js') }}"></script>
-
-    <!-- Custom JS for Boost Interactions Filter -->
-    <script>
-        document.getElementById('statusFilter')?.addEventListener('change', function(e) {
-            const status = e.target.value;
-            window.location.href = '{{ route('admin.boostinteractions.index') }}?status=' + status;
-        });
-    </script>
-</body>
-</html>
+    <script src="{{ asset('assets/vendor/libs/datatables-bs
