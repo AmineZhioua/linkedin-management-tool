@@ -81,6 +81,98 @@ class LinkedInController extends Controller
         }
     }
 
+
+    public function deleteCampaign(Request $request) {
+        $validated = $request->validate([
+            "campaign_id" => "required|integer|exists:linkedin_campaigns,id"
+        ]);
+    
+        $campaign = LinkedinCampaign::where("id", $validated["campaign_id"])->first();
+
+        if (!$campaign) {
+            return response()->json([
+                'message' => 'Campagne non trouvée'
+            ], 404);
+        }
+    
+        $campaignPosts = ScheduledLinkedinPost::where("campaign_id", $validated["campaign_id"])->get();
+        $linkedinUser = LinkedinUser::where("id", $campaign->linkedin_user_id)->first();
+
+        if (!$linkedinUser) {
+            return response()->json([
+                'message' => 'Utilisateur LinkedIn non trouvé'
+            ], 404);
+        }
+    
+        DB::beginTransaction();
+
+        try {
+            foreach ($campaignPosts as $post) {
+                if ($post->status === 'posted' && $post->post_urn) {
+
+                    $post_urn = $post->post_urn;
+
+                    $urnParts = explode(':', $post_urn);
+                    $shareId = end($urnParts);
+
+                    if (!is_numeric($shareId)) {
+                        throw new \Exception("Invalid share ID in post_urn: " . $post_urn);
+                    }
+
+                    if($post->type === "video") {
+                        $deleteUrl = "https://api.linkedin.com/v2/ugcPosts/".urlencode($post->post_urn);
+                    } else {
+                        $deleteUrl = "https://api.linkedin.com/v2/shares/".urlencode($post->post_urn);
+                    }
+
+                    $headers = [
+                        "Authorization: Bearer " . $linkedinUser->linkedin_token,
+                        "Content-Type: application/json",
+                        "X-Restli-Protocol-Version: 2.0.0",
+                        "LinkedIn-Version: 202501"
+                    ];
+    
+                    $curl = curl_init();
+                    curl_setopt_array($curl, [
+                        CURLOPT_URL => $deleteUrl,
+                        CURLOPT_RETURNTRANSFER => true,
+                        CURLOPT_CUSTOMREQUEST => "DELETE",
+                        CURLOPT_HTTPHEADER => $headers,
+                        CURLOPT_TIMEOUT => 1800
+                    ]);
+                
+                    $response = curl_exec($curl);
+                    $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+                    $errorMsg = curl_error($curl);
+                
+                    curl_close($curl);
+    
+                    if ($httpCode !== 200 || $httpCode !== 204) {
+                        throw new \Exception("Échec de la suppression du post sur LinkedIn:{$shareId}" . $response);
+                    }
+                }
+
+                $post->delete();
+            }
+    
+            $campaign->delete();
+    
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Campagne et posts supprimés avec succès'
+            ], 200);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'message' => 'Échec de la suppression de la campagne',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
     /**
      * Schedule a LinkedIn post with token expiration and validation.
     */
@@ -949,8 +1041,15 @@ class LinkedInController extends Controller
             'linkedin_user_id' => 'required|integer|exists:linkedin_users,id',
             'urn_id' => 'required|string'
         ]);
+
+        $post = ScheduledLinkedinPost::where("id", $validated["post_id"])->first();
     
-        $deleteUrl = "https://api.linkedin.com/v2/shares/" . $validated["urn_id"];
+        if($post->type === "video") {
+            $deleteUrl = "https://api.linkedin.com/v2/ugcPosts/".urlencode($post->post_urn);
+        } else {
+            $deleteUrl = "https://api.linkedin.com/v2/shares/".urlencode($post->post_urn);
+        }
+
         $linkedinUser = LinkedinUser::where("id", $validated['linkedin_user_id'])->first();
     
         if (!$linkedinUser) {
@@ -979,7 +1078,7 @@ class LinkedInController extends Controller
     
         curl_close($curl);
     
-        if ($httpCode === 200) {
+        if ($httpCode === 200 || $httpCode === 204) {
             try {
                 $post = ScheduledLinkedinPost::where('id', $validated['post_id'])->first();
     
@@ -987,11 +1086,11 @@ class LinkedInController extends Controller
                     $post->delete();
                     return response()->json(['message' => 'Post supprimé avec succès'], 200);
                 } else {
-                    return response()->json(['message' => 'Post non trouvé dans la base de données'], 404);
+                    return response()->json(['message' => 'Post non trouvé !'], 404);
                 }
             } catch (\Exception $e) {
                 return response()->json([
-                    'message' => 'Échec de la suppression du post dans la base de données',
+                    'message' => 'Échec de la suppression du post !',
                     'error' => $e->getMessage()
                 ], 500);
             }

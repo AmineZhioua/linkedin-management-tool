@@ -30,10 +30,37 @@ import LinkedinPost from "./components/LinkedinPost.vue";
 import PostPortal from "./components/PostPortal.vue";
 import CampaignPortal from "./components/CampaignPortal.vue";
 import CampaignPostPortal from "./components/CampaignPostPortal.vue";
+import PostView from "./components/PostView.vue";
+import CampaignDetails from "./components/CampaignDetails.vue";
+
+// Importing PrimeVue for UI Components
+import PrimeVue from 'primevue/config';
+import Aura from '@primeuix/themes/aura';
+
+// PrimeVue Components
+import 'primeicons/primeicons.css'
+import Button from "primevue/button"
+import Select from "primevue/select";
+import FloatLabel from "primevue/floatlabel";
+import DataTable from 'primevue/datatable';
+import Column from 'primevue/column';
+import ColumnGroup from 'primevue/columngroup';
+import Row from 'primevue/row';
+import DatePicker from "primevue/datepicker";
+import SplitButton from "primevue/splitbutton";
+import ScrollPanel from 'primevue/scrollpanel';
+
+
 
 const app = createApp();
 
 app.use(Toast);
+app.use(PrimeVue, {
+    theme: {
+        preset: Aura
+    }
+});
+
 app.component("subscription-cards", SubscriptionCards);
 app.component("popup", Popup);
 app.component("plateforme-card", PlateformeCard);
@@ -58,5 +85,20 @@ app.component("linkedin-post", LinkedinPost);
 app.component("post-portal", PostPortal);
 app.component("campaign-portal", CampaignPortal);
 app.component("campaign-post-portal", CampaignPostPortal);
+app.component("post-view", PostView);
+app.component("campaign-details", CampaignDetails);
+
+// PrimeVue Components
+app.component("Button", Button);
+app.component("Select", Select);
+app.component("FloatLabel", FloatLabel);
+app.component("DataTable", DataTable);
+app.component("Column", Column);
+app.component("ColumnGroup", ColumnGroup);
+app.component("Row", Row);
+app.component("DatePicker", DatePicker);
+app.component("SplitButton", SplitButton);
+app.component("ScrollPanel", ScrollPanel);
+
 
 app.mount("#app");

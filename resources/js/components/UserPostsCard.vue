@@ -47,17 +47,22 @@
 
             <!-- New Post & Campaign Buttons Section -->
             <div class="flex items-center gap-2">
-                <button @click="showPortal = true" class="cursor-pointer bg-blue-700 text-white px-3 py-2 rounded-md flex items-center gap-2">
+                <Button 
+                    @click="showPortal = true" 
+                    class="cursor-pointer bg-black text-white px-3 py-2 rounded-md flex items-center gap-2"
+                    style="border: 1px solid pink;"
+                >
                     <img src="/build/assets/icons/add-white.svg" alt="Add Icon" />
                     <span>Nouveau Post</span>
-                </button>
-                <button 
+                </Button>
+                <Button 
                     @click="openCampaignPortal"
-                    class="cursor-pointer bg-blue-700 text-white px-4 py-2 rounded-md flex items-center gap-2"
+                    class="cursor-pointer bg-black text-white px-4 py-2 rounded-md flex items-center gap-2"
+                    style="border: 1px solid pink;"
                 >
                     <img src="/build/assets/icons/add-white.svg" alt="Add Icon" />
                     <span>Nouveau Campagne</span>
-                </button>
+                </Button>
             </div>
         </div>
 
@@ -96,39 +101,230 @@
                 </button>
             </div>
 
-            <div class="flex items-center gap-2">
-                <button>Filtrer</button>
-                <button>Adjust</button>
+            <div class="flex items-center gap-4">
+                <FloatLabel class="w-full md:w-40" variant="over">
+                    <Select 
+                        v-model="view" 
+                        inputId="over_label" 
+                        :options="views" 
+                        optionLabel="name" 
+                        class="w-full" 
+                        variant="filled"
+                        style="background-color: black;"
+                    >
+                    </Select>
+                    <label for="over_label">Vue</label>
+                </FloatLabel>
             </div>
         </div>
 
         <!-- Posts Cards Container -->
-        <div class="grid grid-cols-4 gap-3 w-full h-full mt-4">
+        <div class="grid grid-cols-4 gap-3 w-full h-full mt-4" v-if="view && view.name === 'Cartes'">
             <linkedin-post 
                 v-for="post in filteredPosts" 
                 :key="post.id" 
                 :user-linkedin-accounts="userLinkedinAccounts" 
                 :post="post" 
-                @isEditing="handleEditPost"
+                @edit-post="editPost"
+                @delete-post="deletePost"
+                @delete-post-from-linkedin="deletePostFromLinkedIn"
             />
         </div>
+
+        <!-- DataTable for Tableau view -->
+        <!-- Posts DataTable -->
+        <div v-if="view && view.name === 'Tableau'" class="p-2 mt-5 rounded-xl" style="background-color: #18181b;">
+            <DataTable :value="userLinkedinPosts" paginator stripedRows :rows="10" 
+                :rowsPerPageOptions="[5, 10, 20, 50]" 
+                tableStyle="min-width: 50rem"
+                paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
+                currentPageReportTemplate="{first} to {last} of {totalRecords}"
+                class="mt-4 w-full"
+            >
+                <Column header="Compte">
+                    <template #body="slotProps">
+                        <div class="flex items-center gap-2">
+                            <img 
+                                :src="getProfilePicture(slotProps.data.linkedin_user_id)" 
+                                alt="Profile Picture" 
+                                class="rounded-full" 
+                                style="width: 32px; 
+                                height: 32px;" 
+                            />
+                            <span>{{ getUsername(slotProps.data.linkedin_user_id) }}</span>
+                        </div>
+                    </template>
+                </Column>
+                <Column header="Campagne">
+                    <template #body="slotProps">
+                        <div 
+                            class="p-1 rounded-lg text-center" 
+                            :style="{backgroundColor: getCampaignColor(slotProps.data.campaign_id)}"
+                        >
+                            {{ getCampaignName(slotProps.data.campaign_id) }}
+                        </div>
+                    </template>
+                </Column>
+
+                <Column field="type" header="Type"></Column>
+
+                <Column header="Scheduled Time">
+                    <template #body="slotProps">
+                        {{ formatDate(slotProps.data.scheduled_time) }}
+                    </template>
+                </Column>
+                <Column header="Statut">
+                    <template #body="slotProps">
+                        <div 
+                            class="p-1 rounded-lg text-center"
+                            :class="{
+                                'bg-blue-600 text-white': slotProps.data.status === 'queued',
+                                'bg-green-600 text-white': slotProps.data.status === 'posted',
+                                'bg-red-500 text-white': slotProps.data.status === 'failed',
+                                'bg-orange-500 text-white': slotProps.data.status === 'draft',
+                            }"
+                        >
+                            {{ translateStatus(slotProps.data.status) }}
+                        </div>
+                    </template>
+                </Column>
+                <Column header="Créé en">
+                    <template #body="slotProps">
+                        {{ formatDate(slotProps.data.created_at) }}
+                    </template>
+                </Column>
+                <Column header="Actions">
+                    <template #body="slotProps">
+                        <SplitButton 
+                            icon="pi pi-eye" 
+                            @click="openPostInReadMode(slotProps.data.id)" 
+                            :model="getItemsPostsDatatable(slotProps.data)" 
+                            style="color: red;" 
+                            severity="contrast" 
+                            rounded
+                        />
+                    </template>
+                </Column>
+            </DataTable>
+        </div>
+
+
+
+        <!-- Campaigns DataTable -->
+        <div v-if="view && view.name === 'Tableau'" class="p-2 mt-5 rounded-xl" style="background-color: #18181b;">
+            <DataTable :value="campaigns" paginator stripedRows :rows="10" 
+                :rowsPerPageOptions="[5, 10, 20, 50]" 
+                tableStyle="min-width: 50rem"
+                paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
+                currentPageReportTemplate="{first} to {last} of {totalRecords}"
+                class="mt-4 w-full"
+            >
+                <Column header="Compte">
+                    <template #body="slotProps">
+                        <div class="flex items-center gap-2">
+                            <img 
+                                :src="getProfilePicture(slotProps.data.linkedin_user_id)" 
+                                alt="Profile Picture" 
+                                class="rounded-full" 
+                                style="width: 32px; 
+                                height: 32px;" 
+                            />
+                            <span>{{ getUsername(slotProps.data.linkedin_user_id) }}</span>
+                        </div>
+                    </template>
+                </Column>
+                <Column header="Nom">
+                    <template #body="slotProps">
+                        <div class="text-center">
+                            {{ slotProps.data.name }}
+                        </div>
+                    </template>
+                </Column>
+
+                <Column field="target_audience" header="Audience"></Column>
+
+                <Column header="Date de début">
+                    <template #body="slotProps">
+                        {{ formatDate(slotProps.data.start_date) }}
+                    </template>
+                </Column>
+                <Column header="Date de fin">
+                    <template #body="slotProps">
+                        {{ formatDate(slotProps.data.end_date) }}
+                    </template>
+                </Column>
+                <Column header="Statut">
+                    <template #body="slotProps">
+                        <div 
+                            class="p-1 rounded-lg text-center"
+                            :class="{
+                                'bg-blue-600 text-white': slotProps.data.status === 'scheduled',
+                                'bg-green-600 text-white': slotProps.data.status === 'completed',
+                                'bg-red-500 text-white': slotProps.data.status === 'failed',
+                                'bg-orange-500 text-white': slotProps.data.status === 'draft',
+                            }"
+                        >
+                            {{ translateStatus(slotProps.data.status) }}
+                        </div>
+                    </template>
+                </Column>
+
+                <Column header="Fréquence">
+                    <template #body="slotProps">
+                        <div class="text-center">
+                            {{ slotProps.data.frequency_per_day }}
+                        </div>
+                    </template>
+                </Column>
+
+                <Column header="Couleur">
+                    <template #body="slotProps">
+                        <div 
+                            class="p-2 rounded-lg border"
+                            :style="{backgroundColor: getCampaignColor(slotProps.data.id)}"
+                        ></div>
+                    </template>
+                </Column>
+                <Column header="Actions">
+                    <template #body="slotProps">
+                        <SplitButton 
+                            icon="pi pi-eye" 
+                            @click="openCampaignInReadMode(slotProps.data.linkedin_user_id, slotProps.data.id)" 
+                            :model="getItemsCampaignsDatatable(slotProps.data.id)" 
+                            style="color: red;" 
+                            severity="contrast" 
+                            rounded
+                        />
+                    </template>
+                </Column>
+            </DataTable>
+        </div>
+
+
+
         <!-- Post Portal Component -->
         <post-portal 
             v-if="showPortal"
             :all-linkedin-accounts="userLinkedinAccounts" 
             :selected-post="selectedPost"
+            :read-mode="readModeStatus"
             @close="showPortal = false; selectedPost = null"
+            @close-readmode="showPortal = false; selectedPost = null; readModeStatus = false"
         />
 
         <campaign-portal
             v-if="showCampaignPortal"
             ref="campaignPortal"
             :selected-account="selectedAccount"
+            :read-mode="readModeStatus"
+            :selectedCampaign="selectedCampaign"
+            :linkedin-posts="userLinkedinPosts"
             @campaign-post-editing="editCampaignPost"
             @posts-generated="handlePostsGenerated"
             @dates-updated="updateCampaignDates"
             @update:form-data="updateFormData"
             @validate="isFormValid = $event"
+            @close-campaign-portal="showCampaignPortal = false; selectedCampaign = null; readModeStatus = false; selectedAccount = null;"
         />
 
         <campaign-post-portal 
@@ -144,6 +340,9 @@
 </template>
 
 <script>
+import axios from 'axios';
+import Swal from 'sweetalert2';
+
 export default {
     name: 'UserPostsCard',
 
@@ -156,20 +355,31 @@ export default {
             type: Array,
             required: true,
         },
+        campaigns: {
+            type: Array,
+            required: false,
+            default: () => []
+        },
     },
 
     data() {
         return {
+            view: { name: 'Tableau' },
+            views: [
+                { name: 'Tableau' },
+                { name: 'Cartes' },
+            ],
             postStatus: "queued",
             showPortal: false,
+            selectedCampaign: null,
             showCampaignPostPortal: false,
             selectedAccount: null,
             showCampaignPortal: false,
             selectedPost: null,
+            readModeStatus: false,
             campaignPosts: [],
             campaignStartDateTime: null,
             campaignEndDateTime: null,
-            // Campaign variables
             isFormValid: false,
             selectedCible: '',
             frequenceParJour: '',
@@ -182,9 +392,6 @@ export default {
 
     computed: {
         filteredPosts() {
-            if (this.postStatus === "all") {
-                return this.userLinkedinPosts;
-            }
             return this.userLinkedinPosts.filter(post => post.status === this.postStatus);
         },
         queuedPostsCount() {
@@ -202,6 +409,258 @@ export default {
     },
 
     methods: {
+        // THIS FUNCTION WAS MADE FOR THE ITEMS IN DATATABLE
+        getItemsPostsDatatable(post) {
+            if(post.status === "queued") {
+                return [
+                    {
+                        label: 'Modifier',
+                        icon: 'pi pi-file-edit',
+                        command: () => this.editPost(post)
+                    },
+                    {
+                        label: 'Supprimer',
+                        icon: 'pi pi-times',
+                        command: () => this.deletePost(post.id)
+                    },
+                ];
+            } else if(post.status === "failed") {
+                return [
+                    {
+                        label: 'Supprimer',
+                        icon: 'pi pi-times',
+                        command: () => this.deletePost(post.id)
+                    },
+                ];
+            } else if(post.status === "posted") {
+                return [
+                    {
+                        label: 'Supprimer de LinkedIn',
+                        icon: 'pi pi-times',
+                        command: () => this.deletePostFromLinkedIn(post)
+                    },
+                ];
+            }
+        },
+
+        getItemsCampaignsDatatable(id) {
+            return [
+                {
+                    label: 'Supprimer',
+                    icon: 'pi pi-times',
+                    command: () => this.deleteCampaign(id)
+                },
+            ];
+        },
+
+        editPost(post) {
+            this.selectedPost = post;
+            this.showPortal = true;
+        },
+
+        async deletePost(postId) {
+            const result = await Swal.fire({
+                title: "Vous êtes sûr ?",
+                text: "Vous ne pourrez pas revenir en arrière !",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Oui, supprimer !",
+                cancelButtonText: "Annuler"
+            });
+
+            if (result.isConfirmed) {
+                try {
+                    const post = this.userLinkedinPosts.find(p => p.id === postId);
+                    const response = await axios.delete("/linkedin/delete-post", {
+                        data: {
+                            post_id: postId,
+                            linkedin_user_id: post ? post.linkedin_user_id : null,
+                        },
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
+                        },
+                    });
+
+                    if (response.status === 200) {
+                        await Swal.fire({
+                            title: "Supprimé !",
+                            text: "Votre post a été supprimé.",
+                            icon: "success"
+                        });
+                        window.location.reload();
+                    } else {
+                        throw new Error("Failed to delete post");
+                    }
+                } catch (error) {
+                    console.error("Error deleting post:", error);
+                    await Swal.fire({
+                        icon: "error",
+                        title: "Oops...",
+                        text: "Une erreur s'est produite lors de la suppression du post !",
+                    });
+                }
+            }
+        },
+
+        async deletePostFromLinkedIn(post) {
+            const result = await Swal.fire({
+                title: "Vous êtes sûr ?",
+                text: "Vous ne pourrez pas revenir en arrière !",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Oui, supprimer !",
+                cancelButtonText: "Annuler"
+            });
+
+            if (result.isConfirmed) {
+                try {
+                    const urnId = post.post_urn.split(':')[3];
+                    const deleteData = new FormData();
+                    deleteData.append("post_id", post.id);
+                    deleteData.append("linkedin_user_id", post.linkedin_user_id);
+                    deleteData.append("urn_id", urnId);
+
+                    const deleteResponse = await axios.delete("/linkedin/post/delete", {
+                        data: {
+                            post_id: post.id,
+                            linkedin_user_id: post.linkedin_user_id,
+                            urn_id: urnId
+                        },
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
+                        }
+                    });
+
+                    if (deleteResponse.status === 200) {
+                        await Swal.fire({
+                            title: "Supprimé !",
+                            text: "Votre post a été supprimé.",
+                            icon: "success"
+                        });
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1500);
+                    }
+                } catch (error) {
+                    console.error(error);
+                    await Swal.fire({
+                        icon: "error",
+                        title: "Oops...",
+                        text: "Une erreur s'est produite lors de la suppression du post !",
+                    });
+                }
+            }
+        },
+
+        async deleteCampaign(campaignId) {
+            const result = await Swal.fire({
+                title: "Vous êtes sûr ?",
+                text: "Vous ne pourrez pas revenir en arrière !",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Oui, supprimer !",
+                cancelButtonText: "Annuler"
+            });
+
+            if(result.isConfirmed) {
+                try {
+                    const response = await axios.delete('/campaign/delete', {
+                        data: {
+                            campaign_id: campaignId,
+                        },
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
+                        },
+                    });
+
+                    if(response.status === 200) {
+                        await Swal.fire({
+                            title: "Campagne supprimé !",
+                            text: "Votre campagne a été supprimé avec succès.",
+                            icon: "success"
+                        });
+                        window.location.reload();
+                    } else {
+                        throw new Error("Failed to delete post");
+                    }
+                    
+                } catch (error) {
+                    console.error("Error deleting post:", error);
+                    Swal.fire({
+                        icon: "error",
+                        title: "Oops...",
+                        text: "Une erreur s'est produite lors de la suppression du post !",
+                    });
+                }
+            }
+        },
+
+        getLinkedinUserByID(id) {
+            return this.userLinkedinAccounts.find(account => account.id === id);
+        },
+
+        getPostByID(id) {
+            return this.userLinkedinPosts.find(post => post.id === id);
+        },
+
+        getUsername(linkedinUserId) {
+            const account = this.getLinkedinUserByID(linkedinUserId);
+            return account ? `${account.linkedin_firstname} ${account.linkedin_lastname}` : 'inconnu';
+        },
+
+        getProfilePicture(linkedinUserId) {
+            const account = this.getLinkedinUserByID(linkedinUserId);
+            return account ? account.linkedin_picture : '/images/default-profile.png';
+        },
+
+        getCampaignByID(id) {
+            return this.campaigns.find(campaign => campaign.id === id);
+        },
+
+        getCampaignName(campaignId) {
+            if (!campaignId) return 'UNIQUE';
+            const campaign = this.campaigns.find(c => c.id === campaignId);
+            return campaign ? campaign.name : 'inconnu';
+        },
+
+        getCampaignColor(campaignId) {
+            if (!campaignId) return 'UNIQUE';
+            const campaign = this.campaigns.find(c => c.id === campaignId);
+            return campaign ? campaign.color : 'inconnu';
+        },
+
+        getCaption(post) {
+            if (post.type === 'text') {
+                return post.content.text || '';
+            } else if (post.type === 'image' || post.type === 'video' || post.type === 'article') {
+                return post.content.caption || '';
+            }
+            return '';
+        },
+
+        getFileUrl(filePath) {
+            return filePath ? `/linkedin/${filePath}` : '';
+        },
+
+        translateStatus(status) {
+            const statusMap = {
+                'queued': 'en attente',
+                'posted': 'publié',
+                'failed': 'échoué',
+                'draft': 'Brouillons'
+            };
+            return statusMap[status] || status;
+        },
+
         selectAccount(account) {
             this.selectedAccount = account;
         },
@@ -210,20 +669,32 @@ export default {
             this.postStatus = status;
         },
 
-        handleEditPost(post) {
-            this.selectedPost = post;
-            this.showPortal = true;
+        // OPEN POST PORTAL IN READ MODE
+        openPostInReadMode(id) {
+            this.showPortal = true; 
+            this.selectedPost = this.getPostByID(id); 
+            this.readModeStatus = true;
+        },
+
+        // OPEN CAMPAIGN PORTAL IN READ MODE
+        openCampaignInReadMode(linkedin_id, campaign_id) {
+            this.showCampaignPortal = true;
+            this.selectedAccount = this.getLinkedinUserByID(linkedin_id);
+            this.selectedCampaign = this.getCampaignByID(campaign_id);
+            this.readModeStatus = true;
         },
 
         handlePostsGenerated(posts) {
             this.campaignPosts = posts.map(post => ({ ...post }));
-            console.log(this.campaignPosts)
+            console.log(this.campaignPosts);
         },
+
         editCampaignPost(post) {
             this.selectedPost = { ...post };
             this.showCampaignPostPortal = true;
         },
 
+        // OPEN CAMPAIGN PORTAL FOR EDIT OR NEW CAMPAIGN
         openCampaignPortal() {
             if (this.selectedAccount) {
                 this.showCampaignPortal = true;
@@ -233,6 +704,7 @@ export default {
             }
         },
 
+        // CLOSE THE CAMPAIGN PORTAL
         closeCampaignPortal() {
             this.showCampaignPortal = false;
             if (!this.campaignPosts.length) {
@@ -240,7 +712,7 @@ export default {
             }
         },
 
-
+        // SAVE CHANGES MADE TO A GENERATED POST
         saveChanges(updatedPost) {
             const now = new Date();
             const scheduled = new Date(updatedPost.scheduledDateTime);
@@ -256,7 +728,6 @@ export default {
                 return;
             }
 
-            // Validation logic (unchanged)
             if (updatedPost.type === "text" && updatedPost.content.text.trim() === "") {
                 this.campaignPostError = "Le contenu du post ne peut pas être vide !";
                 return;
@@ -298,7 +769,6 @@ export default {
 
             const index = this.campaignPosts.findIndex(p => p.tempId === updatedPost.tempId);
             if (index !== -1) {
-                // this.campaignPosts[index] = { ...postToSave };
                 this.campaignPosts.splice(index, 1, { ...postToSave });
                 if (this.$refs.campaignPortal) {
                     this.$refs.campaignPortal.updatePost({ ...postToSave });
@@ -326,17 +796,35 @@ export default {
             this.nomCampagne = formData.nomCampagne;
         },
 
-        // Refine the date output for the campaign start & end dates
+        // HUMAN READABLE CAMPAIGN DATES
         campaignDateTimeOutput(date) {
             const dateTime = new Date(date);
-            
             const year = dateTime.getFullYear();
             const month = String(dateTime.getMonth() + 1).padStart(2, '0');
             const day = String(dateTime.getDate()).padStart(2, '0');
             const hours = String(dateTime.getHours()).padStart(2, '0');
             const minutes = String(dateTime.getMinutes()).padStart(2, '0');
-            
             return `${month}/${day}/${year} ${hours}:${minutes}`;
+        },
+
+        formatDate(dateString) {
+            const date = new Date(dateString);
+            
+            const daysOfWeek = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+            const dayOfWeek = daysOfWeek[date.getDay()];
+            
+            const dayOfMonth = date.getDate();
+            
+            const year = date.getFullYear();
+            
+            let hours = date.getHours();
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours : 12;
+            
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            
+            return `${dayOfWeek} ${dayOfMonth}, ${year} à ${hours}:${minutes}${ampm}`;
         },
     },
 }

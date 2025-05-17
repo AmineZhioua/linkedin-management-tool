@@ -100,6 +100,13 @@ Route::post('/boost-interaction/request', [\App\Http\Controllers\DashboardContro
 
     
 Route::get('/main/dashboard', [App\Http\Controllers\MainDashboardController::class, 'index'])->name('main.dashboard');
+Route::delete('/campaign/delete', [App\Http\Controllers\LinkedInController::class, 'deleteCampaign'])->name('delete.campaign');
+
+
+
+
+
+
 
 // Admin Routes (without admin middleware)
 Route::middleware(['auth', 'verified','admin'])->prefix('admin')->group(function () {

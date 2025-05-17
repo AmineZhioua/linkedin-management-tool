@@ -1,5 +1,5 @@
 <template>
-    <div class="bg-white rounded-lg h-fit py-2 relative shadow-md">
+    <div class="bg-white rounded-lg h-fit py-2 relative shadow-lg">
         <!-- Header of the Post Card -->
         <div class="flex items-center gap-2 px-3 py-2">
             <img 
@@ -26,7 +26,7 @@
                     Utilisateur Inconnu
                 </h4>
                 <div class="flex items-center gap-2">
-                    <p class="text-gray-500 text-sm mb-0">1h</p>
+                    <p class="text-gray-500 text-sm mb-0 line-clamp-1">{{ formatDate(post.scheduled_time) }}</p>
                     <p class="text-muted mb-0">·</p>
                     <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="#B7B7B7">
                         <path d="M480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm-40-82v-78q-33 0-56.5-23.5T360-320v-40L168-552q-3 18-5.5 36t-2.5 36q0 121 79.5 212T440-162Zm276-102q41-45 62.5-100.5T800-480q0-98-54.5-179T600-776v16q0 33-23.5 56.5T520-680h-80v80q0 17-11.5 28.5T400-560h-80v80h240q17 0 28.5 11.5T600-440v120h40q26 0 47 15.5t29 40.5Z"/>
@@ -47,9 +47,28 @@
                     v-if="postDropdown"
                     class="absolute border top-[30px] right-0 min-w-[150px] rounded-lg px-0 bg-white z-50"
                 >
-                    <li class="w-full text-center transition-all duration-200 px-4 py-3 hover:bg-gray-200">
+                    <!-- Delete post from LinkedIn Button -->
+                    <li 
+                        v-if="post.status === 'posted'"
+                        class="min-w-[200px] text-center transition-all duration-200 px-4 py-3 hover:bg-gray-200"
+                    >
                         <button 
-                            @click="deletePost(post.id)"
+                            @click="$emit('delete-post-from-linkedin', post); postDropdown = false"
+                            class="text-red-600 flex items-center gap-2"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#EA3323">
+                                <path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/>
+                            </svg>
+                            <span>Supprimer de LinkedIn</span>
+                        </button>
+                    </li>
+                    <!-- Delete from Queue or Failed -->
+                    <li 
+                        v-if="post.status !== 'posted'"
+                        class="w-full text-center transition-all duration-200 px-4 py-3 hover:bg-gray-200"
+                    >
+                        <button 
+                            @click="$emit('delete-post', post.id); postDropdown = false"
                             class="text-red-600 flex items-center gap-2"
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#EA3323">
@@ -58,9 +77,13 @@
                             <span>Supprimer</span>
                         </button>
                     </li>
-                    <li class="w-full text-center transition-all duration-200 px-4 py-3 hover:bg-gray-200">
+                    <!-- Update Button -->
+                    <li 
+                        v-if="post.status !== 'posted'" 
+                        class="w-full text-center transition-all duration-200 px-4 py-3 hover:bg-gray-200"
+                    >
                         <button 
-                            @click="isEditing"
+                            @click="$emit('edit-post', post); postDropdown = false"
                             class="text-blue-500 flex items-center gap-2"
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#3f73f9">
@@ -157,8 +180,6 @@
 </template>
 
 <script>
-import axios from 'axios';
-
 export default {
     name: 'LinkedinPost',
 
@@ -173,7 +194,8 @@ export default {
         },
     },
 
-    emits: ['isEditing'],
+    // THE WHOLE EDITING & DELETING LOGIC WAS MOVED TO THE PARENT COMPONENT "UserPostsCard.vue"
+    emits: ['edit-post', 'delete-post', 'delete-post-from-linkedin'],
 
     data() {
         return {
@@ -240,37 +262,23 @@ export default {
             return filePath ? `/linkedin/${filePath}` : '';
         },
 
-        async deletePost(postId) {
-            this.postDropdown = false;
-            this.isLoading = true;
-            try {
-                const response = await axios.delete("/linkedin/delete-post", {
-                    data: {
-                        post_id: postId,
-                        linkedin_user_id: this.post.linkedin_user_id,
-                    },
-                    headers: {
-                        "Content-Type": "application/json",
-                        "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
-                    },
-                });
-
-                if (response.status === 200) {
-                    window.location.reload();
-                } else {
-                    console.error("Failed to delete post:", response);
-                    throw new Error("Failed to delete post");
-                }
-            } catch (error) {
-                console.error("Error deleting post:", error);
-            } finally {
-                this.isLoading = false;
-            }
-        },
-
-        isEditing() {
-            this.postDropdown = false;
-            this.$emit('isEditing', this.post);
+        formatDate(dateString) {
+            const date = new Date(dateString);
+            
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const dayOfMonth = date.getDate();
+            
+            const year = date.getFullYear();
+            
+            let hours = date.getHours();
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours : 12;
+            
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            
+            // return `${month}/${dayOfMonth}/${year} à ${hours}:${minutes}${ampm}`;
+            return `${month}/${dayOfMonth}/${year}`;
         },
     },  
 }

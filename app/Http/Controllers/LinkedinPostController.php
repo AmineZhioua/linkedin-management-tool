@@ -116,7 +116,7 @@ class LinkedinPostController extends Controller
 
 
 
-
+    
     public function getCampaignPostsForDay(Request $request) {
         $validated = $request->validate([
             'linkedin_user_id' => 'required|integer|exists:linkedin_users,id',

@@ -1062,7 +1062,7 @@ export default {
 
             if (result.isConfirmed) {
                 try {
-                    const urnId = post.post_urn.split(':')[3]; // Fixed typo: unrId to urnId
+                    const urnId = post.post_urn.split(':')[3];
                     const deleteData = new FormData();
                     deleteData.append("post_id", post.id);
                     deleteData.append("linkedin_user_id", post.linkedin_user_id);

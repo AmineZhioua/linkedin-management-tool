@@ -2,7 +2,7 @@
     <div class="bg-black bg-opacity-50 inset-0 h-full w-full absolute"></div>
     <div class="flex items-center w-full p-4 justify-center gap-2 absolute top-[50%] left-[50%] translate-y-[-50%] translate-x-[-50%]">
         <!-- Post Fields -->
-        <div class="bg-white p-4 rounded-lg relative"> 
+        <div v-if="!readMode" class="bg-white p-4 rounded-lg relative"> 
             <!-- Close Button & Title -->
             <div class="flex w-full justify-between mb-2">
                 <h3 class="text-xl mb-0">{{ selectedPost ? 'Modifier le Post' : 'Créer un Post' }}</h3>
@@ -59,7 +59,7 @@
                     <select 
                         name="post-type" 
                         id="post-type"
-                        class="py-2 px-3 min-w-[100px] rounded-lg"
+                        class="py-2 px-3 min-w-[100px] rounded-lg bg-gray-200"
                         v-model="newPost.type"
                         v-if="!selectedPost"
                     >
@@ -94,7 +94,7 @@
                             v-model="newPost.content.text"
                             name="caption" 
                             id="caption" 
-                            class="border rounded-md w-full p-2 min-h-[300px]" 
+                            class="border rounded-md w-full p-2 min-h-[300px] bg-white" 
                             placeholder="Ecrire quelque chose ou utiliser votre Assistant IA"
                         ></textarea>
 
@@ -104,7 +104,7 @@
                             v-if="newPost.type === 'image' || newPost.type === 'video'"
                         >
                             <div v-if="newPost.content.file_path">
-                                <p>Current file:</p>
+                                <p>Fichier choisi:</p>
                                 <img v-if="newPost.type === 'image'" :src="getMediaUrl(newPost.content.file_path)" alt="Current Image" style="max-width: 100px;" />
                                 <video v-if="newPost.type === 'video'" controls style="max-width: 100px; z-index: 10;">
                                     <source :src="getMediaUrl(newPost.content.file_path)" type="video/mp4">
@@ -156,7 +156,7 @@
                             v-model="newPost.content.caption"
                             name="caption" 
                             id="caption" 
-                            class="border rounded-md w-full p-2 min-h-[300px]" 
+                            class="border rounded-md w-full p-2 min-h-[300px] bg-white" 
                             placeholder="Ecrire quelque chose ou utiliser votre Assistant IA"
                         ></textarea>
                     </div>
@@ -164,7 +164,7 @@
 
                 <!-- Buttons -->
                 <div class="flex flex-row-reverse items-center justify-between gap-4">
-                    <div class="flex flex-row-reverse items-center gap-2">
+                    <div v-if="!readMode" class="flex flex-row-reverse items-center gap-2">
                         <!-- Update Button -->
                         <button 
                             v-if="selectedPost"
@@ -193,9 +193,11 @@
                         <input 
                             type="datetime-local" 
                             v-model="newPost.scheduledDateTime"
-                            class="border" 
+                            class="border bg-white text-black p-2 rounded-lg" 
                             :min="currentDateTime"
                         />
+
+                        <!-- <DatePicker id="datepicker-12h" v-model="datetime12h" showTime hourFormat="12" fluid style="background-color: white;" /> -->
                     </div>
                 </div>
             </div>
@@ -203,8 +205,12 @@
 
         <!-- Post Preview Section -->
         <div class="bg-white p-3 rounded-lg min-w-[400px] max-w-[450px] min-h-[400px]">
-            <div class="flex items-center">
-                <h3 class="text-black text-lg">Aperçu LinkedIn</h3>
+            <div class="flex items-center justify-between">
+                <h3 class="text-black text-lg mb-0">Aperçu LinkedIn</h3>
+                <button @click="handleCloseinReadMore" v-if="readMode">
+                    <img src="/build/assets/icons/close.svg" alt="Close Icon" height="20" width="20" />
+                </button>
+
             </div>
 
             <div class="border rounded-md mt-4">
@@ -356,9 +362,13 @@ export default {
             type: Object,
             default: null,
         },
+        readMode: {
+            type: Boolean,
+            default: false,
+        },
     },
 
-    emits: ['close'],
+    emits: ['close', 'close-readmode'],
 
     setup() {
         const toast = useToast();
@@ -402,8 +412,8 @@ export default {
                 if (newPost) {
                     const parsedContent = typeof newPost.content === 'string' ? JSON.parse(newPost.content) : newPost.content || {};
                     
-                    let scheduledDateTime = this.utcToLocalForInput(newPost.scheduled_date);
-                    
+                    let scheduledDateTime = this.utcToLocalForInput(newPost.scheduled_time);
+
                     this.newPost = {
                         scheduledDateTime: scheduledDateTime,
                         type: newPost.type,
@@ -446,6 +456,7 @@ export default {
             immediate: true,
         },
     },
+    
     methods: {
         selectLinkedinAccount(account) {
             this.selectedAccount = account;
@@ -795,6 +806,10 @@ export default {
 
         handleClose() {
             this.showConfirmExit = true;
+        },
+
+        handleCloseinReadMore() {
+            this.$emit('close-readmode');
         },
 
         confirmExit() {

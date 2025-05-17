@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
     <script src="https://kit.fontawesome.com/8ecf1b98e7.js" crossorigin="anonymous"></script>
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -19,7 +20,7 @@
             height: 100vh;
             width: 100%;
             overflow: auto;
-            font-family: "Roboto", sans-serif !important;
+            font-family: "Inter", sans-serif !important;
         }
         body::-webkit-scrollbar {
             width: 6px;
@@ -90,9 +91,9 @@
 
 
     <!-- Main Section Start -->
-    <main class="w-full h-full flex " style="background-color: #eee;" id="app">
+    <main class="w-full h-full flex " id="app">
         <!-- Sidebar Section Start -->
-        <div class="bg-black h-full w-[300px]" style="border-top: 1px solid gray;">
+        <div class="bg-black min-h-full w-[300px]" style="border-top: 1px solid gray;">
             <ul class="list-style-none flex flex-col gap-4 py-4 mr-2">
                 <li class="flex items-center gap-2 text-white cursor-pointer hover:bg-gray-500 py-2 px-2 rounded-lg transition-all duration-300">
                     <img 
@@ -144,12 +145,11 @@
         <!-- Sidebar Section End -->
 
         <!-- Content Section Start -->
-        <!-- <div class="w-full h-full bg-gray-200 overflow-scroll"> -->
-            <user-posts-card 
-                :user-linkedin-accounts="{{ json_encode($userLinkedinAccounts) }}" 
-                :user-linkedin-posts="{{ json_encode($userLinkedinPosts) }}"
-            />
-        <!-- </div> -->
+        <user-posts-card 
+            :user-linkedin-accounts="{{ json_encode($userLinkedinAccounts) }}" 
+            :user-linkedin-posts="{{ json_encode($userLinkedinPosts) }}"
+            :campaigns="{{ json_encode($userCampaigns) }}"
+        />
         <!-- Content Section End -->
     </main>
     <!-- Main Section End -->

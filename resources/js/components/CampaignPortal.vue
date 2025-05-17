@@ -1,55 +1,66 @@
 <template>
     <div class="bg-black bg-opacity-50 inset-0 h-full w-full absolute"></div>
-        <div class="flex items-center w-full p-4 justify-center gap-2 absolute top-[50%] left-[50%] translate-y-[-50%] translate-x-[-50%]">
-            <div class="bg-white p-4 rounded-md">
-                <div class="flex flex-col gap-3" v-if="currentStep === 1">
-                    <h3 class="text-black text-lg mb-0">Commencez votre Campagne personnalisé :</h3>
-                    
-                    <p v-if="errorMessage" class="text-red-500 text-sm mb-2 px-2 py-3 rounded-lg bg-red-200">
-                        <i class="fa-solid fa-circle-exclamation mx-2 text-xl" style="color: red;"></i>
-                        {{ errorMessage }}
-                    </p>
-        
+    <div class="flex items-center w-full p-4 justify-center gap-2 absolute top-[50%] left-[50%] translate-y-[-50%] translate-x-[-50%]">
+        <div class="bg-white p-4 rounded-md">
+            <div class="flex flex-col gap-3" v-if="currentStep === 1">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 v-if="!readMode" class="text-black text-lg mb-0">Commencez votre Campagne personnalisé :</h3>
+                    <h3 v-else class="text-black text-lg mb-0">Détails de votre Campagne :</h3>
+                    <button @click="handleClose">
+                        <img src="/build/assets/icons/close.svg" alt="Close Icon" height="20" width="20" />
+                    </button>
+                </div>
+
+                <p v-if="errorMessage && !readMode" class="text-red-500 text-sm mb-2 px-2 py-3 rounded-lg bg-red-200">
+                    <i class="fa-solid fa-circle-exclamation mx-2 text-xl" style="color: red;"></i>
+                    {{ errorMessage }}
+                </p>
+
+                <!-- Read Mode: Campaign Details -->
+                <div v-if="readMode">
+                    <CampaignDetails 
+                        :campaign="selectedCampaign" 
+                        :linkedin-account="selectedAccount" 
+                        :posts="linkedinPosts" 
+                        :cibles="cibles" 
+                    />
+                </div>
+
+                <!-- Create Mode: Campaign Form -->
+                <div v-else>
                     <div class="flex items-center justify-between gap-2">
                         <!-- Date de Debut -->
                         <div class="w-full">
-                        <label for="startDate" class="block text-md mb-2">
-                            Date de Début <span class="text-red-500">*</span> :
-                        </label>
-                        <input
-                            type="datetime-local"
-                            id="startDate"
-                            v-model="startDate"
-                            :min="todayDate"
-                            :class="{'border-red-500': startDateErrorMessage}"
-                            class="w-full border rounded-lg p-2 mb-1"
-                            @change="updateDates"
-                        />
-                        <!-- <p v-if="startDateErrorMessage" class="text-red-500 text-sm mb-2">
-                            {{ startDateErrorMessage }}
-                        </p> -->
+                            <label for="startDate" class="block text-md mb-2">
+                                Date de Début <span class="text-red-500">*</span> :
+                            </label>
+                            <input
+                                type="datetime-local"
+                                id="startDate"
+                                v-model="startDate"
+                                :min="todayDate"
+                                :class="{'border-red-500': startDateErrorMessage}"
+                                class="w-full border bg-white rounded-lg p-2 mb-1"
+                                @change="updateDates"
+                            />
                         </div>
-            
                         <!-- Date de Fin -->
                         <div class="w-full">
-                        <label for="endDate" class="block text-md mb-2">
-                            Date de Fin <span class="text-red-500">*</span> :
-                        </label>
-                        <input
-                            type="datetime-local"
-                            id="endDate"
-                            v-model="endDate"
-                            :min="startDate"
-                            :class="{'border-red-500': endDateErrorMessage}"
-                            class="w-full border rounded-lg p-2 mb-1"
-                            @change="updateDates"
-                        />
-                        <!-- <p v-if="endDateErrorMessage" class="text-red-500 text-sm mb-2">
-                            {{ endDateErrorMessage }}
-                        </p> -->
+                            <label for="endDate" class="block text-md mb-2">
+                                Date de Fin <span class="text-red-500">*</span> :
+                            </label>
+                            <input
+                                type="datetime-local"
+                                id="endDate"
+                                v-model="endDate"
+                                :min="startDate"
+                                :class="{'border-red-500': endDateErrorMessage}"
+                                class="w-full border bg-white rounded-lg p-2 mb-1"
+                                @change="updateDates"
+                            />
                         </div>
                     </div>
-        
+
                     <!-- Audience Cible -->
                     <div>
                         <label for="cible" class="block text-md mb-2">
@@ -58,7 +69,7 @@
                         <select
                             id="cible"
                             v-model="selectedCible"
-                            class="w-full border rounded-lg p-2 mb-1"
+                            class="w-full border rounded-lg bg-gray-200 p-2 mb-1"
                             :class="{'border-red-500': cibleErrorMessage}"
                         >
                             <option value="" disabled>Choisissez votre audience</option>
@@ -67,10 +78,10 @@
                             </option>
                         </select>
                         <p v-if="cibleErrorMessage" class="text-red-500 text-sm mb-2">
-                        {{ cibleErrorMessage }}
+                            {{ cibleErrorMessage }}
                         </p>
                     </div>
-        
+
                     <!-- Frequence des Posts -->
                     <div>
                         <label for="frequence" class="block text-md mb-2">Fréquence des Posts <span class="text-red-500">*</span> :</label>
@@ -79,7 +90,7 @@
                                 type="number"
                                 id="frequence"
                                 v-model="frequenceParJour"
-                                class="w-full border rounded-lg p-2 px-4"
+                                class="w-full border bg-white rounded-lg p-2 px-4"
                                 placeholder="Nombre de Posts"
                                 min="1"
                                 max="10"
@@ -93,48 +104,47 @@
                             </button>
                         </div>
                     </div>
-        
+
                     <div class="flex items-center flex-wrap gap-2 mt-2">
                         <!-- Nom de Campagne -->
                         <div class="mb-2 flex-1">
-                        <label for="nomCampagne" class="block text-md mb-2">Nom de Campagne <span class="text-red-500">*</span> :</label>
-                        <input
-                            type="text"
-                            id="nomCampagne"
-                            v-model="nomCampagne"
-                            placeholder="e.g: Campagne de Noël"
-                            class="min-w-[300px] w-full h-[50px] border rounded-xl p-3 bg-white mb-1"
-                        />
+                            <label for="nomCampagne" class="block text-md mb-2">Nom de Campagne <span class="text-red-500">*</span> :</label>
+                            <input
+                                type="text"
+                                id="nomCampagne"
+                                v-model="nomCampagne"
+                                placeholder="e.g: Campagne de Noël"
+                                class="min-w-[300px] w-full h-[50px] border rounded-xl p-3 bg-white mb-1"
+                            />
                         </div>
                         <!-- Couleur du Campagne -->
                         <div class="mb-2">
-                        <label for="couleurCampagne" class="block text-md mb-2">Choisissez une couleur spéciale <span class="text-red-500">*</span> :</label>
-                        <input
-                            type="color"
-                            id="couleurCampagne"
-                            v-model="couleurCampagne"
-                            class="min-w-[300px] max-w-[500px] h-[50px] border rounded-xl p-2 bg-white mb-1"
-                        />
+                            <label for="couleurCampagne" class="block text-md mb-2">Choisissez une couleur spéciale <span class="text-red-500">*</span> :</label>
+                            <input
+                                type="color"
+                                id="couleurCampagne"
+                                v-model="couleurCampagne"
+                                class="min-w-[300px] max-w-[500px] h-[50px] border rounded-xl p-2 bg-white mb-1"
+                            />
                         </div>
                     </div>
-        
+
                     <!-- Description du Campagne -->
                     <div class="mb-4">
                         <label for="descriptionCampagne" class="block text-md mb-2">Description <span class="text-red-500">*</span> :</label>
                         <textarea
                             id="descriptionCampagne"
                             v-model="descriptionCampagne"
-                            class="w-full border rounded-lg p-3 h-32"
+                            class="w-full border rounded-lg p-3 h-32 bg-white"
                             placeholder="Décrivez votre Campagne ici..."
                             min="10"
                             max="500"
                         ></textarea>
-
                         <p v-if="descriptionErrorMessage" class="text-red-500 text-sm mb-2">
-                        {{ descriptionErrorMessage }}
+                            {{ descriptionErrorMessage }}
                         </p>
                     </div>
-            
+
                     <button
                         @click="generatePosts"
                         :disabled="!isFormValid"
@@ -143,87 +153,97 @@
                         Génerer les Posts
                     </button>
                 </div>
+            </div>
 
-
-                <!-- Display the Generated Posts -->
-                <div class="flex flex-col gap-2 min-w-[400px] items-start" v-if="currentStep === 2">
-                    <h3 class="text-lg">Les Posts de votre Campagne :</h3>
-
-                    <p v-if="submissionError" class="text-red-500 text-sm mb-2 w-full px-2 py-3 rounded-lg bg-red-200">
-                        <i class="fa-solid fa-circle-exclamation mx-2 text-xl" style="color: red;"></i>
-                        {{ submissionError }}
-                    </p>
-
-                    <p v-if="successMessage" class="text-white text-sm mb-2 px-2 py-3 w-full rounded-lg bg-green-500">
-                        <i class="fa-solid fa-circle-check text-xl mx-2 text-green-200"></i>
-                        {{ successMessage }}
-                    </p>
-
-                    <div class="flex flex-col w-full items-center gap-2 max-h-[400px] overflow-y-scroll">
-                        <div 
-                            v-for="post in postCards" 
-                            class="py-4 px-3 w-full rounded-lg flex items-center cursor-pointer text-black"
-                            :class="{
-                                'bg-green-200 hover:bg-green-400': post.type === 'text',
-                                'bg-yellow-200 hover:bg-yellow-400': post.type === 'image',
-                                'bg-red-200 hover:bg-red-400': post.type === 'video',
-                                'bg-purple-300 hover:bg-purple-400': post.type === 'article'
-                            }"
-                            :key="post.tempId"
-                            @click="editCampaignPost(post)"
-                        >
+            <!-- Display the Generated Posts -->
+            <div class="flex flex-col gap-2 min-w-[400px] items-start" v-if="currentStep === 2">
+                <h3 class="text-lg">Les Posts de votre Campagne :</h3>
+                <p v-if="submissionError" class="text-red-500 text-sm mb-2 w-full px-2 py-3 rounded-lg bg-red-200">
+                    <i class="fa-solid fa-circle-exclamation mx-2 text-xl" style="color: red;"></i>
+                    {{ submissionError }}
+                </p>
+                <p v-if="successMessage" class="text-white text-sm mb-2 px-2 py-3 w-full rounded-lg bg-green-500">
+                    <i class="fa-solid fa-circle-check text-xl mx-2 text-green-200"></i>
+                    {{ successMessage }}
+                </p>
+                <div class="flex flex-col w-full items-center gap-2 max-h-[400px] overflow-y-scroll">
+                    <div 
+                        v-for="post in postCards" 
+                        class="py-4 px-3 w-full rounded-lg flex items-center cursor-pointer text-black"
+                        :class="{
+                            'bg-green-200 hover:bg-green-400': post.type === 'text',
+                            'bg-yellow-200 hover:bg-yellow-400': post.type === 'image',
+                            'bg-red-200 hover:bg-red-400': post.type === 'video',
+                            'bg-purple-300 hover:bg-purple-400': post.type === 'article'
+                        }"
+                        :key="post.tempId"
+                        @click="editCampaignPost(post)"
+                    >
                         {{ getPostTypeIcon(post.type) }} {{ formatTime(post.scheduledDateTime) }}
-                        </div>
                     </div>
-
-                    <div class="flex items-center justify-between w-full">
-                        <button 
-                            class="bg-gray-300 rounded-lg px-3 py-2 mt-4"
-                            @click="prevStep"
-                        >
-                            Précédent
-                        </button>
-
-                        <!-- Loader Spinner -->
-                        <button
-                            v-if="isSubmitting"
-                            class="bg-white rounded-lg px-3 py-2 mt-4 loader"
-                        >
-                        </button>
-
-                        <button
-                            v-else
-                            class="bg-blue-500 text-white rounded-lg px-3 py-2 mt-4"
-                            :disabled="!areAllPostsValid"
-                            @click="submitAllPosts"
-                        >
-                            Commencez la campagne
-                        </button>
-                    </div>
+                </div>
+                <div class="flex items-center justify-between w-full">
+                    <button 
+                        class="bg-gray-300 rounded-lg px-3 py-2 mt-4"
+                        @click="prevStep"
+                    >
+                        Précédent
+                    </button>
+                    <button
+                        v-if="isSubmitting"
+                        class="bg-white rounded-lg px-3 py-2 mt-4 loader"
+                    >
+                    </button>
+                    <button
+                        v-else
+                        class="bg-blue-500 text-white rounded-lg px-3 py-2 mt-4"
+                        :disabled="!areAllPostsValid"
+                        @click="submitAllPosts"
+                    >
+                        Commencez la campagne
+                    </button>
                 </div>
             </div>
         </div>
-  </template>
-  
+    </div>
+</template>
+
 <script>
 import axios from 'axios';
+import CampaignDetails from './CampaignDetails.vue';
 
 export default {
     name: 'CampaignPortal',
+
+    components: { CampaignDetails },
     props: {
-        selectedAccount: {
-            type: Object,
-            required: true,
+        selectedAccount: { 
+            type: Object, 
+            required: true 
         },
+
+        readMode: { 
+            type: Boolean, 
+            required: true 
+        },
+
+        selectedCampaign: { 
+            type: Object, 
+            required: false 
+        },
+
+        linkedinPosts: {
+            type: Array,
+            required: true
+        }
     },
 
-    emits: ['CampaignPostEditing', 'posts-generated', 'dates-updated', 'update:form-data', 'validate'],
+    emits: ['CampaignPostEditing', 'posts-generated', 'dates-updated', 'update:form-data', 'validate', 'close-campaign-portal'],
 
     data() {
         const today = new Date();
         const tomorrow = new Date();
         tomorrow.setDate(today.getDate() + 1);
-
         return {
             currentStep: 1,
             isSubmitting: false,
@@ -249,63 +269,52 @@ export default {
         };
     },
 
+
     computed: {
         minEndDate() {
             if (!this.startDate) return this.todayDate;
             const start = new Date(this.startDate);
             start.setHours(start.getHours() + 2);
-
             return this.formatDateTime(start);
         },
-
         isStartDateValid() {
             if (!this.startDate) return false;
-
             const selectedStart = new Date(this.startDate);
             const now = new Date();
             const minStartTime = new Date(now);
-
             minStartTime.setHours(minStartTime.getHours());
-
             return selectedStart >= minStartTime;
         },
-
         isEndDateValid() {
             if (!this.endDate || !this.startDate) return false;
             const selectedStart = new Date(this.startDate);
             const selectedEnd = new Date(this.endDate);
             const minEndTime = new Date(selectedStart);
             minEndTime.setHours(minEndTime.getHours() + 2);
-
             return selectedEnd >= minEndTime;
         },
-
         startDateErrorMessage() {
             if (!this.startDate) return "Date de début requise";
             if (!this.isStartDateValid) {
                 const now = new Date();
                 const minStartTime = new Date(now);
                 minStartTime.setHours(minStartTime.getHours() + 1);
-
                 this.errorMessage = `La date de début doit être au moins 1 heure après maintenant (${this.formatReadableDateTime(minStartTime)})`;
                 return `La date de début doit être au moins 1 heure après maintenant (${this.formatReadableDateTime(minStartTime)})`;
             }
             return "";
         },
-
         endDateErrorMessage() {
             if (!this.endDate) return "Date de fin requise";
             if (!this.isEndDateValid) {
                 const selectedStart = new Date(this.startDate);
                 const minEndTime = new Date(selectedStart);
                 minEndTime.setHours(minEndTime.getHours() + 2);
-
                 this.errorMessage = `La date de fin doit être au moins 2 heures après la date de début (${this.formatReadableDateTime(minEndTime)})`;
                 return `La date de fin doit être au moins 2 heures après la date de début (${this.formatReadableDateTime(minEndTime)})`;
             }
             return "";
         },
-
         isDescriptionValid() {
             if (this.descriptionCampagne.trim() === "") {
                 this.descriptionErrorMessage = "La description ne peut pas être vide";
@@ -321,7 +330,6 @@ export default {
                 return true;
             }
         },
-
         isFormValid() {
             return (
                 this.isStartDateValid &&
@@ -334,7 +342,6 @@ export default {
                 this.frequenceParJour <= 10
             );
         },
-
         formData() {
             return {
                 startDate: this.startDate,
@@ -346,44 +353,33 @@ export default {
                 nomCampagne: this.nomCampagne,
             };
         },
-
         areAllPostsValid() {
             return this.postCards.every((post) => {
-                if (!post.scheduledDateTime) {
-                    return false;
-                }
-
+                if (!post.scheduledDateTime) return false;
                 const postDateTime = new Date(post.scheduledDateTime);
                 const startDateTime = new Date(this.campaignStartDateTime);
                 const endDateTime = new Date(this.campaignEndDateTime);
-
-                if (postDateTime < startDateTime || postDateTime > endDateTime) {
-                    return false;
-                }
-
+                if (postDateTime < startDateTime || postDateTime > endDateTime) return false;
                 switch (post.type) {
-                    case "text":
-                        return post.content.text.trim() !== "";
+                    case "text": return post.content.text.trim() !== "";
                     case "image":
-                    case "video":
-                        return !!post.content.file;
-                    case "article":
-                        return !!post.content.url;
-                    default:
-                        return false;
+                    case "video": return !!post.content.file;
+                    case "article": return !!post.content.url;
+                    default: return false;
                 }
             });
         },
     },
 
+
     watch: {
         startDate(newVal) {
             if (newVal) {
-            const suggestedEnd = new Date(newVal);
-            suggestedEnd.setHours(suggestedEnd.getHours() + 2);
-            if (!this.endDate || new Date(this.endDate) < suggestedEnd) {
-                this.endDate = this.formatDateTime(suggestedEnd);
-            }
+                const suggestedEnd = new Date(newVal);
+                suggestedEnd.setHours(suggestedEnd.getHours() + 2);
+                if (!this.endDate || new Date(this.endDate) < suggestedEnd) {
+                    this.endDate = this.formatDateTime(suggestedEnd);
+                }
             }
         },
         formData: {
@@ -394,16 +390,13 @@ export default {
             },
         },
     },
-
     methods: {
         prevStep() {
-            if(this.currentStep > 1) {
-                this.currentStep--;
-            }
+            if (this.currentStep > 1) this.currentStep--;
         },
 
         getPostTypeIcon(type) {
-            switch(type) {
+            switch (type) {
                 case 'text': return '📝';
                 case 'image': return '🖼️';
                 case 'video': return '🎬';
@@ -419,13 +412,7 @@ export default {
         },
 
         formatReadableDateTime(date) {
-            const options = {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-            };
+            const options = { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' };
             return date.toLocaleDateString('fr-FR', options).replace(',', ' à');
         },
 
@@ -433,16 +420,12 @@ export default {
             if (this.isFormValid) {
                 const start = new Date(this.startDate);
                 const end = new Date(this.endDate);
-
                 let campaignStartDateTime = `${this.startDate}`;
                 let campaignEndDateTime = `${this.endDate}`;
-
                 if (end < start) {
                     console.error("End date is before start date");
                     return;
                 }
-
-                // Calculate number of days
                 const startDay = new Date(start);
                 startDay.setHours(0, 0, 0, 0);
                 const endDay = new Date(end);
@@ -450,69 +433,30 @@ export default {
                 const diffTime = Math.abs(endDay - startDay);
                 const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
                 const daysToProcess = diffDays + 1;
-
                 this.postCards = [];
-
-                // Generate posts for each day
                 for (let i = 0; i < daysToProcess; i++) {
                     const currentDate = new Date(start);
                     currentDate.setDate(start.getDate() + i);
                     currentDate.setHours(0, 0, 0, 0);
-
-                    if (currentDate > endDay) {
-                        continue;
-                    }
-
-                    let dayStart, dayEnd;
-                    if (i === 0) {
-                        dayStart = new Date(start);
-                    } else {
-                        dayStart = new Date(currentDate);
-                    }
-
-                    if (currentDate.getTime() === endDay.getTime()) {
-                        dayEnd = new Date(end);
-                    } else {
-                        dayEnd = new Date(currentDate);
-                        dayEnd.setHours(23, 59, 59, 999);
-                    }
-
-                    if (dayEnd <= dayStart) {
-                        continue;
-                    }
-
+                    if (currentDate > endDay) continue;
+                    let dayStart = (i === 0) ? new Date(start) : new Date(currentDate);
+                    let dayEnd = (currentDate.getTime() === endDay.getTime()) ? new Date(end) : new Date(currentDate).setHours(23, 59, 59, 999);
+                    dayEnd = new Date(dayEnd);
+                    if (dayEnd <= dayStart) continue;
                     const durationMs = dayEnd - dayStart;
                     const intervalMs = durationMs / Math.max(this.frequenceParJour, 1);
-
                     for (let j = 0; j < this.frequenceParJour; j++) {
-                        let postDateTime;
-                        if (i === 0 && j === 0) {
-                            postDateTime = new Date(start);
-                        } else {
-                            postDateTime = new Date(dayStart.getTime() + j * intervalMs);
-                        }
-
-                        if (postDateTime > end) {
-                            continue;
-                        }
-
+                        let postDateTime = (i === 0 && j === 0) ? new Date(start) : new Date(dayStart.getTime() + j * intervalMs);
+                        if (postDateTime > end) continue;
                         this.postCards.push({
                             tempId: `post-${i}-${j}-${Date.now()}`,
                             scheduledDateTime: this.toLocalISOString(postDateTime),
                             type: "text",
-                            content: {
-                                text: "",
-                                file: null,
-                                caption: "",
-                                url: "",
-                                title: "",
-                                description: "",
-                            },
+                            content: { text: "", file: null, caption: "", url: "", title: "", description: "" },
                             accountId: this.selectedAccount.id,
                         });
                     }
                 }
-
                 this.$emit('posts-generated', this.postCards);
                 this.currentStep = 2;
             } else {
@@ -521,7 +465,7 @@ export default {
         },
 
         editCampaignPost(post) {
-            this.$emit('CampaignPostEditing', {...post});
+            this.$emit('CampaignPostEditing', { ...post });
         },
 
         updatePost(updatedPost) {
@@ -550,38 +494,26 @@ export default {
         updateDates() {
             const now = new Date();
             this.todayDate = this.formatDateTime(now);
-            
             if (this.startDate && (!this.endDate || new Date(this.endDate) < new Date(this.startDate))) {
                 const suggestedStart = new Date(this.startDate);
                 const suggestedEnd = new Date(suggestedStart);
                 suggestedEnd.setHours(suggestedEnd.getHours() + 2);
                 this.endDate = this.formatDateTime(suggestedEnd);
             }
-    
-            this.$emit('dates-updated', {
-                startDate: this.startDate,
-                endDate: this.endDate
-            });
+            this.$emit('dates-updated', { startDate: this.startDate, endDate: this.endDate });
         },
 
-        // SUBMIT, VALIDATE & SCHEDULE MEDIA METHODS
         async submitAllPosts() {
             this.isSubmitting = true;
             this.submissionError = null;
-
             try {
                 if (!this.isTokenValid()) {
-                    this.submissionError = "Votre jeton d'accès LinkedIn a expiré. Veuillez reconnecter votre compte.";
+                    this.submissionError = "Votre jeton d'accès LinkedIn a expiré. Veuillez <a href='/linkedin/reconnect'>reconnecter votre compte</a>.";
                     this.isSubmitting = false;
                     return;
                 }
-
-                const sortedPosts = [...this.postCards].sort((a, b) => {
-                    return new Date(a.scheduledDateTime) - new Date(b.scheduledDateTime);
-                });
-
+                const sortedPosts = [...this.postCards].sort((a, b) => new Date(a.scheduledDateTime) - new Date(b.scheduledDateTime));
                 const campaignFormData = new FormData();
-
                 campaignFormData.append("linkedin_id", this.selectedAccount.id);
                 campaignFormData.append("name", this.nomCampagne);
                 campaignFormData.append("description", this.descriptionCampagne || '');
@@ -590,32 +522,22 @@ export default {
                 campaignFormData.append("couleur", this.couleurCampagne);
                 campaignFormData.append("start_date", this.startDate);
                 campaignFormData.append("end_date", this.endDate);
-
                 const campaignResponse = await axios.post("/linkedin/create-campaign", campaignFormData, {
                     headers: {
                         "Content-Type": "multipart/form-data",
                         "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
                     },
                 });
-
-                if(campaignResponse.data.status !== 201) {
-                    throw new Error("Échec de la création de la campagne");
-                }
-                    
+                if (campaignResponse.data.status !== 201) throw new Error("Échec de la création de la campagne");
                 const campaignId = campaignResponse.data.id;
-                
-
-                for(const post of sortedPosts) {
+                for (const post of sortedPosts) {
                     let formData = new FormData();
                     formData.append("linkedin_id", this.selectedAccount.id);
                     formData.append("type", post.type);
                     formData.append("scheduled_date", post.scheduledDateTime);
                     formData.append("campaign_id", campaignId);
-
                     switch (post.type) {
-                        case "text":
-                            formData.append("content[text]", post.content.text.trim());
-                            break;
+                        case "text": formData.append("content[text]", post.content.text.trim()); break;
                         case "image":
                         case "video":
                             formData.append("content[file]", post.content.file);
@@ -628,10 +550,8 @@ export default {
                             formData.append("content[description]", post.content.description);
                             formData.append("content[caption]", post.content.caption.trim());
                             break;
-                        default:
-                            throw new Error("Type de publication invalide");
+                        default: throw new Error("Type de publication invalide");
                     }
-
                     await axios.post("/linkedin/schedule-post", formData, {
                         headers: {
                             "Content-Type": "multipart/form-data",
@@ -639,20 +559,14 @@ export default {
                         },
                     });
                 }
-
-                // this.showSuccessPopup = true;
                 this.successMessage = "Tous vos posts ont été programmés avec succès!";
-
-                // Redirect to the Dasboard
-                setTimeout(() => {
-                    window.location = "/dashboard/linkedin";
-                }, 2000)
+                setTimeout(() => { window.location = "/dashboard/linkedin"; }, 2000);
             } catch (error) {
                 console.error("Error submitting posts:", error);
                 if (error.response?.status === 401 || 
                     (error.response?.data?.error && error.response?.data?.error.toLowerCase().includes("token")) ||
                     (error.message && error.message.toLowerCase().includes("token"))) {
-                    this.submissionError = "Votre jeton d'accès LinkedIn a expiré. Veuillez reconnecter votre compte.";
+                    this.submissionError = "Votre jeton d'accès LinkedIn a expiré. Veuillez <a href='/linkedin/reconnect'>reconnecter votre compte</a>.";
                 } else if (error.response?.data?.error) {
                     this.submissionError = error.response.data.error;
                 } else if (error.response?.data?.message) {
@@ -666,21 +580,34 @@ export default {
                 this.isSubmitting = false;
             }
         },
-
-
+        
         isTokenValid() {
-            if(!this.selectedAccount) {
-                return false;
-            }
+            if (!this.selectedAccount) return false;
             const tokenExpirationDate = new Date(this.selectedAccount.expire_at);
             const now = new Date();
-            
             return tokenExpirationDate > now;
+        },
+
+        formatDate(dateString) {
+            const date = new Date(dateString);
+            const daysOfWeek = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+            const dayOfWeek = daysOfWeek[date.getDay()];
+            const dayOfMonth = date.getDate();
+            const year = date.getFullYear();
+            let hours = date.getHours();
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12 || 12;
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            return `${dayOfWeek} ${dayOfMonth}, ${year} à ${hours}:${minutes}${ampm}`;
+        },
+
+        
+        handleClose() {
+            this.$emit('close-campaign-portal');
         },
     },
 };
 </script>
-
 
 <style scoped>
 ::-webkit-scrollbar {
