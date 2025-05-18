@@ -88,7 +88,7 @@ class LinkedInController extends Controller
         ]);
     
         $campaign = LinkedinCampaign::where("id", $validated["campaign_id"])->first();
-
+    
         if (!$campaign) {
             return response()->json([
                 'message' => 'Campagne non trouvée'
@@ -97,7 +97,7 @@ class LinkedInController extends Controller
     
         $campaignPosts = ScheduledLinkedinPost::where("campaign_id", $validated["campaign_id"])->get();
         $linkedinUser = LinkedinUser::where("id", $campaign->linkedin_user_id)->first();
-
+    
         if (!$linkedinUser) {
             return response()->json([
                 'message' => 'Utilisateur LinkedIn non trouvé'
@@ -105,26 +105,24 @@ class LinkedInController extends Controller
         }
     
         DB::beginTransaction();
-
+    
         try {
             foreach ($campaignPosts as $post) {
                 if ($post->status === 'posted' && $post->post_urn) {
-
                     $post_urn = $post->post_urn;
-
                     $urnParts = explode(':', $post_urn);
                     $shareId = end($urnParts);
-
+    
                     if (!is_numeric($shareId)) {
                         throw new \Exception("Invalid share ID in post_urn: " . $post_urn);
                     }
-
-                    if($post->type === "video") {
+    
+                    if ($post->type === "video") {
                         $deleteUrl = "https://api.linkedin.com/v2/ugcPosts/".urlencode($post->post_urn);
                     } else {
-                        $deleteUrl = "https://api.linkedin.com/v2/shares/".urlencode($post->post_urn);
+                        $deleteUrl = "https://api.linkedin.com/v2/shares/".$shareId; // Use numeric ID
                     }
-
+    
                     $headers = [
                         "Authorization: Bearer " . $linkedinUser->linkedin_token,
                         "Content-Type: application/json",
@@ -140,32 +138,37 @@ class LinkedInController extends Controller
                         CURLOPT_HTTPHEADER => $headers,
                         CURLOPT_TIMEOUT => 1800
                     ]);
-                
+    
                     $response = curl_exec($curl);
                     $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
                     $errorMsg = curl_error($curl);
-                
+    
                     curl_close($curl);
     
-                    if ($httpCode !== 200 || $httpCode !== 204) {
+                    if ($httpCode !== 200 && $httpCode !== 204) { // Fixed condition
+                        Log::info([
+                            "error" => "Échec de la suppression du post sur LinkedIn:{$shareId}" . $response,
+                            "errorMessage" => "Echec de la suppression{$errorMsg}",
+                            "httpCode" => $httpCode
+                        ]);
                         throw new \Exception("Échec de la suppression du post sur LinkedIn:{$shareId}" . $response);
                     }
                 }
-
+    
                 $post->delete();
             }
     
             $campaign->delete();
     
             DB::commit();
-
+    
             return response()->json([
                 'message' => 'Campagne et posts supprimés avec succès'
             ], 200);
-
+    
         } catch (\Exception $e) {
             DB::rollBack();
-
+    
             return response()->json([
                 'message' => 'Échec de la suppression de la campagne',
                 'error' => $e->getMessage()

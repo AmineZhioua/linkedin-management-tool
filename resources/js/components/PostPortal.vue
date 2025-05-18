@@ -21,7 +21,7 @@
                             class="flex items-center gap-2 p-1 border rounded-full"
                         >
                             <img 
-                                :src="selectedAccount.linkedin_picture" 
+                                :src="selectedAccount.linkedin_picture"
                                 alt="Profile Picture"
                                 height="40"
                                 width="40" 
@@ -95,8 +95,13 @@
                             name="caption" 
                             id="caption" 
                             class="border rounded-md w-full p-2 min-h-[300px] bg-white" 
+                            :class="{'border-red-500': validationErrors.text}"
                             placeholder="Ecrire quelque chose ou utiliser votre Assistant IA"
+                            @blur="validateField('text')"
                         ></textarea>
+                        <p v-if="validationErrors.text" class="text-red-500 text-sm">
+                            {{ validationErrors.text }}
+                        </p>
 
                         <!-- File Input for Image & Video Posts -->
                         <div 
@@ -114,8 +119,12 @@
                                 type="file" 
                                 @change="handleFileUpload"
                                 class="border w-full rounded-md" 
+                                :class="{'border-red-500': validationErrors.file}"
                                 :accept="newPost.type === 'image' ? 'image/*' : 'video/*'"
                             />
+                            <p v-if="validationErrors.file" class="text-red-500 text-sm">
+                                {{ validationErrors.file }}
+                            </p>
                         </div>
                         
                         <!-- For Type of Article Posts -->
@@ -126,20 +135,29 @@
                                     type="text"
                                     v-model="newPost.content.url"
                                     class="w-full border rounded-lg p-2"
+                                    :class="{'border-red-500': validationErrors.url}"
                                     placeholder="e.g: www.example.com"
+                                    @blur="validateField('url')"
                                 />
+                                <p v-if="validationErrors.url" class="text-red-500 text-sm">
+                                    {{ validationErrors.url }}
+                                </p>
                             </div>
-
                             <div>
                                 <label class="text-sm text-black mb-2">Titre de l'Article <span style="color: red;">*</span> :</label>
                                 <input
                                     type="text"
                                     v-model="newPost.content.title"
                                     class="w-full border rounded-lg p-2"
+                                    :class="{'border-red-500': validationErrors.title}"
                                     placeholder="Official LinkedIn Blog"
+                                    @blur="validateField('title')"
                                 />
+                                <p v-if="validationErrors.title" class="text-red-500 text-sm">
+                                    {{ validationErrors.title }}
+                                </p>
                             </div>
-
+                            <!-- Description field (optional, no validation required) -->
                             <div>
                                 <label class="text-sm text-black mb-2">Description de l'Article :</label>
                                 <input
@@ -178,6 +196,7 @@
                         <button 
                             v-else
                             @click="submitSinglePost"
+                            id="submitBtn"
                             class="bg-blue-600 text-white py-2 px-3 rounded-md text-md fw-semibold"
                         >
                             Planifier
@@ -194,8 +213,13 @@
                             type="datetime-local" 
                             v-model="newPost.scheduledDateTime"
                             class="border bg-white text-black p-2 rounded-lg" 
+                            :class="{'border-red-500': validationErrors.scheduledDateTime}"
                             :min="currentDateTime"
+                            @blur="validateField('scheduledDateTime')"
                         />
+                        <p v-if="validationErrors.scheduledDateTime" class="text-red-500 text-sm">
+                            {{ validationErrors.scheduledDateTime }}
+                        </p>
 
                         <!-- <DatePicker id="datepicker-12h" v-model="datetime12h" showTime hourFormat="12" fluid style="background-color: white;" /> -->
                     </div>
@@ -381,7 +405,11 @@ export default {
             selectedAccount: this.allLinkedinAccounts[0],
             linkedinAccountDropdown: false,
             currentDateTime: this.formatDateTime(today),
+            // validateFieldDebounced: _.debounce(function(field) {
+            //     this.validateField(field);
+            // }, 300),
             imagePreviewUrl: null,
+            validationErrors: {},
             videoPreviewUrl: null,
             postTypes: [
                 { value: "text", label: "Text", icon: "fas fa-align-left" },
@@ -511,7 +539,72 @@ export default {
             }
         },
 
+        validatePost(post) {
+            const errors = {};
+            const now = new Date();
+            const scheduledDate = new Date(post.scheduledDateTime);
+
+            if (scheduledDate < now) {
+                errors.scheduledDateTime = "La date de publication ne peut pas être dans le passé !";
+            }
+
+            if (post.type === "text") {
+                const text = post.content.text.trim();
+                if (!text) {
+                    errors.text = "Le contenu du post ne peut pas être vide !";
+                } else if (text.length > 3000) {
+                    errors.text = "Le contenu du post ne peut pas dépasser 3000 caractères !";
+                } else if (text.length < 50) {
+                    errors.text = "Le contenu du post doit contenir au moins 50 caractères !";
+                }
+            } else if (post.type === "image" || post.type === "video") {
+                if (!post.content.file && !post.content.file_path) {
+                    errors.file = "Veuillez sélectionner un fichier pour le publier !";
+                }
+            } else if (post.type === "article") {
+                const { url, title } = post.content;
+                if (!url.trim()) {
+                    errors.url = "L'URL de l'article est requise.";
+                } else if (!url.startsWith("https://")) {
+                    errors.url = "L'URL de l'article doit commencer par 'https://'";
+                }
+                if (!title.trim()) {
+                    errors.title = "Le titre de l'article est requis.";
+                } else if (title.length > 200) {
+                    errors.title = "Le titre de l'article ne peut pas dépasser 200 caractères !";
+                } else if (title.length < 5) {
+                    errors.title = "Le titre de l'article doit contenir au moins 5 caractères !";
+                }
+            }
+
+            return errors;
+        },
+
+        validateField(field) {
+            const errors = this.validatePost(this.newPost);
+            this.validationErrors = { ...this.validationErrors, [field]: errors[field] };
+        },
+
         async submitSinglePost() {
+            const errors = this.validatePost(this.newPost);
+            if (Object.keys(errors).length > 0) {
+                this.validationErrors = errors;
+                this.toast.error("Veuillez corriger les erreurs avant de soumettre.", {
+                    position: "bottom-right",
+                    timeout: 3000,
+                    closeOnClick: true,
+                    pauseOnFocusLoss: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    draggablePercent: 0.6,
+                    showCloseButtonOnHover: false,
+                    hideProgressBar: false,
+                    closeButton: "button",
+                    icon: true,
+                    rtl: false
+                });
+                return;
+            }
             try {
                 if (!this.isTokenValid()) {
                     return;
@@ -572,6 +665,8 @@ export default {
                         icon: true,
                         rtl: false
                     });
+
+                    document.getElementById("submitBtn").style.display = "none";
 
                     setTimeout(() => {
                         window.location.reload();
@@ -815,6 +910,7 @@ export default {
         confirmExit() {
             this.$emit('close');
             this.showConfirmExit = false;
+            this.validationErrors = {};
         },
     }
 };

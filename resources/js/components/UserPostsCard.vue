@@ -1,5 +1,5 @@
 <template>
-    <div class="w-full h-full p-4 overflow-y-scroll">
+    <div class="w-full h-full p-4 overflow-y-scroll" style="background-color: #FEF4E5;">
         <!-- Heading Section -->
         <div class="flex items-center justify-between">
             <!-- Accounts Buttons Sections -->
@@ -13,7 +13,17 @@
                 >
                     <div class="relative">
                         <img 
+                            v-if="linkedinAccount.linkedin_picture"
                             :src="linkedinAccount.linkedin_picture" 
+                            alt="Linkedin Picture" 
+                            class="rounded-full"
+                            height="55" 
+                            width="55"
+                        />
+
+                        <img 
+                            v-else
+                            src="/build/assets/images/default-profile.png"
                             alt="Linkedin Picture" 
                             class="rounded-full"
                             height="55" 
@@ -633,7 +643,9 @@ export default {
         },
 
         getCampaignColor(campaignId) {
-            if (!campaignId) return 'UNIQUE';
+            if(campaignId === null) {
+                return '#FFFFFF00'
+            }
             const campaign = this.campaigns.find(c => c.id === campaignId);
             return campaign ? campaign.color : 'inconnu';
         },

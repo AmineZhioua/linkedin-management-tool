@@ -235,9 +235,7 @@ export default {
 
     methods: {
         getLinkedinUserbyPost(post) {
-            const linkedinUserArray = this.userLinkedinAccounts.filter(
-                account => account.id === post.linkedin_user_id
-            );
+            const linkedinUserArray = this.userLinkedinAccounts.filter(account => account.id === post.linkedin_user_id);
             this.linkedinUser = linkedinUserArray.length > 0 ? linkedinUserArray[0] : null;
         },
 

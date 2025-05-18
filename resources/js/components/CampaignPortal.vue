@@ -357,8 +357,8 @@ export default {
             return this.postCards.every((post) => {
                 if (!post.scheduledDateTime) return false;
                 const postDateTime = new Date(post.scheduledDateTime);
-                const startDateTime = new Date(this.campaignStartDateTime);
-                const endDateTime = new Date(this.campaignEndDateTime);
+                const startDateTime = new Date(this.startDate);
+                const endDateTime = new Date(this.endDate);
                 if (postDateTime < startDateTime || postDateTime > endDateTime) return false;
                 switch (post.type) {
                     case "text": return post.content.text.trim() !== "";
