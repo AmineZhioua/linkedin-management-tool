@@ -12,6 +12,10 @@
 html {
     scroll-behavior: smooth;
 }
+.pagination .page-item:first-child,
+.pagination .page-item:last-child {
+    display: none;
+}
 
 /* CSS GLOBAL VARIABLES */
 :root {

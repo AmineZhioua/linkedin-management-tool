@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\Support\Facades\Auth;
@@ -23,7 +22,7 @@ class UserController extends Controller
         $search = $request->query('search');
         $users = User::getCachedUsers($search);
 
-        return view('admin', compact('users'));
+        return view('admin', compact('users', 'search'));
     }
 
     /**
@@ -65,10 +64,6 @@ class UserController extends Controller
             'image' => $request->image,
             'suspend_end' => $request->suspend_end,
         ]);
-
-        // Clear user-related caches
-        Cache::forget('active_users_count');
-        Cache::flush(); // Clear all caches
 
         return redirect()->route('admin.users.index')->with('success', 'User created successfully.');
     }
@@ -120,10 +115,6 @@ class UserController extends Controller
 
         $user->update($data);
 
-        // Clear user-related caches
-        Cache::forget('active_users_count');
-        Cache::flush(); // Clear all caches
-
         return redirect()->route('admin.users.index')->with('success', 'User updated successfully.');
     }
 
@@ -136,10 +127,6 @@ class UserController extends Controller
     public function destroy(User $user)
     {
         $user->delete();
-
-        // Clear user-related caches
-        Cache::forget('active_users_count');
-        Cache::flush(); // Clear all caches
 
         return redirect()->route('admin.users.index')->with('success', 'User deleted successfully.');
     }
@@ -190,10 +177,6 @@ class UserController extends Controller
 
         $user->update($data);
 
-        // Clear user-related caches
-        Cache::forget('active_users_count');
-        Cache::flush(); // Clear all caches
-
         return redirect()->route('admin.profile')->with('success', 'Profile updated successfully.');
     }
 
@@ -215,10 +198,6 @@ class UserController extends Controller
             'suspend_end' => $request->suspend_date,
         ]);
 
-        // Clear user-related caches
-        Cache::forget('active_users_count');
-        Cache::flush(); // Clear all caches
-
         return redirect()->route('admin.users.index')->with('success', 'User suspended successfully.');
     }
 
@@ -238,10 +217,6 @@ class UserController extends Controller
         $user->update([
             'suspend_end' => null,
         ]);
-
-        // Clear user-related caches
-        Cache::forget('active_users_count');
-        Cache::flush(); // Clear all caches
 
         return redirect()->route('admin.users.index')->with('success', 'User suspension removed successfully.');
     }

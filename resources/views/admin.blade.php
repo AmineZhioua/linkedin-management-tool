@@ -455,122 +455,144 @@
                             @endif
                         @show
 
-                        @section('users-index')
-                            @if (Route::is('admin.users.index'))
-                                <div class="card">
-                                    <div class="card-header d-flex align-items-center justify-content-between">
-                                        <h5 class="card-title m-0 me-2">Users</h5>
-                                        <div class="d-flex align-items-center">
-                                            <form action="{{ route('admin.users.index') }}" method="GET" class="d-flex">
-                                                <input type="text" class="form-control me-2" name="search" placeholder="Search by name or email..." value="{{ request('search') }}" style="width: 200px;">
-                                                <button type="submit" class="btn btn-outline-primary me-2">Search</button>
-                                            </form>
-                                            <a href="{{ route('admin.users.create') }}" class="btn btn-primary">Create User</a>
-                                        </div>
-                                    </div>
-                                    <div class="table-responsive">
-                                        <table class="table table-borderless border-top">
-                                            <thead class="border-bottom">
-                                                <tr>
-                                                    <th>ID</th>
-                                                    <th>Name</th>
-                                                    <th>Email</th>
-                                                    <th>Role</th>
-                                                    <th>Post Permission</th>
-                                                    <th>Boost Permission</th>
-                                                    <th>Suspension End</th>
-                                                    <th>Last Activity</th>
-                                                    <th>Actions</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                @foreach ($users as $user)
-                                                    <tr>
-                                                        <td>{{ $user->id }}</td>
-                                                        <td>{{ $user->name }}</td>
-                                                        <td>{{ $user->email }}</td>
-                                                        <td>{{ $user->role }}</td>
-                                                        <td>
-                                                            <span class="{{ $user->post_perm ? 'text-success' : 'text-danger' }}">
-                                                                {{ $user->post_perm ? 'Yes' : 'No' }}
-                                                            </span>
-                                                        </td>
-                                                        <td>
-                                                            <span class="{{ $user->boost_perm ? 'text-success' : 'text-danger' }}">
-                                                                {{ $user->boost_perm ? 'Yes' : 'No' }}
-                                                            </span>
-                                                        </td>
-                                                        <td>{{ $user->suspend_end ? $user->suspend_end->format('Y-m-d') : 'None' }}</td>
-                                                        <td>{{ $user->last_activity ? $user->last_activity->format('Y-m-d H:i:s') : 'Never' }}</td>
-                                                        <td>
-                                                            <a href="{{ route('admin.users.edit', $user) }}" class="btn btn-sm btn-outline-primary me-2">Edit</a>
-                                                            <form action="{{ route('admin.users.destroy', $user) }}" method="POST" style="display: inline;">
-                                                                @csrf
-                                                                @method('DELETE')
-                                                                <button type="submit" class="btn btn-sm btn-outline-danger me-2" onclick="return confirm('Are you sure?')">Delete</button>
-                                                            </form>
-                                                            <button type="button" class="btn btn-sm btn-outline-warning me-2 suspend-btn" data-bs-toggle="modal" data-bs-target="#suspendModal" data-user-id="{{ $user->id }}" data-user-name="{{ $user->name }}">
-                                                                Suspend
-                                                            </button>
-                                                            @if ($user->suspend_end)
-                                                                <form action="{{ route('admin.users.remove-suspension') }}" method="POST" style="display: inline;">
-                                                                    @csrf
-                                                                    <input type="hidden" name="user_id" value="{{ $user->id }}">
-                                                                    <button type="submit" class="btn btn-sm btn-outline-success" onclick="return confirm('Are you sure you want to remove the suspension for {{ $user->name }}?')">Remove Suspension</button>
-                                                                </form>
-                                                            @endif
-                                                        </td>
-                                                    </tr>
-                                                @endforeach
-                                            </tbody>
-                                        </table>
-                                        <div class="mt-3">
-                                            {{ $users->appends(['search' => request('search')])->links() }}
-                                        </div>
-                                    </div>
-                                </div>
+ @section('users-index')
+    @if (Route::is('admin.users.index'))
+        <div class="card">
+            <div class="card-header d-flex align-items-center justify-content-between">
+                <h5 class="card-title m-0 me-2">Users</h5>
+                <div class="d-flex align-items-center">
+                    <form action="{{ route('admin.users.index') }}" method="GET" class="d-flex">
+                        <input type="text" class="form-control me-2" name="search" placeholder="Search by name or email..." value="{{ request('search') }}" style="width: 200px;">
+                        <button type="submit" class="btn btn-outline-primary me-2">Search</button>
+                        <a href="{{ route('admin.users.index') }}" class="btn btn-outline-secondary me-2">Clear</a>
+                    </form>
+                    <a href="{{ route('admin.users.create') }}" class="btn btn-primary">Create User</a>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-borderless border-top" id="usersTable">
+                    <thead class="border-bottom">
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Post Permission</th>
+                            <th>Boost Permission</th>
+                            <th>Suspension End</th>
+                            <th>Last Activity</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($users as $user)
+                            <tr>
+                                <td>{{ $user->id }}</td>
+                                <td>{{ $user->name }}</td>
+                                <td>{{ $user->email }}</td>
+                                <td>{{ $user->role }}</td>
+                                <td>
+                                    <span class="{{ $user->post_perm ? 'text-success' : 'text-danger' }}">
+                                        {{ $user->post_perm ? 'Yes' : 'No' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="{{ $user->boost_perm ? 'text-success' : 'text-danger' }}">
+                                        {{ $user->boost_perm ? 'Yes' : 'No' }}
+                                    </span>
+                                </td>
+                                <td>{{ $user->suspend_end ? $user->suspend_end->format('Y-m-d') : 'None' }}</td>
+                                <td>{{ $user->last_activity ? $user->last_activity->format('Y-m-d H:i:s') : 'Never' }}</td>
+                                <td>
+                                    <a href="{{ route('admin.users.edit', $user) }}" class="btn btn-sm btn-outline-primary me-2">Edit</a>
+                                    <form action="{{ route('admin.users.destroy', $user) }}" method="POST" style="display: inline;">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-sm btn-outline-danger me-2" onclick="return confirm('Are you sure?')">Delete</button>
+                                    </form>
+                                    <button type="button" class="btn btn-sm btn-outline-warning me-2 suspend-btn" data-bs-toggle="modal" data-bs-target="#suspendModal" data-user-id="{{ $user->id }}" data-user-name="{{ $user->name }}">
+                                        Suspend
+                                    </button>
+                                    @if ($user->suspend_end)
+                                        <form action="{{ route('admin.users.remove-suspension') }}" method="POST" style="display: inline;">
+                                            @csrf
+                                            <input type="hidden" name="user_id" value="{{ $user->id }}">
+                                            <button type="submit" class="btn btn-sm btn-outline-success" onclick="return confirm('Are you sure you want to remove the suspension for {{ $user->name }}?')">Remove Suspension</button>
+                                        </form>
+                                    @endif
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="9" class="text-center">No users found.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+                <div class="mt-3">
+                {{ $users->links('vendor.pagination.bootstrap-5') }}
+</div>
+            </div>
+        </div>
 
-                                <!-- Suspend Modal -->
-                                <div class="modal fade" id="suspendModal" tabindex="-1" aria-labelledby="suspendModalLabel" aria-hidden="true">
-                                    <div class="modal-dialog">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title" id="suspendModalLabel">Suspend User</h5>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                            </div>
-                                            <div class="modal-body">
-                                                <form id="suspendForm" action="{{ route('admin.users.suspend') }}" method="POST">
-                                                    @csrf
-                                                    <input type="hidden" name="user_id" id="suspendUserId">
-                                                    <div class="mb-3">
-                                                        <label for="suspendDate" class="form-label">Select Suspension End Date</label>
-                                                        <input type="date" class="form-control" name="suspend_date" id="suspendDate" required min="{{ now()->format('Y-m-d') }}">
-                                                    </div>
-                                                    <p>Are you sure you want to suspend <strong id="suspendUserName"></strong> until the selected date?</p>
-                                                    <div class="modal-footer">
-                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                                        <button type="submit" class="btn btn-warning">Suspend</button>
-                                                    </div>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+        <!-- Suspend Modal -->
+        <div class="modal fade" id="suspendModal" tabindex="-1" aria-labelledby="suspendModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="suspendModalLabel">Suspend User</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="suspendForm" action="{{ route('admin.users.suspend') }}" method="POST">
+                            @csrf
+                            <input type="hidden" name="user_id" id="suspendUserId">
+                            <div class="mb-3">
+                                <label for="suspendDate" class="form-label">Select Suspension End Date</label>
+                                <input type="date" class="form-control" name="suspend_date" id="suspendDate" required min="{{ now()->format('Y-m-d') }}">
+                            </div>
+                            <p>Are you sure you want to suspend <strong id="suspendUserName"></strong> until the selected date?</p>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <button type="submit" class="btn btn-warning">Suspend</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-                                <!-- JavaScript for Modal -->
-                                <script>
-                                    document.querySelectorAll('.suspend-btn').forEach(button => {
-                                        button.addEventListener('click', function() {
-                                            const userId = this.getAttribute('data-user-id');
-                                            const userName = this.getAttribute('data-user-name');
-                                            document.getElementById('suspendUserId').value = userId;
-                                            document.getElementById('suspendUserName').textContent = userName;
-                                            document.getElementById('suspendDate').value = ''; // Reset date field
-                                        });
-                                    });
-                                </script>
-                            @endif
-                        @show
+        <!-- JavaScript for Modal and DataTables -->
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                // Suspend Modal Logic
+                document.querySelectorAll('.suspend-btn').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const userId = this.getAttribute('data-user-id');
+                        const userName = this.getAttribute('data-user-name');
+                        document.getElementById('suspendUserId').value = userId;
+                        document.getElementById('suspendUserName').textContent = userName;
+                        document.getElementById('suspendDate').value = '';
+                    });
+                });
+
+                // Initialize DataTables
+                $('#usersTable').DataTable({
+                    dom: 'frtip',
+                    pageLength: 1, // One user per page
+                    ordering: false, // Disable client-side sorting
+                    searching: false, // Disable client-side searching
+                    paging: false, // Disable DataTables pagination (use Laravel's)
+                    info: false, // Hide "Showing X of Y entries"
+                    language: {
+                        search: '',
+                        searchPlaceholder: 'Search users...'
+                    }
+                });
+            });
+        </script>
+    @endif
+@show
 
                         @section('users-create')
                             @if (Route::is('admin.users.create'))
@@ -1405,21 +1427,7 @@
                     <!-- / Content -->
 
                     <!-- Footer -->
-                    <footer class="content-footer footer bg-footer-theme">
-                        <div class="container-xxl">
-                            <div class="footer-container d-flex align-items-center justify-content-between py-2 flex-md-row flex-column">
-                                <div>
-                                    © <script>document.write(new Date().getFullYear())</script>, made with ❤️ by <a href="https://pixinvent.com" target="_blank" class="footer-link text-primary fw-medium">Pixinvent</a>
-                                </div>
-                                <div class="d-none d-lg-inline-block">
-                                    <a href="https://themeforest.net/licenses/standard" class="footer-link me-4" target="_blank">License</a>
-                                    <a href="https://1.envato.market/pixinvent_portfolio" target="_blank" class="footer-link me-4">More Themes</a>
-                                    <a href="https://demos.pixinvent.com/vuexy-html-admin-template/documentation/" target="_blank" class="footer-link me-4">Documentation</a>
-                                    <a href="https://pixinvent.ticksy.com/" target="_blank" class="footer-link d-none d-sm-inline-block">Support</a>
-                                </div>
-                            </div>
-                        </div>
-                    </footer>
+
                     <!-- / Footer -->
 
                     <div class="content-backdrop fade"></div>
