@@ -37,22 +37,22 @@
         }
     </style>
 </head>
-<body>
+<body id="app">
     <!-- Header Section Start -->
-    <div class="flex items-center justify-between py-3 px-4 bg-black">
+    <div class="flex items-center justify-between py-3 px-3 bg-black">
         <!-- Logo Section -->
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2">
             <img 
                 src="/build/assets/lemonade-logo.svg" 
                 alt="Lemonade Logo" 
-                height="40"
-                width="40"
+                height="35"
+                width="35"
             />
             <img 
                 src="/build/assets/Lemonade.png" 
                 alt="Lemonade Text" 
                 height="50"
-                width="100"
+                width="120"
             />
         </div>
 
@@ -91,67 +91,11 @@
 
 
     <!-- Main Section Start -->
-    <main class="w-full h-full flex " id="app">
-        <!-- Sidebar Section Start -->
-        <div class="bg-black min-h-full w-[300px]" style="border-top: 1px solid gray;">
-            <ul class="list-style-none flex flex-col gap-4 py-4 mr-2">
-                <li class="flex items-center gap-2 text-white cursor-pointer hover:bg-gray-500 py-2 px-2 rounded-lg transition-all duration-300">
-                    <img 
-                        src="/build/assets/icons/dashboard-white.svg" 
-                        alt="Dashboard Icon" 
-                        height="25" 
-                        width="25"
-                    />
-                    <span class="text-md fw-semibold">Dashboard</span>
-                </li>
-                <li class="flex items-center gap-2 text-white cursor-pointer hover:bg-gray-500 py-2 px-2 rounded-lg transition-all duration-300">
-                    <img 
-                        src="/build/assets/icons/linkedin.svg" 
-                        alt="Dashboard Icon" 
-                        height="25" 
-                        width="25"
-                    />
-                    <span class="text-md fw-semibold">Vos Comptes</span>
-                </li>
-                <li class="flex items-center gap-2 text-white cursor-pointer hover:bg-gray-500 py-2 px-2 rounded-lg transition-all duration-300">
-                    <img 
-                        src="/build/assets/icons/posts-white.svg" 
-                        alt="Dashboard Icon" 
-                        height="25" 
-                        width="25"
-                    />
-                    <span class="text-md fw-semibold">Vos Posts</span>
-                </li>
-                <li class="flex items-center gap-2 text-white cursor-pointer hover:bg-gray-500 py-2 px-2 rounded-lg transition-all duration-300">
-                    <img 
-                        src="/build/assets/icons/calendar-white.svg" 
-                        alt="Dashboard Icon" 
-                        height="25" 
-                        width="25"
-                    />
-                    <span class="text-md fw-semibold">Calendrier</span>
-                </li>
-                <li class="flex items-center gap-2 text-white cursor-pointer hover:bg-gray-500 py-2 px-2 rounded-lg transition-all duration-300">
-                    <img 
-                        src="/build/assets/icons/kpi-white.svg" 
-                        alt="Dashboard Icon" 
-                        height="25" 
-                        width="25"
-                    />
-                    <span class="text-md fw-semibold">Vos KPIs</span>
-                </li>
-            </ul>
-        </div>
-        <!-- Sidebar Section End -->
-
-        <!-- Content Section Start -->
-        <user-posts-card 
-            :user-linkedin-accounts="{{ json_encode($userLinkedinAccounts) }}" 
-            :user-linkedin-posts="{{ json_encode($userLinkedinPosts) }}"
-            :campaigns="{{ json_encode($userCampaigns) }}"
-        />
-        <!-- Content Section End -->
-    </main>
+    <main-section
+        :user-linkedin-accounts="{{ json_encode($userLinkedinAccounts) }}" 
+        :user-linkedin-posts="{{ json_encode($userLinkedinPosts) }}"
+        :campaigns="{{ json_encode($userCampaigns) }}"
+    />
     <!-- Main Section End -->
 </body>
 </html>

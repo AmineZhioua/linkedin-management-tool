@@ -4,12 +4,13 @@
         <div class="flex items-center justify-between">
             <!-- Accounts Buttons Sections -->
             <div class="grid grid-cols-3 gap-2">
+                <!-- LinkedIn Account Selection -->
                 <div 
                     v-for="linkedinAccount in userLinkedinAccounts" 
                     :key="linkedinAccount.id"
                     @click="selectAccount(linkedinAccount)"
-                    class="flex items-center justify-end gap-2 py-2 px-4 bg-blue-50 rounded-xl cursor-pointer shadow-md"
-                    :class="{ 'bg-red-500': selectedAccount === linkedinAccount }"
+                    class="flex items-center justify-end gap-2 py-2 px-3 rounded-xl cursor-pointer shadow-md bg-white"
+                    :class="{ 'text-red-500 border': this.selectedAccount === linkedinAccount }"
                 >
                     <div class="relative">
                         <img 
@@ -25,7 +26,7 @@
                             v-else
                             src="/build/assets/images/default-profile.png"
                             alt="Linkedin Picture" 
-                            class="rounded-full"
+                            class="rounded-full px-0"
                             height="55" 
                             width="55"
                         />
@@ -42,7 +43,7 @@
                         </div>
                     </div>
 
-                    <div class="flex flex-col ml-2">
+                    <div class="flex flex-col ml-2 flex-1">
                         <h3 class="fw-bold text-xl mb-0">{{ linkedinAccount.linkedin_firstname }} {{ linkedinAccount.linkedin_lastname }}</h3>
                         <p class="mb-0 text-sm text-muted">Compte personnel</p>
                     </div>
@@ -129,7 +130,7 @@
         </div>
 
         <!-- Posts Cards Container -->
-        <div class="grid grid-cols-4 gap-3 w-full h-full mt-4" v-if="view && view.name === 'Cartes'">
+        <div class="grid grid-cols-4 gap-3 w-full h-full pb-3 mt-4" v-if="view && view.name === 'Cartes'">
             <linkedin-post 
                 v-for="post in filteredPosts" 
                 :key="post.id" 
@@ -346,6 +347,8 @@
             :on-save="saveChanges"
             @close="showCampaignPostPortal = false; selectedPost = null; campaignPostError = ''"
         />
+
+        <ConfirmDialog></ConfirmDialog>
     </div>
 </template>
 
@@ -698,7 +701,6 @@ export default {
 
         handlePostsGenerated(posts) {
             this.campaignPosts = posts.map(post => ({ ...post }));
-            console.log(this.campaignPosts);
         },
 
         editCampaignPost(post) {

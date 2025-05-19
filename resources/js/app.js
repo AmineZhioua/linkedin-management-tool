@@ -49,6 +49,10 @@ import Row from 'primevue/row';
 import DatePicker from "primevue/datepicker";
 import SplitButton from "primevue/splitbutton";
 import ScrollPanel from 'primevue/scrollpanel';
+import Sidebar from "./components/Sidebar.vue";
+import MainSection from "./components/MainSection.vue";
+import KpiSection from "./components/KpiSection.vue";
+import { ConfirmDialog } from "primevue";
 
 
 
@@ -87,6 +91,11 @@ app.component("campaign-portal", CampaignPortal);
 app.component("campaign-post-portal", CampaignPostPortal);
 app.component("post-view", PostView);
 app.component("campaign-details", CampaignDetails);
+app.component("sidebar", Sidebar);
+app.component("main-section", MainSection);
+app.component("kpi-section", KpiSection);
+
+
 
 // PrimeVue Components
 app.component("Button", Button);
@@ -99,6 +108,7 @@ app.component("Row", Row);
 app.component("DatePicker", DatePicker);
 app.component("SplitButton", SplitButton);
 app.component("ScrollPanel", ScrollPanel);
+app.component("ConfirmDialog", ConfirmDialog);
 
 
 app.mount("#app");
