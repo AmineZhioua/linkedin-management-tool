@@ -35,8 +35,19 @@ class LinkedInController extends Controller
         ]);
     }
 
-    public function createCampaign(Request $request) {
+  public function createCampaign(Request $request)
+    {
         try {
+            // Check post permission
+            $user = Auth::user();
+            if (!$user->post_perm) {
+                return response()->json([
+                    'status' => 403,
+                    'error' => "Vous n'avez pas la permission pour publier des posts"
+                ], 403);
+            }
+
+            // Validate request data
             $validated = $request->validate([
                 'linkedin_id' => 'required|exists:linkedin_users,id',
                 'name' => 'required|string',
@@ -47,7 +58,25 @@ class LinkedInController extends Controller
                 'start_date' => 'required|date|after:now',
                 'end_date' => 'required|date|after:start_date',
             ]);
-    
+
+            // Calculate number of posts
+            $startDate = Carbon::parse($validated['start_date']);
+            $endDate = Carbon::parse($validated['end_date']);
+            $days = $startDate->diffInDays($endDate) + 1; // Inclusive of start and end date
+            $totalPosts = $days * $validated['frequency_per_day'];
+
+            // Check available posts
+            $subscription = Subscription::where('user_id', Auth::id())
+                ->where('date_expiration', '>', now())
+                ->first();
+
+            if (!$subscription || $subscription->available_posts < $totalPosts) {
+                return response()->json([
+                    'status' => 403,
+                    'error' => 'Nombre de posts disponibles insuffisant pour cette campagne'
+                ], 403);
+            }
+
             $campaign = LinkedinCampaign::firstOrCreate(
                 [
                     'user_id' => Auth::id(),
@@ -65,19 +94,23 @@ class LinkedInController extends Controller
                 ]
             );
 
+            // Update available posts
+            $subscription->available_posts -= $totalPosts;
+            $subscription->save();
+
             CheckCampaignStartStatus::dispatch($campaign)->delay(Carbon::parse($validated['start_date']));
-    
+
             return response()->json([
                 'id' => $campaign->id,
                 'status' => 201,
-                'message' => 'Campaign created or retrieved successfully'
+                'message' => 'Campagne créée avec succès. Posts restants: ' . $subscription->available_posts
             ], 201);
         } catch (\Exception $e) {
             Log::error('Error creating campaign', [
                 'error' => $e->getMessage(),
                 'data' => $request->all()
             ]);
-            return response()->json(['error' => 'Une erreur s\'est produite lors de la création de votre campagne ! ' . $e], 500);
+            return response()->json(['error' => 'Une erreur s\'est produite lors de la création de votre campagne ! ' . $e->getMessage()], 500);
         }
     }
 
@@ -180,188 +213,240 @@ class LinkedInController extends Controller
     /**
      * Schedule a LinkedIn post with token expiration and validation.
     */
-    public function publish(Request $request) {
-        $user = Auth::user();
-        if (!$user->post_perm) {
-            return response()->json([
-                'status' => 403,
-                'error' => 'Vous n\'avez pas la permission pour publier des Posts'
-            ], 403);
-        }
-        
-        // TURN VALIDATION ERRORS INTO FRENCH LANGUAGE MANUALLY
-        $validated = $request->validate([
-            'linkedin_id' => 'required|exists:linkedin_users,id',
-            'type' => 'required|in:text,image,video,article',
-            'scheduled_date' => 'required|date|after:now',
-            'content' => 'required|array',
-            'campaign_id' => 'required|exists:linkedin_campaigns,id',
-        ]);
-        
-        switch ($validated['type']) {
-            case 'text':
-                $request->validate(['content.text' => 'required|string|max:3000']);
-                $content = ['text' => $validated['content']['text']];
-                break;
-
-            case 'image':
-            case 'video':
-                $request->validate([
-                    'content.file' => 'required|file|max:50000',
-                    'content.caption' => 'nullable|string',
-                    'content.original_filename' => 'required|string',
-                ]);
-                $file = $request->file('content.file');
-                $path = $file->store('', 'linkedin_media');
-                Log::info('Stored LinkedIn media', [
-                    'path' => $path,
-                    'full_path' => Storage::disk('linkedin_media')->path($path)
-                ]);
-                $content = [
-                    'file_path' => $path,
-                    'caption' => $validated['content']['caption'] ?? '',
-                    'original_filename' => $validated['content']['original_filename'],
-                ];
-                break;
-
-            case 'article':
-                $request->validate([
-                    'content.url' => 'required|url',
-                    'content.title' => 'required|string|max:200',
-                    'content.description' => 'nullable|string|max:500',
-                    'content.caption' => 'nullable|string',
-                ]);
-                $content = [
-                    'url' => $validated['content']['url'],
-                    'title' => $validated['content']['title'],
-                    'description' => $validated['content']['description'],
-                    'caption' => $validated['content']['caption'] ?? '',
-                ];
-                break;
-                
-            default:
-                return response()->json(['error' => 'Invalid post type'], 400);
-        }
-
-        $campaign = LinkedinCampaign::findOrFail($validated['campaign_id']);
-
-        $post = ScheduledLinkedinPost::create([
-            'user_id' => Auth::id(),
-            'linkedin_user_id' => $validated['linkedin_id'],
-            'campaign_id' => $campaign->id,
-            'type' => $validated['type'],
-            'content' => json_encode($content),
-            'scheduled_time' => $validated['scheduled_date'],
-            'status' => 'queued',
-        ]);
-
-        ScheduleLinkedInPost::dispatch($post)->delay(Carbon::parse($validated['scheduled_date']));
-        
-        if (config('queue.default') === 'database') {
-            $jobRecord = DB::table('jobs')
-                ->where('payload', 'like', '%ScheduleLinkedInPost%')
-                ->where('payload', 'like', '%'.$post->id.'%')
-                ->orderBy('id', 'desc')
-                ->first();
-                
-            if ($jobRecord) {
-                $post->update(['job_id' => $jobRecord->id]);
+    public function publish(Request $request)
+    {
+        try {
+            $user = Auth::user();
+            if (!$user->post_perm) {
+                return response()->json([
+                    'status' => 403,
+                    'error' => "Vous n'avez pas la permission pour publier des posts"
+                ], 403);
             }
-        }
 
-        return response()->json(['message' => 'Post planifié avec succès']);
+            // Check available posts
+            $subscription = Subscription::where('user_id', Auth::id())
+                ->where('date_expiration', '>', now())
+                ->first();
+
+            if (!$subscription || $subscription->available_posts < 1) {
+                return response()->json([
+                    'status' => 403,
+                    'error' => 'Nombre de posts disponibles insuffisant'
+                ], 403);
+            }
+
+            // Validate request data
+            $validated = $request->validate([
+                'linkedin_id' => 'required|exists:linkedin_users,id',
+                'type' => 'required|in:text,image,video,article',
+                'scheduled_date' => 'required|date|after:now',
+                'content' => 'required|array',
+                'campaign_id' => 'required|exists:linkedin_campaigns,id',
+            ]);
+
+            switch ($validated['type']) {
+                case 'text':
+                    $request->validate(['content.text' => 'required|string|max:3000']);
+                    $content = ['text' => $validated['content']['text']];
+                    break;
+
+                case 'image':
+                case 'video':
+                    $request->validate([
+                        'content.file' => 'required|file|max:50000',
+                        'content.caption' => 'nullable|string',
+                        'content.original_filename' => 'required|string',
+                    ]);
+                    $file = $request->file('content.file');
+                    $path = $file->store('', 'linkedin_media');
+                    Log::info('Stored LinkedIn media', [
+                        'path' => $path,
+                        'full_path' => Storage::disk('linkedin_media')->path($path)
+                    ]);
+                    $content = [
+                        'file_path' => $path,
+                        'caption' => $validated['content']['caption'] ?? '',
+                        'original_filename' => $validated['content']['original_filename'],
+                    ];
+                    break;
+
+                case 'article':
+                    $request->validate([
+                        'content.url' => 'required|url',
+                        'content.title' => 'required|string|max:200',
+                        'content.description' => 'nullable|string|max:500',
+                        'content.caption' => 'nullable|string',
+                    ]);
+                    $content = [
+                        'url' => $validated['content']['url'],
+                        'title' => $validated['content']['title'],
+                        'description' => $validated['content']['description'],
+                        'caption' => $validated['content']['caption'] ?? '',
+                    ];
+                    break;
+
+                default:
+                    return response()->json(['error' => 'Type de post invalide'], 400);
+            }
+
+            $campaign = LinkedinCampaign::findOrFail($validated['campaign_id']);
+
+            $post = ScheduledLinkedinPost::create([
+                'user_id' => Auth::id(),
+                'linkedin_user_id' => $validated['linkedin_id'],
+                'campaign_id' => $campaign->id,
+                'type' => $validated['type'],
+                'content' => json_encode($content),
+                'scheduled_time' => $validated['scheduled_date'],
+                'status' => 'queued',
+            ]);
+
+            // Update available posts
+            $subscription->available_posts -= 1;
+            $subscription->save();
+
+            ScheduleLinkedInPost::dispatch($post)->delay(Carbon::parse($validated['scheduled_date']));
+
+            if (config('queue.default') === 'database') {
+                $jobRecord = DB::table('jobs')
+                    ->where('payload', 'like', '%ScheduleLinkedInPost%')
+                    ->where('payload', 'like', '%'.$post->id.'%')
+                    ->orderBy('id', 'desc')
+                    ->first();
+
+                if ($jobRecord) {
+                    $post->update(['job_id' => $jobRecord->id]);
+                }
+            }
+
+            return response()->json([
+                'message' => 'Post planifié avec succès. Posts restants: ' . $subscription->available_posts
+            ], 200);
+        } catch (\Exception $e) {
+            Log::error('Error publishing post', [
+                'error' => $e->getMessage(),
+                'data' => $request->all()
+            ]);
+            return response()->json(['error' => 'Une erreur s\'est produite lors de la planification de votre post ! ' . $e->getMessage()], 500);
+        }
     }
 
-
     // FUNCTION TO POST A SIGNLE POST WITHOUT ANY CAMPAIGN
-    public function publishSinglePost(Request $request) {
-        $user = Auth::user();
-
-        if (!$user->post_perm) {
-            return response()->json([
-                'status' => 403,
-                'error' => 'Vous n\'avez pas la permission pour planifier un post'
-            ], 403);
-        }
-        
-        $validated = $request->validate([
-            'linkedin_id' => 'required|exists:linkedin_users,id',
-            'type' => 'required|in:text,image,video,article',
-            'scheduled_date' => 'required|date|after:now',
-            'content' => 'required|array',
-        ]);
-        
-        switch ($validated['type']) {
-            case 'text':
-                $request->validate(['content.text' => 'required|string|max:3000']);
-                $content = ['text' => $validated['content']['text']];
-                break;
-
-            case 'image':
-            case 'video':
-                $request->validate([
-                    'content.file' => 'required|file|max:50000',
-                    'content.caption' => 'nullable|string',
-                    'content.original_filename' => 'required|string',
-                ]);
-                $file = $request->file('content.file');
-                $path = $file->store('', 'linkedin_media');
-                Log::info('Stored LinkedIn media', [
-                    'path' => $path,
-                    'full_path' => Storage::disk('linkedin_media')->path($path)
-                ]);
-                $content = [
-                    'file_path' => $path,
-                    'caption' => $validated['content']['caption'] ?? '',
-                    'original_filename' => $validated['content']['original_filename'],
-                ];
-                break;
-
-            case 'article':
-                $request->validate([
-                    'content.url' => 'required|url',
-                    'content.title' => 'required|string|max:200',
-                    'content.description' => 'nullable|string|max:500',
-                    'content.caption' => 'nullable|string',
-                ]);
-                $content = [
-                    'url' => $validated['content']['url'],
-                    'title' => $validated['content']['title'],
-                    'description' => $validated['content']['description'],
-                    'caption' => $validated['content']['caption'] ?? '',
-                ];
-                break;
-                
-            default:
-                return response()->json(['error' => 'Invalid post type'], 400);
-        }
-
-        $post = ScheduledLinkedinPost::create([
-            'user_id' => Auth::id(),
-            'linkedin_user_id' => $validated['linkedin_id'],
-            'campaign_id' => null,
-            'type' => $validated['type'],
-            'content' => json_encode($content),
-            'scheduled_time' => $validated['scheduled_date'],
-            'status' => 'queued',
-        ]);
-
-        ScheduleLinkedinSinglePost::dispatch($post)->delay(Carbon::parse($validated['scheduled_date']));
-        
-        if (config('queue.default') === 'database') {
-            $jobRecord = DB::table('jobs')
-                ->where('payload', 'like', '%ScheduleLinkedinSinglePost%')
-                ->where('payload', 'like', '%'.$post->id.'%')
-                ->orderBy('id', 'desc')
-                ->first();
-                
-            if ($jobRecord) {
-                $post->update(['job_id' => $jobRecord->id]);
+   public function publishSinglePost(Request $request)
+    {
+        try {
+            $user = Auth::user();
+            if (!$user->post_perm) {
+                return response()->json([
+                    'status' => 403,
+                    'error' => "Vous n'avez pas la permission pour planifier un post"
+                ], 403);
             }
+
+            // Check available posts
+            $subscription = Subscription::where('user_id', Auth::id())
+                ->where('date_expiration', '>', now())
+                ->first();
+
+            if (!$subscription || $subscription->available_posts < 1) {
+                return response()->json([
+                    'status' => 403,
+                    'error' => 'Nombre de posts disponibles insuffisant'
+                ], 403);
+            }
+
+            // Validate request data
+            $validated = $request->validate([
+                'linkedin_id' => 'required|exists:linkedin_users,id',
+                'type' => 'required|in:text,image,video,article',
+                'scheduled_date' => 'required|date|after:now',
+                'content' => 'required|array',
+            ]);
+
+            switch ($validated['type']) {
+                case 'text':
+                    $request->validate(['content.text' => 'required|string|max:3000']);
+                    $content = ['text' => $validated['content']['text']];
+                    break;
+
+                case 'image':
+                case 'video':
+                    $request->validate([
+                        'content.file' => 'required|file|max:50000',
+                        'content.caption' => 'nullable|string',
+                        'content.original_filename' => 'required|string',
+                    ]);
+                    $file = $request->file('content.file');
+                    $path = $file->store('', 'linkedin_media');
+                    Log::info('Stored LinkedIn media', [
+                        'path' => $path,
+                        'full_path' => Storage::disk('linkedin_media')->path($path)
+                    ]);
+                    $content = [
+                        'file_path' => $path,
+                        'caption' => $validated['content']['caption'] ?? '',
+                        'original_filename' => $validated['content']['original_filename'],
+                    ];
+                    break;
+
+                case 'article':
+                    $request->validate([
+                        'content.url' => 'required|url',
+                        'content.title' => 'required|string|max:200',
+                        'content.description' => 'nullable|string|max:500',
+                        'content.caption' => 'nullable|string',
+                    ]);
+                    $content = [
+                        'url' => $validated['content']['url'],
+                        'title' => $validated['content']['title'],
+                        'description' => $validated['content']['description'],
+                        'caption' => $validated['content']['caption'] ?? '',
+                    ];
+                    break;
+
+                default:
+                    return response()->json(['error' => 'Type de post invalide'], 400);
+            }
+
+            $post = ScheduledLinkedinPost::create([
+                'user_id' => Auth::id(),
+                'linkedin_user_id' => $validated['linkedin_id'],
+                'campaign_id' => null,
+                'type' => $validated['type'],
+                'content' => json_encode($content),
+                'scheduled_time' => $validated['scheduled_date'],
+                'status' => 'queued',
+            ]);
+
+            // Update available posts
+            $subscription->available_posts -= 1;
+            $subscription->save();
+
+            ScheduleLinkedinSinglePost::dispatch($post)->delay(Carbon::parse($validated['scheduled_date']));
+
+            if (config('queue.default') === 'database') {
+                $jobRecord = DB::table('jobs')
+                    ->where('payload', 'like', '%ScheduleLinkedinSinglePost%')
+                    ->where('payload', 'like', '%'.$post->id.'%')
+                    ->orderBy('id', 'desc')
+                    ->first();
+
+                if ($jobRecord) {
+                    $post->update(['job_id' => $jobRecord->id]);
+                }
+            }
+
+            return response()->json([
+                'message' => 'Post planifié avec succès. Posts restants: ' . $subscription->available_posts
+            ], 200);
+        } catch (\Exception $e) {
+            Log::error('Error publishing single post', [
+                'error' => $e->getMessage(),
+                'data' => $request->all()
+            ]);
+            return response()->json(['error' => 'Une erreur s\'est produite lors de la planification de votre post ! ' . $e->getMessage()], 500);
         }
-
-        return response()->json(['message' => 'Post planifié avec succès'], 200);
-
     }
 
 
