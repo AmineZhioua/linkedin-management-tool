@@ -20,15 +20,16 @@ class StripeController extends Controller
         return view('checkout');
     }
 
-    public function applyCoupon(Request $request) {
+    public function applyCoupon(Request $request)
+    {
         $couponCode = $request->input('coupon_code');
         $coupon = Coupon::where('code', $couponCode)->first();
 
         if ($coupon && $coupon->isValid()) {
             session(['applied_coupon' => $couponCode]);
             return response()->json([
-                'success' => true, 
-                'discount' => $coupon->discount, 
+                'success' => true,
+                'discount' => $coupon->discount,
                 'type' => $coupon->type
             ]);
         }
@@ -36,9 +37,10 @@ class StripeController extends Controller
         return response()->json(['success' => false, 'error' => 'Code promo invalide ou expiré.']);
     }
 
-    public function session(Request $request) {
+    public function session(Request $request)
+    {
         require_once base_path('vendor/autoload.php');
-        
+
         Stripe::setApiKey(env('STRIPE_SECRET_KEY'));
 
         $price = floatval($request->get('price'));
@@ -51,7 +53,7 @@ class StripeController extends Controller
             return redirect()->route('subscriptions')
                 ->with('subscription_notfound', "Abonnement supprimé ou n'est pas trouvé!");
         }
-        
+
         // Apply Discount if available
         if ($discount > 0) {
             $price = $price - ($price * $discount / 100);
@@ -99,18 +101,21 @@ class StripeController extends Controller
 
         UserSubscription::updateOrCreate(
             [
-                'user_id' => $userId, 
+                'user_id' => $userId,
                 'subscription_id' => $subscription->id,
                 'pricing_mode' => $pricingMode
             ],
-            ['date_expiration' => $expirationDate]
+            [
+                'date_expiration' => $expirationDate,
+                'boost_likes' => $subscription->boost_likes,
+                'available_posts' => $subscription->available_posts
+            ]
         );
 
         // Update user permissions based on subscription features
         $user = Auth::user();
         if ($user instanceof \App\Models\User) {
             $user->post_perm = ($subscription->linkedin == 1 || $subscription->whatsapp == 1) ? true : false;
-
             $user->save();
         } else {
             Log::error('Authenticated user is not an instance of the User model.');
@@ -118,17 +123,18 @@ class StripeController extends Controller
 
         session()->forget(['subscription_id', 'pricingMode']);
 
-        if(!$userLinkedinAccount) {
+        if (!$userLinkedinAccount) {
             return redirect()->route('login-linkedin')
                 ->with('success_payment', 'Votre Abonnement est maintenant Activé!');
-
         } else {
-            return redirect()->route('dashboard')->with('success_payment', 'Votre Abonnement  est maintenant Activé!'); 
+            return redirect()->route('dashboard')
+                ->with('success_payment', 'Votre Abonnement est maintenant Activé!');
         }
     }
 
     public function cancel()
     {
-        return redirect()->route('subscriptions')->with('cancel_payment', 'Abonnement Annulé!');
+        return redirect()->route('subscriptions')
+            ->with('cancel_payment', 'Abonnement Annulé!');
     }
 }

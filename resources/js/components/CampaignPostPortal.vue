@@ -477,6 +477,7 @@ export default {
             this.$emit('close');
             this.showConfirmExit = false;
         },
+        
     },
 };
 </script>

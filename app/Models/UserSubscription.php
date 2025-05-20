@@ -16,6 +16,8 @@ class UserSubscription extends Model
         'subscription_id',
         'pricing_mode',
         'date_expiration',
+        'boost_likes',
+        'available_posts',
     ];
 
     protected $casts = [

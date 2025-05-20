@@ -2,48 +2,40 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
 use App\Models\Subscription;
+use Illuminate\Database\Seeder;
 
 class SubscriptionSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
-    public function run()
+    public function run(): void
     {
-        Subscription::create([
-            'name' => 'LinkedIn Plan',
-            'monthly_price' => 22,
-            'yearly_price' => 120,
-            'description' => 'Accès premium avec plus de fonctionnalités',
-            'features' => json_encode(['Hausse de 100 likes', 'Accès limité', 'Support prioritaire']),
-            'linkedin' => true,
-            'whatsapp' => false,
-            'discount' => 0,
-        ]);
+        $subscriptions = [
+            [
+                'name' => 'Basic',
+                'monthly_price' => 9.99,
+                'yearly_price' => 99.99,
+                'description' => 'Basic subscription plan',
+                'boost_likes' => 50,
+                'available_posts' => 10,
+                'linkedin' => 1,
+                'whatsapp' => 0,
+                'discount' => 0,
+            ],
+            [
+                'name' => 'Premium',
+                'monthly_price' => 19.99,
+                'yearly_price' => 199.99,
+                'description' => 'Premium subscription plan',
+                'boost_likes' => 200,
+                'available_posts' => 50,
+                'linkedin' => 1,
+                'whatsapp' => 1,
+                'discount' => 10,
+            ],
+        ];
 
-        Subscription::create([
-            'name' => 'WhatsApp Plan',
-            'monthly_price' => 19,
-            'yearly_price' => 59.99,
-            'description' => 'Accès premium avec plus de fonctionnalités',
-            'features' => json_encode(['Hausse de 500 likes', 'Accès illimité', 'Support prioritaire']),
-            'linkedin' => false,
-            'whatsapp' => true,
-            'discount' => 0,
-        ]);
-
-        Subscription::create([
-            'name' => 'WhatsApp & LinkedIn Plan',
-            'monthly_price' => 50,
-            'yearly_price' => 150,
-            'description' => 'Accès premium avec plus de fonctionnalités',
-            'features' => json_encode(['Hausse de 500 likes', 'Accès illimité', 'Support prioritaire']),
-            'linkedin' => true,
-            'whatsapp' => true,
-            'discount' => 10,
-        ]);
+        foreach ($subscriptions as $subscription) {
+            Subscription::create($subscription);
+        }
     }
 }

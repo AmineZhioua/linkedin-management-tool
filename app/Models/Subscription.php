@@ -14,13 +14,12 @@ class Subscription extends Model
         'monthly_price',
         'yearly_price',
         'description',
-        'features',
         'linkedin',
         'whatsapp',
         'discount',
+        'boost_likes',
+        'available_posts',
     ];
 
-    protected $casts = [
-        'features' => 'array', // Convert JSON field to array automatically
-    ];
+    // No casts needed since features is removed
 }
