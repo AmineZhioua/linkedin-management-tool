@@ -84,11 +84,31 @@ class User extends Authenticatable implements MustVerifyEmail
     public function scopeFilter($query, $search = null)
     {
         if ($search) {
-            $query->where('name', 'like', '%' . $search . '%')
-                  ->orWhere('email', 'like', '%' . $search . '%');
+            $searchTerm = '%' . $search . '%';
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('name', 'like', $searchTerm)
+                  ->orWhere('email', 'like', $searchTerm);
+            });
         }
 
         return $query;
+    }
+
+    /**
+     * Scope a query to order users by a specified column.
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param string $column
+     * @param string $direction
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeOrder($query, $column = 'name', $direction = 'asc')
+    {
+        $validColumns = ['name', 'email', 'last_activity', 'created_at'];
+        $column = in_array($column, $validColumns) ? $column : 'name';
+        $direction = in_array(strtolower($direction), ['asc', 'desc']) ? $direction : 'asc';
+
+        return $query->orderBy($column, $direction);
     }
 
     /**
@@ -110,9 +130,9 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function scopeNotSuspended($query)
     {
-        return $query->where(function ($query) {
-            $query->whereNull('suspend_end')
-                  ->orWhere('suspend_end', '<', now());
+        return $query->where(function ($q) {
+            $q->whereNull('suspend_end')
+              ->orWhere('suspend_end', '<', now());
         });
     }
 
@@ -124,10 +144,12 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public static function getCachedUsers($search = null)
     {
-        $cacheKey = 'users_' . md5($search ?? 'all') . '_page_' . request()->get('page', 1);
-    
+        $cacheKey = 'users_' . md5(($search ?? 'all') . '_page_' . request()->get('page', 1));
+
         return Cache::remember($cacheKey, now()->addMinutes(10), function () use ($search) {
-            return static::filter($search)->paginate(10);
+            return static::filter($search)
+                ->order('name', 'asc')
+                ->paginate(10);
         });
     }
 
@@ -151,5 +173,50 @@ class User extends Authenticatable implements MustVerifyEmail
     public function isSuspended()
     {
         return $this->suspend_end && now()->lessThan($this->suspend_end);
+    }
+
+    /**
+     * Clear cached user data when user is updated or deleted.
+     *
+     * @return void
+     */
+    public static function clearUserCaches()
+    {
+        Cache::forget('active_users_count');
+    
+        // Clear all cached user pages
+        $page = 1;
+        while (Cache::has('users_' . md5('all_page_' . $page))) {
+            Cache::forget('users_' . md5('all_page_' . $page));
+            $page++;
+        }
+    
+        // Clear cached search results
+        if (request()->has('search')) {
+            $search = request()->query('search');
+            $page = 1;
+            while (Cache::has('users_' . md5($search . '_page_' . $page))) {
+                Cache::forget('users_' . md5($search . '_page_' . $page));
+                $page++;
+            }
+        }
+    }
+
+    /**
+     * Boot the model to clear caches on certain events.
+     */
+    protected static function booted()
+    {
+        static::created(function () {
+            static::clearUserCaches();
+        });
+
+        static::updated(function () {
+            static::clearUserCaches();
+        });
+
+        static::deleted(function () {
+            static::clearUserCaches();
+        });
     }
 }
