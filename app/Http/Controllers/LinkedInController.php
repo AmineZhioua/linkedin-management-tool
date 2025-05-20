@@ -59,23 +59,9 @@ class LinkedInController extends Controller
                 'end_date' => 'required|date|after:start_date',
             ]);
 
-            // Calculate number of posts
-            $startDate = Carbon::parse($validated['start_date']);
-            $endDate = Carbon::parse($validated['end_date']);
-            $days = $startDate->diffInDays($endDate) + 1; // Inclusive of start and end date
-            $totalPosts = $days * $validated['frequency_per_day'];
 
-            // Check available posts
-            $subscription = Subscription::where('user_id', Auth::id())
-                ->where('date_expiration', '>', now())
-                ->first();
 
-            if (!$subscription || $subscription->available_posts < $totalPosts) {
-                return response()->json([
-                    'status' => 403,
-                    'error' => 'Nombre de posts disponibles insuffisant pour cette campagne'
-                ], 403);
-            }
+
 
             $campaign = LinkedinCampaign::firstOrCreate(
                 [
@@ -228,8 +214,13 @@ class LinkedInController extends Controller
             $subscription = Subscription::where('user_id', Auth::id())
                 ->where('date_expiration', '>', now())
                 ->first();
+            // Calculate number of posts
+            $startDate = Carbon::parse($validated['start_date']);
+            $endDate = Carbon::parse($validated['end_date']);
+            $days = $startDate->diffInDays($endDate) + 1; // Inclusive of start and end date
+            $totalPosts = $days * $validated['frequency_per_day'];
 
-            if (!$subscription || $subscription->available_posts < 1) {
+            if (!$subscription || $subscription->available_posts < $totalPosts) {
                 return response()->json([
                     'status' => 403,
                     'error' => 'Nombre de posts disponibles insuffisant'
@@ -303,7 +294,7 @@ class LinkedInController extends Controller
             ]);
 
             // Update available posts
-            $subscription->available_posts -= 1;
+            $subscription->available_posts = $subscription->available_posts - $totalPosts;
             $subscription->save();
 
             ScheduleLinkedInPost::dispatch($post)->delay(Carbon::parse($validated['scheduled_date']));
