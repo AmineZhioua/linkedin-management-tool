@@ -38,13 +38,11 @@ class LinkedInController extends Controller
 
      public function createCampaign(Request $request) {
         try {
-            // Check post permission
             $user = Auth::user();
-            if (!$user->post_perm) {
-                return response()->json([
-                    'status' => 403,
-                    'error' => "Vous n'avez pas la permission pour publier des posts"
-                ], 403);
+            
+            // Check post permission
+            if ($user->post_perm != 1) {
+                return response()->json(['error' => 'Vous n\'avez pas la permission de créer des campagnes !'], 403);
             }
 
             // Validate request data
@@ -66,20 +64,19 @@ class LinkedInController extends Controller
             $totalPosts = $days * $validated['frequency_per_day'];
 
             // Check available posts
-            $subscription = UserSubscription::where('user_id', Auth::id())
-                ->where('date_expiration', '>', now())
-                ->first();
-
-            if (!$subscription || $subscription->available_posts < $totalPosts) {
-                return response()->json([
-                    'status' => 403,
-                    'error' => 'Nombre de posts disponibles insuffisant pour cette campagne'
-                ], 403);
+            $userSubscription = UserSubscription::where('user_id', $user->id)->first();
+            
+            if (!$userSubscription) {
+                return response()->json(['error' => 'Vous n\'avez pas d\'abonnement actif !'], 403);
             }
 
-            $campaign = LinkedinCampaign::firstOrCreate(
+            if ($userSubscription->available_posts < $totalPosts) {
+                return response()->json(['error' => 'Vous n\'avez pas assez de posts disponibles pour cette campagne !'], 403);
+            }
+
+            $campaign = LinkedinUser::firstOrCreate(
                 [
-                    'user_id' => Auth::id(),
+                    'user_id' => $user->id,
                     'linkedin_user_id' => $validated['linkedin_id'],
                     'name' => $validated['name'] ?? 'Campaign ' . now()->toDateTimeString(),
                     'start_date' => $validated['start_date'],
@@ -94,16 +91,16 @@ class LinkedInController extends Controller
                 ]
             );
 
-            // Update available posts
-            $subscription->available_posts -= $totalPosts;
-            $subscription->save();
-
             CheckCampaignStartStatus::dispatch($campaign)->delay(Carbon::parse($validated['start_date']));
+
+            // Deduct available posts
+            $userSubscription->available_posts -= $totalPosts;
+            $userSubscription->save();
 
             return response()->json([
                 'id' => $campaign->id,
                 'status' => 201,
-                'message' => 'Campagne créée avec succès. Posts restants: ' . $subscription->available_posts
+                'message' => 'Campagne créée avec succès. '
             ], 201);
         } catch (\Exception $e) {
             Log::error('Error creating campaign', [
@@ -216,23 +213,10 @@ class LinkedInController extends Controller
     public function publish(Request $request) {
         try {
             $user = Auth::user();
-            if (!$user->post_perm) {
-                return response()->json([
-                    'status' => 403,
-                    'error' => "Vous n'avez pas la permission pour publier des posts"
-                ], 403);
-            }
-
-            // Check available posts
-            $subscription = UserSubscription::where('user_id', Auth::id())
-                ->where('date_expiration', '>', now())
-                ->first();
-
-            if (!$subscription || $subscription->available_posts < 1) {
-                return response()->json([
-                    'status' => 403,
-                    'error' => 'Nombre de posts disponibles insuffisant'
-                ], 403);
+            
+            // Check post permission
+            if ($user->post_perm != 1) {
+                return response()->json(['error' => 'Vous n\'avez pas la permission de créer des posts !'], 403);
             }
 
             // Validate request data
@@ -292,7 +276,7 @@ class LinkedInController extends Controller
             $campaign = LinkedinCampaign::findOrFail($validated['campaign_id']);
 
             $post = ScheduledLinkedinPost::create([
-                'user_id' => Auth::id(),
+                'user_id' => $user->id,
                 'linkedin_user_id' => $validated['linkedin_id'],
                 'campaign_id' => $campaign->id,
                 'type' => $validated['type'],
@@ -300,10 +284,6 @@ class LinkedInController extends Controller
                 'scheduled_time' => $validated['scheduled_date'],
                 'status' => 'queued',
             ]);
-
-            // Update available posts
-            $subscription->available_posts -= 1;
-            $subscription->save();
 
             ScheduleLinkedInPost::dispatch($post)->delay(Carbon::parse($validated['scheduled_date']));
 
@@ -320,7 +300,7 @@ class LinkedInController extends Controller
             }
 
             return response()->json([
-                'message' => 'Post planifié avec succès. Posts restants: ' . $subscription->available_posts
+                'message' => 'Post planifié avec succès'
             ], 200);
         } catch (\Exception $e) {
             Log::error('Error publishing post', [
@@ -335,23 +315,21 @@ class LinkedInController extends Controller
     public function publishSinglePost(Request $request) {
         try {
             $user = Auth::user();
-            if (!$user->post_perm) {
-                return response()->json([
-                    'status' => 403,
-                    'error' => "Vous n'avez pas la permission pour planifier un post"
-                ], 403);
+            
+            // Check post permission
+            if ($user->post_perm != 1) {
+                return response()->json(['error' => 'Vous n\'avez pas la permission de créer des posts !'], 403);
             }
 
             // Check available posts
-            $subscription = UserSubscription::where('user_id', Auth::id())
-                ->where('date_expiration', '>', now())
-                ->first();
+            $userSubscription = UserSubscription::where('user_id', $user->id)->first();
+            
+            if (!$userSubscription) {
+                return response()->json(['error' => 'Vous n\'avez pas d\'abonnement actif !'], 403);
+            }
 
-            if (!$subscription || $subscription->available_posts < 1) {
-                return response()->json([
-                    'status' => 403,
-                    'error' => 'Nombre de posts disponibles insuffisant'
-                ], 403);
+            if ($userSubscription->available_posts < 1) {
+                return response()->json(['error' => 'Vous n\'avez pas assez de posts disponibles !'], 403);
             }
 
             // Validate request data
@@ -408,7 +386,7 @@ class LinkedInController extends Controller
             }
 
             $post = ScheduledLinkedinPost::create([
-                'user_id' => Auth::id(),
+                'user_id' => $user->id,
                 'linkedin_user_id' => $validated['linkedin_id'],
                 'campaign_id' => null,
                 'type' => $validated['type'],
@@ -417,9 +395,9 @@ class LinkedInController extends Controller
                 'status' => 'queued',
             ]);
 
-            // Update available posts
-            $subscription->available_posts -= 1;
-            $subscription->save();
+            // Deduct available posts
+            $userSubscription->available_posts -= 1;
+            $userSubscription->save();
 
             ScheduleLinkedinSinglePost::dispatch($post)->delay(Carbon::parse($validated['scheduled_date']));
 
@@ -436,7 +414,7 @@ class LinkedInController extends Controller
             }
 
             return response()->json([
-                'message' => 'Post planifié avec succès. Posts restants: ' . $subscription->available_posts
+                'message' => 'Post planifié avec succès.'
             ], 200);
         } catch (\Exception $e) {
             Log::error('Error publishing single post', [
