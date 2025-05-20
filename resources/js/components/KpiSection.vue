@@ -19,13 +19,54 @@
             </p>
         </div>
 
-
+        <!-- Engagement Rate Charts Section -->
         <div class="flex flex-col gap-3 mt-4">
             <h3 class="fw-semibold text-2xl">Taux d'Engagement :</h3>
 
             <div class="grid grid-cols-4 gap-3">
+                <!-- Text Posts Engagement Chart -->
                 <div class="chart-container bg-white p-2 pt-4 rounded-lg shadow-lg" style="position: relative; height: 450px;">
-                    <canvas id="postTypeDoughnutChart"></canvas>
+                    <h4 class="text-center font-semibold mb-2">Texte</h4>
+                    <canvas id="textEngagementChart"></canvas>
+                    <div v-if="isLoading" class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-70">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Chargement...</span>
+                        </div>
+                    </div>
+                    <div v-if="errorMsg && !isLoading" class="text-center text-danger mt-2">{{ errorMsg }}</div>
+                </div>
+                
+                <!-- Image Posts Engagement Chart -->
+                <div class="chart-container bg-white p-2 pt-4 rounded-lg shadow-lg" style="position: relative; height: 450px;">
+                    <h4 class="text-center font-semibold mb-2">Image</h4>
+                    <canvas id="imageEngagementChart"></canvas>
+                    <div v-if="isLoading" class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-70">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Chargement...</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Video Posts Engagement Chart -->
+                <div class="chart-container bg-white p-2 pt-4 rounded-lg shadow-lg" style="position: relative; height: 450px;">
+                    <h4 class="text-center font-semibold mb-2">Vidéo</h4>
+                    <canvas id="videoEngagementChart"></canvas>
+                    <div v-if="isLoading" class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-70">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Chargement...</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Article Posts Engagement Chart -->
+                <div class="chart-container bg-white p-2 pt-4 rounded-lg shadow-lg" style="position: relative; height: 450px;">
+                    <h4 class="text-center font-semibold mb-2">Article</h4>
+                    <canvas id="articleEngagementChart"></canvas>
+                    <div v-if="isLoading" class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-70">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Chargement...</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -37,14 +78,6 @@
                 <canvas id="postTypeDistributionChart"></canvas>
             </div>
         </div>
-
-        <!-- Doughnut Chart Section -->
-        <!-- <div class="mt-6">
-            <h1 class="text-3xl mb-4">Distribution des Types de Posts</h1>
-            <div class="chart-container bg-white p-2 pt-4 rounded-lg shadow-lg" style="position: relative; height: 450px;">
-                <canvas id="postTypeDoughnutChart"></canvas>
-            </div>
-        </div> -->
     </div>
 </template>
 
@@ -82,6 +115,12 @@ export default {
             currentWeekOffset: 0,
             barChartInstance: null,
             doughnutChartInstance: null,
+            // Engagement Charts
+            textEngagementChartInstance: null,
+            imageEngagementChartInstance: null,
+            videoEngagementChartInstance: null,
+            articleEngagementChartInstance: null,
+            isLoading: false,
             // Text Posts Variables
             totalTextPosts: 0,
             totalLikesTextPosts: 0,
@@ -98,6 +137,13 @@ export default {
             totalArticlePosts: 0,
             totalLikesArticlePosts: 0,
             totalCommentsArticlePosts: 0,
+            // Error tracking per post type
+            typeErrors: {
+                text: '',
+                image: '',
+                video: '',
+                article: ''
+            }
         };
     },
 
@@ -162,6 +208,7 @@ export default {
         renderCharts() {
             this.renderBarChart();
             this.renderDoughnutChart();
+            this.renderEngagementCharts();
         },
 
         // FUNCTION USED TO CALL THE DATA AND RENDER THE BAR CHART
@@ -276,6 +323,114 @@ export default {
             });
         },
 
+        // NEW FUNCTION TO RENDER ALL ENGAGEMENT CHARTS
+        renderEngagementCharts() {
+            this.renderTypeEngagementChart('text');
+            this.renderTypeEngagementChart('image');
+            this.renderTypeEngagementChart('video');
+            this.renderTypeEngagementChart('article');
+        },
+
+        // FUNCTION TO RENDER ENGAGEMENT CHART FOR EACH POST TYPE
+        renderTypeEngagementChart(type) {
+            const capitalizedType = type.charAt(0).toUpperCase() + type.slice(1);
+            const canvasId = `${type}EngagementChart`;
+            const chartInstanceProperty = `${type}EngagementChartInstance`;
+            
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) {
+                console.error(`${capitalizedType} engagement chart canvas not found`);
+                return;
+            }
+
+            if (this[chartInstanceProperty]) {
+                this[chartInstanceProperty].destroy();
+            }
+
+            // Get engagement data for this post type
+            const totalLikes = this[`totalLikes${capitalizedType}Posts`] || 0;
+            const totalComments = this[`totalComments${capitalizedType}Posts`] || 0;
+            const totalPosts = this[`total${capitalizedType}Posts`] || 0;
+
+            // Check if we have data to display
+            if (totalPosts === 0) {
+                this.typeErrors[type] = `Aucun post ${type} trouvé ou données non disponibles`;
+                
+                // Create empty chart with message
+                const ctx = canvas.getContext('2d');
+                this[chartInstanceProperty] = new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: ['Aucune donnée'],
+                        datasets: [{
+                            data: [1],
+                            backgroundColor: ['rgba(200, 200, 200, 0.5)'],
+                            borderColor: ['rgba(200, 200, 200, 1)'],
+                        }],
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false,
+                            },
+                            title: {
+                                display: true,
+                                text: 'Aucune donnée disponible',
+                            },
+                        },
+                    },
+                });
+                return;
+            }
+
+            // Create data for pie chart
+            const ctx = canvas.getContext('2d');
+            this[chartInstanceProperty] = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['Likes', 'Commentaires'],
+                    datasets: [{
+                        data: [totalLikes, totalComments],
+                        backgroundColor: [
+                            'rgba(54, 162, 235, 0.5)', // Likes
+                            'rgba(255, 206, 86, 0.5)'  // Comments
+                        ],
+                        borderColor: [
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)'
+                        ],
+                        borderWidth: 1,
+                    }],
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: true,
+                            position: 'bottom',
+                            text: `${totalPosts} post(s) - ${totalLikes + totalComments} interactions`,
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    const total = totalLikes + totalComments;
+                                    const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
+                                    return `${label}: ${value} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    },
+                },
+            });
+        },
 
         async getSocialActions() {
             this.isLoading = true;
@@ -326,62 +481,54 @@ export default {
             }
         },
 
-
         async getSocialActionsByType(type) {
+            // Set loading state for this type
             this.isLoading = true;
-            this.errorMsg = "";
-            const postedPosts = this.filterPostsByStatus();
-
+            this.typeErrors[type] = "";
+            
             const validTypes = ['text', 'image', 'video', 'article'];
             if (!validTypes.includes(type)) {
-                this.errorMsg = `Type de post non reconnu : ${type}`;
-                console.error(this.errorMsg);
+                this.typeErrors[type] = `Type de post non reconnu : ${type}`;
+                console.error(this.typeErrors[type]);
                 this.isLoading = false;
                 return;
             }
 
+            const postedPosts = this.filterPostsByStatus();
+            console.log("Total posted posts:", postedPosts.length);
+            
             const matchingPosts = postedPosts.filter(post => post.type === type);
+            console.log(`Posts of type ${type}:`, matchingPosts.length);
+            
+            // Reset counters for this type
+            const capitalizedType = type.charAt(0).toUpperCase() + type.slice(1);
+            this[`total${capitalizedType}Posts`] = 0;
+            this[`totalLikes${capitalizedType}Posts`] = 0;
+            this[`totalComments${capitalizedType}Posts`] = 0;
+            
+            // Early return if no matching posts
             if (matchingPosts.length === 0) {
-                this.errorMsg = `Aucun post de type ${type} trouvé`;
-                console.warn(this.errorMsg);
-                switch (type) {
-                    case 'text':
-                        this.totalTextPosts = 0;
-                        this.totalLikesTextPosts = 0;
-                        this.totalCommentsTextPosts = 0;
-                        break;
-                    case 'image':
-                        this.totalImagePosts = 0;
-                        this.totalLikesImagePosts = 0;
-                        this.totalCommentsImagePosts = 0;
-                        break;
-                    case 'video':
-                        this.totalVideoPosts = 0;
-                        this.totalLikesVideoPosts = 0;
-                        this.totalCommentsVideoPosts = 0;
-                        break;
-                    case 'article':
-                        this.totalArticlePosts = 0;
-                        this.totalLikesArticlePosts = 0;
-                        this.totalCommentsArticlePosts = 0;
-                        break;
-                }
+                this.typeErrors[type] = `Aucun post de type ${type} trouvé`;
+                console.warn(this.typeErrors[type]);
                 this.isLoading = false;
+                // Render empty chart
+                this.renderTypeEngagementChart(type);
                 return;
             }
 
             try {
-                for (let i = 0; i < postedPosts.length; i++) {
-                    if (postedPosts[i].type === type) {
-                        const post = postedPosts[i];
-                        const linkedinUser = this.getUserLinkedinInfo(post.linkedin_user_id);
+                // Process only matching posts instead of filtering in the loop
+                for (let i = 0; i < matchingPosts.length; i++) {
+                    const post = matchingPosts[i];
+                    const linkedinUser = this.getUserLinkedinInfo(post.linkedin_user_id);
 
-                        if (!linkedinUser) {
-                            console.error(`No LinkedIn user found for linkedin_user_id: ${post.linkedin_user_id}`);
-                            this.errorMsg = `Utilisateur LinkedIn non trouvé pour le post ${post.id}`;
-                            continue;
-                        }
+                    if (!linkedinUser) {
+                        console.error(`No LinkedIn user found for linkedin_user_id: ${post.linkedin_user_id}`);
+                        this.typeErrors[type] = `Utilisateur LinkedIn non trouvé pour le post ${post.id}`;
+                        continue;
+                    }
 
+                    try {
                         const response = await axios.get('/linkedin/get-social-actions', {
                             params: {
                                 post_id: post.id,
@@ -395,65 +542,72 @@ export default {
                         });
 
                         if (response.status === 200) {
-                            switch (type) {
-                                case 'text':
-                                    this.totalTextPosts++;
-                                    this.totalLikesTextPosts += response.data.likesSummary.totalLikes;
-                                    this.totalCommentsTextPosts += response.data.commentsSummary.aggregatedTotalComments;
-
-                                    break;
-                                case 'image':
-                                    this.totalImagePosts++;
-                                    this.totalLikesImagePosts += response.data.likesSummary.totalLikes;
-                                    this.totalCommentsImagePosts += response.data.commentsSummary.aggregatedTotalComments;
-
-                                    break;
-                                case 'video':
-                                    this.totalVideoPosts++;
-                                    this.totalLikesVideoPosts += response.data.likesSummary.totalLikes;
-                                    this.totalCommentsVideoPosts += response.data.commentsSummary.aggregatedTotalComments;
-
-                                    break;
-                                case 'article':
-                                    this.totalArticlePosts++;
-                                    this.totalLikesArticlePosts += response.data.likesSummary.totalLikes;
-                                    this.totalCommentsArticlePosts += response.data.commentsSummary.aggregatedTotalComments;
-
-                                    break;
-                            }
+                            this[`total${capitalizedType}Posts`]++;
+                            this[`totalLikes${capitalizedType}Posts`] += response.data.likesSummary.totalLikes;
+                            this[`totalComments${capitalizedType}Posts`] += response.data.commentsSummary.aggregatedTotalComments;
+                            
                             console.log(`Social actions for post ${post.id}:`, response.data);
                         } else {
-                            this.errorMsg = `Erreur lors de la récupération des données pour le post ${post.id}`;
+                            this.typeErrors[type] = `Erreur lors de la récupération des données pour le post ${post.id}`;
                             console.error(`Non-200 status for post ${post.id}:`, response.status);
+                        }
+                    } catch (innerError) {
+                        if (innerError.response) {
+                            if (innerError.response.status === 401) {
+                                this.typeErrors[type] = `Token expiré ou invalide`;
+                            } else if (innerError.response.status === 403) {
+                                this.typeErrors[type] = `Permissions insuffisantes pour accéder aux données`;
+                            } else if (innerError.response.status === 404) {
+                                console.warn(`Post ${post.id} non trouvé, peut-être supprimé`);
+                                // We don't set error for 404s as these are expected for deleted posts
+                            } else {
+                                this.typeErrors[type] = `Erreur: ${innerError.response.data?.error || 'Problème inconnu'}`;
+                            }
+                        } else {
+                            console.error(`Error processing post ${post.id}:`, innerError);
+                            this.typeErrors[type] = `Problème de connexion au serveur`;
                         }
                     }
                 }
             } catch (error) {
-                if (error.response && error.response.status === 400) {
-                    console.error("Validation errors:", error.response.data.errors);
-                    this.errorMsg = `Erreur de validation : ${JSON.stringify(error.response.data.errors)}`;
-                } else if(error.response.status === 403) {
-                    this.errorMsg = `Vous avez besoin d'au moins 10 Posts publié pour activer vos KPIs`;
+                if (error.response) {
+                    if (error.response.status === 400) {
+                        console.error("Validation errors:", error.response.data.errors);
+                        this.typeErrors[type] = `Erreur de validation : ${JSON.stringify(error.response.data.errors)}`;
+                    } else if (error.response.status === 403) {
+                        this.typeErrors[type] = `Vous avez besoin d'au moins 10 Posts publié pour activer vos KPIs`;
+                    } else {
+                        console.error("Request error status:", error.response.status);
+                        this.typeErrors[type] = `Erreur lors de la récupération des données. Status: ${error.response.status}`;
+                    }
                 } else {
                     console.error("Request error:", error);
-                    this.errorMsg = "Erreur lors de la récupération des données.";
+                    this.typeErrors[type] = "Erreur lors de la récupération des données.";
                 }
             } finally {
                 this.isLoading = false;
+                // Update the engagement chart for this type
+                this.renderTypeEngagementChart(type);
             }
         },
-
 
         async fetchAllKPIs() {
             this.isLoading = true;
             const types = ['text', 'image', 'video', 'article'];
+            
+            // Clear all errors
+            this.errorMsg = '';
+            types.forEach(type => {
+                this.typeErrors[type] = '';
+            });
+            
+            // Fetch data for each type
             for (const type of types) {
                 await this.getSocialActionsByType(type);
             }
-            // await this.getSocialActions();
+            
             this.isLoading = false;
         },
-
     },
 };
 </script>

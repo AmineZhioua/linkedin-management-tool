@@ -213,8 +213,7 @@ class LinkedInController extends Controller
     /**
      * Schedule a LinkedIn post with token expiration and validation.
     */
-    public function publish(Request $request)
-    {
+    public function publish(Request $request) {
         try {
             $user = Auth::user();
             if (!$user->post_perm) {
@@ -333,8 +332,7 @@ class LinkedInController extends Controller
     }
 
     // FUNCTION TO POST A SIGNLE POST WITHOUT ANY CAMPAIGN
-    public function publishSinglePost(Request $request)
-    {
+    public function publishSinglePost(Request $request) {
         try {
             $user = Auth::user();
             if (!$user->post_perm) {
