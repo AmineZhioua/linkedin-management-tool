@@ -59,7 +59,7 @@
                     height="25" 
                     width="25"
                 />
-                <span class="text-md fw-semibold">Vos KPIs</span>
+                <span class="text-md fw-semibold">Vos Statistiques</span>
             </li>
         </ul>
     </div>

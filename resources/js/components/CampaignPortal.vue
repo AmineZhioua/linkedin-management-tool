@@ -512,6 +512,7 @@ export default {
                     this.isSubmitting = false;
                     return;
                 }
+                console.log(this.selectedAccount.id)
                 const sortedPosts = [...this.postCards].sort((a, b) => new Date(a.scheduledDateTime) - new Date(b.scheduledDateTime));
                 const campaignFormData = new FormData();
                 campaignFormData.append("linkedin_id", this.selectedAccount.id);
@@ -529,6 +530,7 @@ export default {
                     },
                 });
                 if (campaignResponse.data.status !== 201) throw new Error("Échec de la création de la campagne");
+                
                 const campaignId = campaignResponse.data.id;
                 for (const post of sortedPosts) {
                     let formData = new FormData();

@@ -10,7 +10,7 @@
                     height="50"
                     width="50"
                 />
-                <h1 class="mb-0 fw-semibold">Vos KPIs</h1>
+                <h1 class="mb-0 fw-semibold">Vos Statistiques</h1>
             </div>
 
             <p class="mt-2 text-lg text-muted">

@@ -47,7 +47,7 @@ class LinkedInController extends Controller
 
             // Validate request data
             $validated = $request->validate([
-                'linkedin_id' => 'required|exists:linkedin_users,id',
+                'linkedin_id' => 'required|integer|exists:linkedin_users,id',
                 'name' => 'required|string',
                 'description' => 'required|string',
                 'target_audience' => 'nullable|string',
@@ -74,7 +74,7 @@ class LinkedInController extends Controller
                 return response()->json(['error' => 'Vous n\'avez pas assez de posts disponibles pour cette campagne !'], 403);
             }
 
-            $campaign = LinkedinUser::firstOrCreate(
+            $campaign = LinkedinCampaign::firstOrCreate(
                 [
                     'user_id' => $user->id,
                     'linkedin_user_id' => $validated['linkedin_id'],
