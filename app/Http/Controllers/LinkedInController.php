@@ -82,6 +82,7 @@ class LinkedInController extends Controller
     }
 
 
+    // THIS FUNCTION DELETES A CAMPAIGN AND ALL IT'S POSTS  EVEN IF THEY'RE POSTED ON LINKEDIN
     public function deleteCampaign(Request $request) {
         $validated = $request->validate([
             "campaign_id" => "required|integer|exists:linkedin_campaigns,id"

@@ -23,4 +23,14 @@ class LinkedinUser extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function posts()
+    {
+        return $this->hasMany(ScheduledLinkedinPost::class, 'linkedin_user_id');
+    }
+
+    public function campaigns()
+    {
+        return $this->hasMany(LinkedinCampaign::class, 'linkedin_user_id');
+    }
 }

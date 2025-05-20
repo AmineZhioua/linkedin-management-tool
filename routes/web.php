@@ -90,6 +90,12 @@ Route::get('/linkedin/get-campaign-posts-for-day', [App\Http\Controllers\Linkedi
 Route::get('/linkedin/get-social-actions', [App\Http\Controllers\KpiController::class, 'getSocialActions'])->middleware('check.post.number.kpi')
     ->name('get.social.actions');
 
+// KPIs ROUTES
+Route::post('/linkedin/top-account', [App\Http\Controllers\KpiController::class, 'getTopActiveAccount'])->name('get.top.active.account');
+Route::get('/linkedin/post-consistency', [App\Http\Controllers\KpiController::class, 'getPostConsistency'])->name('post.consistency');
+
+
+
 // Route for Adding Notifications to DB
 Route::post('/notifications', [App\Http\Controllers\DashboardController::class, 'notification'])->name('notifications');
 

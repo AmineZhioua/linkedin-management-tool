@@ -13,6 +13,9 @@
 
         <kpi-section
             v-if="cardToSet === 'KPIs'"
+            :all-linkedin-accounts="userLinkedinAccounts"
+            :all-linkedin-posts="userLinkedinPosts"
+            :all-campaigns="campaigns"
         /> 
     </div>
 </template>
@@ -41,7 +44,7 @@ export default {
 
     data() {
         return {
-            cardToSet: 'userPosts',
+            cardToSet: 'KPIs',
         };
     },
 
