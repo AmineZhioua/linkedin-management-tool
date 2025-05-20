@@ -87,8 +87,8 @@ Route::get('/linkedin/get-campaign-posts-for-day', [App\Http\Controllers\Linkedi
     ->name('get.posts.campaign.for.day');
 
 // Route to Get User LinkedIn Data (Likes & Comments for now)
-Route::get('/linkedin/get-social-actions', [App\Http\Controllers\KpiController::class, 'getSocialActions'])->middleware('check.post.number.kpi')
-    ->name('get.social.actions');
+// ADD THIS MIDDLEWARE TO THIS ROUTE "->middleware('check.post.number.kpi')"
+Route::get('/linkedin/get-social-actions', [App\Http\Controllers\KpiController::class, 'getSocialActions'])->name('get.social.actions');
 
 // KPIs ROUTES
 Route::post('/linkedin/top-account', [App\Http\Controllers\KpiController::class, 'getTopActiveAccount'])->name('get.top.active.account');

@@ -12,6 +12,7 @@ use App\Jobs\ScheduleLinkedInPost;
 use App\Jobs\ScheduleLinkedinSinglePost;
 use App\Jobs\CheckCampaignStartStatus;
 use App\Models\LinkedinCampaign;
+use App\Models\UserSubscription;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
@@ -35,8 +36,7 @@ class LinkedInController extends Controller
         ]);
     }
 
-  public function createCampaign(Request $request)
-    {
+     public function createCampaign(Request $request) {
         try {
             // Check post permission
             $user = Auth::user();
@@ -59,9 +59,23 @@ class LinkedInController extends Controller
                 'end_date' => 'required|date|after:start_date',
             ]);
 
+            // Calculate number of posts
+            $startDate = Carbon::parse($validated['start_date']);
+            $endDate = Carbon::parse($validated['end_date']);
+            $days = $startDate->diffInDays($endDate) + 1;
+            $totalPosts = $days * $validated['frequency_per_day'];
 
+            // Check available posts
+            $subscription = UserSubscription::where('user_id', Auth::id())
+                ->where('date_expiration', '>', now())
+                ->first();
 
-
+            if (!$subscription || $subscription->available_posts < $totalPosts) {
+                return response()->json([
+                    'status' => 403,
+                    'error' => 'Nombre de posts disponibles insuffisant pour cette campagne'
+                ], 403);
+            }
 
             $campaign = LinkedinCampaign::firstOrCreate(
                 [
@@ -211,16 +225,11 @@ class LinkedInController extends Controller
             }
 
             // Check available posts
-            $subscription = Subscription::where('user_id', Auth::id())
+            $subscription = UserSubscription::where('user_id', Auth::id())
                 ->where('date_expiration', '>', now())
                 ->first();
-            // Calculate number of posts
-            $startDate = Carbon::parse($validated['start_date']);
-            $endDate = Carbon::parse($validated['end_date']);
-            $days = $startDate->diffInDays($endDate) + 1; // Inclusive of start and end date
-            $totalPosts = $days * $validated['frequency_per_day'];
 
-            if (!$subscription || $subscription->available_posts < $totalPosts) {
+            if (!$subscription || $subscription->available_posts < 1) {
                 return response()->json([
                     'status' => 403,
                     'error' => 'Nombre de posts disponibles insuffisant'
@@ -294,7 +303,7 @@ class LinkedInController extends Controller
             ]);
 
             // Update available posts
-            $subscription->available_posts = $subscription->available_posts - $totalPosts;
+            $subscription->available_posts -= 1;
             $subscription->save();
 
             ScheduleLinkedInPost::dispatch($post)->delay(Carbon::parse($validated['scheduled_date']));
@@ -324,7 +333,7 @@ class LinkedInController extends Controller
     }
 
     // FUNCTION TO POST A SIGNLE POST WITHOUT ANY CAMPAIGN
-   public function publishSinglePost(Request $request)
+    public function publishSinglePost(Request $request)
     {
         try {
             $user = Auth::user();
@@ -336,7 +345,7 @@ class LinkedInController extends Controller
             }
 
             // Check available posts
-            $subscription = Subscription::where('user_id', Auth::id())
+            $subscription = UserSubscription::where('user_id', Auth::id())
                 ->where('date_expiration', '>', now())
                 ->first();
 
