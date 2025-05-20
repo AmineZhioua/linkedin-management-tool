@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Events\PostFailed;
 use App\Events\PostPosted;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -148,9 +149,9 @@ class ScheduleLinkedInPost implements ShouldQueue
                     'http_code' => $httpCode,
                 ]);
 
-                $campaign = LinkedinCampaign::find($post->campaign_id)->first();
+                // $campaign = LinkedinCampaign::find($post->campaign_id)->first();
 
-                event(new PostPosted($post, $campaign));
+                event(new PostPosted($post));
                 
             } else {
                 Log::error("Failed to post {$post->id}", [
@@ -162,6 +163,8 @@ class ScheduleLinkedInPost implements ShouldQueue
                     'error'  => $errorMsg,
                     'job_id' => null,
                 ]);
+
+                event(new PostFailed($post));
             }
 
         } catch (\Exception $e) {

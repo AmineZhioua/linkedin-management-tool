@@ -1,5 +1,6 @@
 <template>
-    <div class="w-full h-full p-4 overflow-y-scroll" style="background-color: #FEF4E5;">
+    <div class="w-full h-full p-4 overflow-y-scroll">
+        <!-- style="background-color: #FEF4E5;" -->
         <!-- Title & Paragraph -->
         <div class="flex flex-col">
             <div class="flex items-center gap-2 text-black">
@@ -21,14 +22,14 @@
 
         <!-- Engagement Rate Charts Section -->
         <div class="flex flex-col gap-3 mt-4">
-            <h3 class="fw-semibold text-2xl">Taux d'Engagement :</h3>
+            <h3 class="fw-semibold text-2xl">Taux d'Engagement des Posts :</h3>
 
             <div class="grid grid-cols-4 gap-3">
                 <!-- Text Posts Engagement Chart -->
-                <div class="chart-container bg-white p-2 pt-4 rounded-lg shadow-lg" style="position: relative; height: 450px;">
-                    <h4 class="text-center font-semibold mb-2">Texte</h4>
+                <div class="chart-container p-2 pt-4 rounded-xl shadow-lg" style="position: relative; height: 400px; background-color: #18181b;">
+                    <!-- <h1 class="text-white text-lg text-center">Texte posts</h1> -->
                     <canvas id="textEngagementChart"></canvas>
-                    <div v-if="isLoading" class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-70">
+                    <div v-if="isLoading" class="absolute inset-0 rounded-xl flex items-center justify-center bg-opacity-70" style="background-color: #18181b;">
                         <div class="spinner-border text-primary" role="status">
                             <span class="visually-hidden">Chargement...</span>
                         </div>
@@ -37,10 +38,10 @@
                 </div>
                 
                 <!-- Image Posts Engagement Chart -->
-                <div class="chart-container bg-white p-2 pt-4 rounded-lg shadow-lg" style="position: relative; height: 450px;">
-                    <h4 class="text-center font-semibold mb-2">Image</h4>
+                <div class="chart-container p-2 pt-4 rounded-xl shadow-lg" style="position: relative; height: 400px; background-color: #18181b;">
+                    <!-- <h1 class="text-white text-lg text-center">Image posts</h1> -->
                     <canvas id="imageEngagementChart"></canvas>
-                    <div v-if="isLoading" class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-70">
+                    <div v-if="isLoading" class="absolute inset-0 rounded-xl flex items-center justify-center bg-opacity-70" style="background-color: #18181b;">
                         <div class="spinner-border text-primary" role="status">
                             <span class="visually-hidden">Chargement...</span>
                         </div>
@@ -48,10 +49,10 @@
                 </div>
                 
                 <!-- Video Posts Engagement Chart -->
-                <div class="chart-container bg-white p-2 pt-4 rounded-lg shadow-lg" style="position: relative; height: 450px;">
-                    <h4 class="text-center font-semibold mb-2">Vidéo</h4>
+                <div class="chart-container p-2 pt-4 rounded-xl shadow-lg" style="position: relative; height: 400px; background-color: #18181b;">
+                    <!-- <h1 class="text-white text-lg text-center">Vidéo posts</h1> -->
                     <canvas id="videoEngagementChart"></canvas>
-                    <div v-if="isLoading" class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-70">
+                    <div v-if="isLoading" class="absolute inset-0 rounded-xl flex items-center justify-center bg-opacity-70" style="background-color: #18181b;">
                         <div class="spinner-border text-primary" role="status">
                             <span class="visually-hidden">Chargement...</span>
                         </div>
@@ -59,10 +60,10 @@
                 </div>
                 
                 <!-- Article Posts Engagement Chart -->
-                <div class="chart-container bg-white p-2 pt-4 rounded-lg shadow-lg" style="position: relative; height: 450px;">
-                    <h4 class="text-center font-semibold mb-2">Article</h4>
+                <div class="chart-container p-2 pt-4 rounded-xl shadow-lg" style="position: relative; height: 400px; background-color: #18181b;">
+                    <!-- <h1 class="text-white text-lg text-center">Articles posts</h1> -->
                     <canvas id="articleEngagementChart"></canvas>
-                    <div v-if="isLoading" class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-70">
+                    <div v-if="isLoading" class="absolute inset-0 rounded-xl flex items-center justify-center bg-opacity-70" style="background-color: #18181b;">
                         <div class="spinner-border text-primary" role="status">
                             <span class="visually-hidden">Chargement...</span>
                         </div>
@@ -72,10 +73,15 @@
         </div>
 
         <!-- Charts Section -->
-        <div class="mt-6">
-            <h1 class="text-3xl mb-4">Distribution des Types de Posts</h1>
-            <div class="chart-container bg-white p-2 pt-4 rounded-lg shadow-lg" style="position: relative; height: 450px;">
+        <div class="mt-6 flex items-center gap-3">
+            <!-- Bar Chart for The Posts Distribution -->
+            <div class="chart-container p-2 pt-4 rounded-lg shadow-lg flex-1" style="position: relative; height: 450px; background-color: #18181b;">
                 <canvas id="postTypeDistributionChart"></canvas>
+            </div>
+
+            <!-- Doughnut Chart for the Posts'Publish Success Rate -->
+            <div class="chart-container p-2 pt-4 rounded-lg shadow-lg" style="position: relative; height: 450px; background-color: #18181b;">
+                <canvas id="postPuslishSuccesRate" class="mx-2"></canvas>
             </div>
         </div>
     </div>
@@ -83,7 +89,8 @@
 
 <script>
 import axios from 'axios';
-import { Chart } from 'chart.js/auto';
+import { Chart, Legend } from 'chart.js/auto';
+import { color } from 'chart.js/helpers';
 
 export default {
     name: 'KpiSection',
@@ -113,8 +120,12 @@ export default {
             selectedWeekStart: null,
             selectedWeekEnd: null,
             currentWeekOffset: 0,
+            // Bar Charts
             barChartInstance: null,
+            // Doughnut Charts
             doughnutChartInstance: null,
+            // Publish Success Rate
+            doughnutSuccessRateChartInstance: null,
             // Engagement Charts
             textEngagementChartInstance: null,
             imageEngagementChartInstance: null,
@@ -156,7 +167,20 @@ export default {
                     typeCounts[post.type]++;
                 }
             });
+
             return typeCounts;
+        },
+
+        postStatusDistributionData() {
+            const allStatus = ['posted', 'failed', 'queued', 'draft'];
+            const statusCounts = allStatus.reduce((acc, type) => ({...acc, [type]: 0}), {});
+            this.allLinkedinPosts.forEach(post => {
+                if(post.status) {
+                    statusCounts[post.status]++;
+                }
+            });
+
+            return statusCounts;
         },
     },
 
@@ -207,8 +231,9 @@ export default {
 
         renderCharts() {
             this.renderBarChart();
-            this.renderDoughnutChart();
+            // this.renderDoughnutChart();
             this.renderEngagementCharts();
+            this.renderPublishSuccessRateChart();
         },
 
         // FUNCTION USED TO CALL THE DATA AND RENDER THE BAR CHART
@@ -227,15 +252,15 @@ export default {
             this.barChartInstance = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: Object.keys(this.postTypeDistributionData),
+                    labels: ['Texte', 'Image', 'Vidéo', 'Article'],
                     datasets: [{
-                        label: 'Types de Posts',
+                        label: 'Nombre des Posts',
                         data: Object.values(this.postTypeDistributionData),
                         backgroundColor: [
-                            'rgba(255, 99, 132, 0.5)', // Text
-                            'rgba(54, 162, 235, 0.5)', // Image
-                            'rgba(255, 206, 86, 0.5)', // Video
-                            'rgba(255, 114, 240, 0.5)' // Article
+                            'rgba(255, 99, 132, 0.3)', // Text
+                            'rgba(54, 162, 235, 0.3)', // Image
+                            'rgba(255, 206, 86, 0.3)', // Video
+                            'rgba(255, 114, 240, 0.3)' // Article
                         ],
                         borderColor: [
                             'rgba(255, 99, 132, 1)',
@@ -256,16 +281,31 @@ export default {
                     },
                     scales: {
                         y: {
+                            ticks: {
+                                color: 'rgb(255, 255, 255, 1)'
+                            },
+                            grid: {
+                                color: 'rgb(255, 255, 255, 0.2)'
+                            },
                             beginAtZero: true,
                             title: {
                                 display: true,
                                 text: 'Nombre de Posts',
+                                font: {
+                                    size: 16,
+                                },
+                                color: 'rgb(255, 255, 255, 1)',
                             },
                         },
                         x: {
+
                             title: {
                                 display: true,
                                 text: 'Type de Post',
+                                font: {
+                                    size: 16
+                                },
+                                color: 'rgb(255, 255, 255, 1)',
                             },
                         },
                     },
@@ -273,35 +313,37 @@ export default {
             });
         },
 
-        // FUNCTION USED TO CALL THE DATA AND RENDER THE DOUGHNUT CHART
-        renderDoughnutChart() {
-            const canvas = document.getElementById('postTypeDoughnutChart');
+        renderPublishSuccessRateChart() {
+            const canvas = document.getElementById('postPuslishSuccesRate');
             if (!canvas) {
-                console.error('Doughnut chart canvas not found');
+                console.error('Bar chart canvas not found');
                 return;
             }
-            if (this.doughnutChartInstance) {
-                this.doughnutChartInstance.destroy();
+
+            if (this.doughnutSuccessRateChartInstance) {
+                this.doughnutSuccessRateChartInstance.destroy();
             }
+
             const ctx = canvas.getContext('2d');
-            this.doughnutChartInstance = new Chart(ctx, {
-                type: 'pie',
+            this.doughnutSuccessRateChartInstance = new Chart(ctx, {
+                type: 'doughnut',
                 data: {
-                    labels: Object.keys(this.postTypeDistributionData),
+                    // labels: Object.keys(this.postStatusDistributionData),
+                    labels: ['Publié', "Echoué", "En attente", "Brouillons"],
                     datasets: [{
-                        label: 'Types de Posts',
-                        data: Object.values(this.postTypeDistributionData),
+                        label: 'Statut des Posts',
+                        data: Object.values(this.postStatusDistributionData),
                         backgroundColor: [
-                            'rgba(255, 99, 132, 0.5)', // Text
-                            'rgba(54, 162, 235, 0.5)', // Image
-                            'rgba(255, 206, 86, 0.5)', // Video
-                            'rgba(255, 114, 240, 0.5)' // Article
+                            'rgba(0, 255, 38, 0.5)', // posted
+                            'rgba(255, 0, 21, 0.5)', // failed
+                            'rgba(0, 119, 255, 0.5)', // queued
+                            'rgba(255, 145, 0, 0.5)' // draft
                         ],
                         borderColor: [
-                            'rgba(255, 99, 132, 1)',
-                            'rgba(54, 162, 235, 1)',
-                            'rgba(255, 206, 86, 1)',
-                            'rgba(255, 114, 240, 1)'
+                            'rgba(0, 255, 38, 1)',
+                            'rgba(255, 0, 21, 1)',
+                            'rgba(0, 119, 255, 1)',
+                            'rgba(255, 145, 0, 1)'
                         ],
                         borderWidth: 1,
                     }],
@@ -311,17 +353,68 @@ export default {
                     maintainAspectRatio: false,
                     plugins: {
                         legend: {
-                            position: 'top',
+                            position: 'bottom',
                         },
                         title: {
                             display: true,
-                            position: 'bottom',
-                            text: 'Distribution des Types de Posts',
+                            position: 'top',
+                            text: 'Distribution des statuts de Posts',
+                            color: 'rgb(255, 255, 255, 1)'
                         },
                     },
                 },
             });
         },
+
+        // FUNCTION USED TO CALL THE DATA AND RENDER THE DOUGHNUT CHART
+        // renderDoughnutChart() {
+        //     const canvas = document.getElementById('postTypeDoughnutChart');
+        //     if (!canvas) {
+        //         console.error('Doughnut chart canvas not found');
+        //         return;
+        //     }
+        //     if (this.doughnutChartInstance) {
+        //         this.doughnutChartInstance.destroy();
+        //     }
+        //     const ctx = canvas.getContext('2d');
+        //     this.doughnutChartInstance = new Chart(ctx, {
+        //         type: 'pie',
+        //         data: {
+        //             labels: Object.keys(this.postTypeDistributionData),
+        //             datasets: [{
+        //                 label: 'Types de Posts',
+        //                 data: Object.values(this.postTypeDistributionData),
+        //                 backgroundColor: [
+        //                     'rgba(255, 99, 132, 0.5)', // Text
+        //                     'rgba(54, 162, 235, 0.5)', // Image
+        //                     'rgba(255, 206, 86, 0.5)', // Video
+        //                     'rgba(255, 114, 240, 0.5)' // Article
+        //                 ],
+        //                 borderColor: [
+        //                     'rgba(255, 99, 132, 1)',
+        //                     'rgba(54, 162, 235, 1)',
+        //                     'rgba(255, 206, 86, 1)',
+        //                     'rgba(255, 114, 240, 1)'
+        //                 ],
+        //                 borderWidth: 1,
+        //             }],
+        //         },
+        //         options: {
+        //             responsive: true,
+        //             maintainAspectRatio: false,
+        //             plugins: {
+        //                 legend: {
+        //                     position: 'top',
+        //                 },
+        //                 title: {
+        //                     display: true,
+        //                     position: 'bottom',
+        //                     text: 'Distribution des Types de Posts',
+        //                 },
+        //             },
+        //         },
+        //     });
+        // },
 
         // NEW FUNCTION TO RENDER ALL ENGAGEMENT CHARTS
         renderEngagementCharts() {
@@ -347,16 +440,13 @@ export default {
                 this[chartInstanceProperty].destroy();
             }
 
-            // Get engagement data for this post type
             const totalLikes = this[`totalLikes${capitalizedType}Posts`] || 0;
             const totalComments = this[`totalComments${capitalizedType}Posts`] || 0;
             const totalPosts = this[`total${capitalizedType}Posts`] || 0;
 
-            // Check if we have data to display
             if (totalPosts === 0) {
                 this.typeErrors[type] = `Aucun post ${type} trouvé ou données non disponibles`;
                 
-                // Create empty chart with message
                 const ctx = canvas.getContext('2d');
                 this[chartInstanceProperty] = new Chart(ctx, {
                     type: 'pie',
@@ -364,7 +454,7 @@ export default {
                         labels: ['Aucune donnée'],
                         datasets: [{
                             data: [1],
-                            backgroundColor: ['rgba(200, 200, 200, 0.5)'],
+                            backgroundColor: ['rgba(50, 200, 200, 0.5)'],
                             borderColor: ['rgba(200, 200, 200, 1)'],
                         }],
                     },
@@ -374,10 +464,12 @@ export default {
                         plugins: {
                             legend: {
                                 display: false,
+                                
                             },
                             title: {
                                 display: true,
                                 text: 'Aucune donnée disponible',
+                                position: 'bottom',
                             },
                         },
                     },
@@ -410,11 +502,15 @@ export default {
                     plugins: {
                         legend: {
                             position: 'top',
+                            labels: {
+                                color: 'rgba(255, 255, 255, 1)'
+                            },
                         },
                         title: {
                             display: true,
                             position: 'bottom',
                             text: `${totalPosts} post(s) - ${totalLikes + totalComments} interactions`,
+                            color: 'rgba(255, 255, 255, 1)'
                         },
                         tooltip: {
                             callbacks: {

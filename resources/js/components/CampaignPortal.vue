@@ -274,7 +274,8 @@ export default {
         minEndDate() {
             if (!this.startDate) return this.todayDate;
             const start = new Date(this.startDate);
-            start.setHours(start.getHours() + 2);
+            // start.setHours(start.getHours() + 2);
+            start.setHours(start.getHours());
             return this.formatDateTime(start);
         },
         isStartDateValid() {
@@ -290,7 +291,9 @@ export default {
             const selectedStart = new Date(this.startDate);
             const selectedEnd = new Date(this.endDate);
             const minEndTime = new Date(selectedStart);
-            minEndTime.setHours(minEndTime.getHours() + 2);
+            // minEndTime.setHours(minEndTime.getHours() + 2);
+            minEndTime.setHours(minEndTime.getHours());
+
             return selectedEnd >= minEndTime;
         },
         startDateErrorMessage() {

@@ -21,12 +21,10 @@ class PostPosted implements ShouldBroadcast
      */
 
     public $post;
-    public $campaign;
 
-    public function __construct(ScheduledLinkedinPost $post, LinkedinCampaign $campaign)
+    public function __construct(ScheduledLinkedinPost $post)
     {
         $this->post = $post;
-        $this->campaign = $campaign;
     }
 
 
@@ -49,14 +47,26 @@ class PostPosted implements ShouldBroadcast
 
     public function broadcastWith(): array
     {
+        $campaign = $this->post->campaign_id ? LinkedinCampaign::find($this->post->campaign_id) : null;
+
+        if ($campaign) {
+            $message = "Campagne {$campaign->name}: Post {$this->post->id} de type {$this->post->type} a été publié avec succès !";
+            $campaignData = [
+                'campaign_id' => $campaign->id,
+            ];
+        } else {
+            $message = "Post {$this->post->id} de type {$this->post->type} a été publié avec succès !";
+            $campaignData = [
+                'campaign_id' => null,
+            ];
+        }
+
         return [
             'user_id' => $this->post->user_id,
-            'campaign_id' => $this->campaign->id ?? null,
+            'campaign_id' => $campaignData["campaign_id"],
             'linkedin_user_id' => $this->post->linkedin_user_id,
             'event_name' => 'PostPosted',
-            'message' => $this->campaign ? 
-                    "Campagne {$this->campaign->name}: Post {$this->post->id} de type {$this->post->type} a été publié avec succès !" 
-                    : "Post {$this->post->id} de type {$this->post->type} a été publié avec succès !",
+            'message' => $message
         ];
     }
 }

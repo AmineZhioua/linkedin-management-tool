@@ -11,6 +11,7 @@ use App\Models\ScheduledLinkedinPost;
 use App\Jobs\ScheduleLinkedInPost;
 use App\Jobs\ScheduleLinkedinSinglePost;
 use App\Jobs\CheckCampaignStartStatus;
+use App\Jobs\CheckCampaignEndStatus;
 use App\Models\LinkedinCampaign;
 use App\Models\UserSubscription;
 use Carbon\Carbon;
@@ -36,7 +37,8 @@ class LinkedInController extends Controller
         ]);
     }
 
-     public function createCampaign(Request $request) {
+
+    public function createCampaign(Request $request) {
         try {
             $user = Auth::user();
             
@@ -45,12 +47,11 @@ class LinkedInController extends Controller
                 return response()->json(['error' => 'Vous n\'avez pas la permission de créer des campagnes !'], 403);
             }
 
-            // Validate request data
             $validated = $request->validate([
                 'linkedin_id' => 'required|integer|exists:linkedin_users,id',
                 'name' => 'required|string',
                 'description' => 'required|string',
-                'target_audience' => 'nullable|string',
+                'target_audience' => 'required|string',
                 'frequency_per_day' => 'required|integer|min:1',
                 'couleur' => 'required|string',
                 'start_date' => 'required|date|after:now',
@@ -76,7 +77,7 @@ class LinkedInController extends Controller
 
             $campaign = LinkedinCampaign::firstOrCreate(
                 [
-                    'user_id' => $user->id,
+                    'user_id' => Auth::id(),
                     'linkedin_user_id' => $validated['linkedin_id'],
                     'name' => $validated['name'] ?? 'Campaign ' . now()->toDateTimeString(),
                     'start_date' => $validated['start_date'],
@@ -91,7 +92,9 @@ class LinkedInController extends Controller
                 ]
             );
 
+
             CheckCampaignStartStatus::dispatch($campaign)->delay(Carbon::parse($validated['start_date']));
+            CheckCampaignEndStatus::dispatch($campaign)->delay(Carbon::parse($validated['end_date']));
 
             // Deduct available posts
             $userSubscription->available_posts -= $totalPosts;
