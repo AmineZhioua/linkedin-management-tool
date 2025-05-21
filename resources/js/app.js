@@ -3,6 +3,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap";
 import SubscriptionCards from "./components/SubscriptionCards.vue";
 import Popup from "./components/Popup.vue";
+import EditAccount from './components/EditAccount.vue';
 import PlateformeCard from "./components/PlateformeCard.vue";
 import LoadingOverlay from "./components/LoadingOverlay.vue";
 import ProgressIndicator from "./components/ProgressIndicator.vue";
@@ -20,11 +21,9 @@ import PostCard from "./components/PostCard.vue";
 import KpiList from "./components/KpiList.vue";
 import NotificationCard from "./components/NotificationCard.vue";
 import ExtraInfoForm from "./components/ExtraInfoForm.vue";
-// Toast Imports
 import Toast from "vue-toastification";
 import "vue-toastification/dist/index.css";
-// Laravel Echo
-import "./echo"
+import "./echo";
 import UserPostsCard from "./components/UserPostsCard.vue";
 import LinkedinPost from "./components/LinkedinPost.vue";
 import PostPortal from "./components/PostPortal.vue";
@@ -41,8 +40,8 @@ import PrimeVue from 'primevue/config';
 import Aura from '@primeuix/themes/aura';
 
 // PrimeVue Components
-import 'primeicons/primeicons.css'
-import Button from "primevue/button"
+import 'primeicons/primeicons.css';
+import Button from "primevue/button";
 import Select from "primevue/select";
 import FloatLabel from "primevue/floatlabel";
 import DataTable from 'primevue/datatable';
@@ -65,8 +64,13 @@ import StepItem from 'primevue/stepitem';
 import Step from 'primevue/step';
 import StepPanel from 'primevue/steppanel';
 
-
-const app = createApp();
+const app = createApp({
+    data() {
+        return {
+            showEditProfile: false // Controls EditAccount.vue popup visibility
+        };
+    }
+});
 
 app.use(Toast);
 app.use(PrimeVue, {
@@ -91,6 +95,7 @@ app.component("dashboard-calendar", DashboardCalendar);
 app.component("campaign-table", CampaignTable);
 app.component("campaign-modal", CampaignModal);
 app.component("post-card", PostCard);
+app.component("edit-account", EditAccount);
 app.component("kpi-list", KpiList);
 app.component("notification-card", NotificationCard);
 app.component("extra-info-form", ExtraInfoForm);
@@ -104,8 +109,6 @@ app.component("campaign-details", CampaignDetails);
 app.component("sidebar", Sidebar);
 app.component("main-section", MainSection);
 app.component("kpi-section", KpiSection);
-
-
 
 // PrimeVue Components
 app.component("Button", Button);
@@ -130,6 +133,5 @@ app.component("StepPanels", StepPanels);
 app.component("StepItem", StepItem);
 app.component("Step", Step);
 app.component("StepPanel", StepPanel);
-
 
 app.mount("#app");
