@@ -32,6 +32,9 @@ import CampaignPortal from "./components/CampaignPortal.vue";
 import CampaignPostPortal from "./components/CampaignPostPortal.vue";
 import PostView from "./components/PostView.vue";
 import CampaignDetails from "./components/CampaignDetails.vue";
+import Sidebar from "./components/Sidebar.vue";
+import MainSection from "./components/MainSection.vue";
+import KpiSection from "./components/KpiSection.vue";
 
 // Importing PrimeVue for UI Components
 import PrimeVue from 'primevue/config';
@@ -49,10 +52,9 @@ import Row from 'primevue/row';
 import DatePicker from "primevue/datepicker";
 import SplitButton from "primevue/splitbutton";
 import ScrollPanel from 'primevue/scrollpanel';
-import Sidebar from "./components/Sidebar.vue";
-import MainSection from "./components/MainSection.vue";
-import KpiSection from "./components/KpiSection.vue";
-import { ConfirmDialog } from "primevue";
+import RadioButton from 'primevue/radiobutton';
+import RadioButtonGroup from 'primevue/radiobuttongroup';
+import ConfirmDialog from "primevue/confirmdialog";
 
 
 
@@ -109,6 +111,8 @@ app.component("DatePicker", DatePicker);
 app.component("SplitButton", SplitButton);
 app.component("ScrollPanel", ScrollPanel);
 app.component("ConfirmDialog", ConfirmDialog);
+app.component("RadioButton", RadioButton);
+app.component("RadioButtonGroup", RadioButtonGroup);
 
 
 app.mount("#app");

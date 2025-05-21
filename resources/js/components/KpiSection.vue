@@ -22,7 +22,52 @@
 
         <!-- Engagement Rate Charts Section -->
         <div class="flex flex-col gap-3 mt-4">
-            <h3 class="fw-semibold text-2xl">Taux d'Engagement des Posts :</h3>
+            <div class="flex items-center justify-between">
+                <h3 class="fw-semibold text-2xl">Taux d'Engagement des Posts :</h3>
+                <!-- Select Dropdown to Use for the "Taux d'Engagement" Fetching per Account -->
+                <div class="relative">
+                    <button 
+                        @click="chooseAccountDropdown = !chooseAccountDropdown"
+                        class="flex items-center gap-2 p-1 border rounded-xl text-white"
+                        style="background-color: #18181b;"
+                    >
+                        <div class="flex p-2">
+                            <span>Tous les Comptes</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#ffffff">
+                                <path d="M480-360 280-560h400L480-360Z"/>
+                            </svg>
+                        </div>
+                    </button>
+                    <ul 
+                        v-if="chooseAccountDropdown"
+                        class="absolute right-0 shadow-lg rounded-md px-0 z-50 text-white"
+                        style="background-color: #18181b;"
+                    >
+                        <li 
+                            class="flex justify-center gap-2 px-3 py-2 hover:bg-slate-500 rounded-md cursor-pointer"
+                            @click="selectAccount(null)"
+                        >
+                            <p class="mb-0">Tous les Comptes</p>
+                        </li>
+                        <li 
+                            v-for="linkedinAccount in allLinkedinAccounts"
+                            class="flex items-center gap-2 px-3 py-2 hover:bg-slate-500 rounded-md cursor-pointer"
+                            @click="selectAccount(linkedinAccount)"
+                        >
+                            <img 
+                                :src="linkedinAccount.linkedin_picture ?? '/build/assets/images/default-profile.png'" 
+                                alt="Profile Picture"
+                                height="40"
+                                width="40" 
+                                class="rounded-full"
+                            />
+                            <span class="line-clamp-1">
+                                {{ linkedinAccount.linkedin_firstname }} {{ linkedinAccount.linkedin_lastname }}
+                            </span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
 
             <div class="grid grid-cols-4 gap-3">
                 <!-- Text Posts Engagement Chart -->
@@ -89,8 +134,7 @@
 
 <script>
 import axios from 'axios';
-import { Chart, Legend } from 'chart.js/auto';
-import { color } from 'chart.js/helpers';
+import { Chart } from 'chart.js/auto';
 
 export default {
     name: 'KpiSection',
@@ -119,7 +163,9 @@ export default {
             errorMsg: '',
             selectedWeekStart: null,
             selectedWeekEnd: null,
-            currentWeekOffset: 0,
+            chooseAccountDropdown: false,
+            // I WAS SICK OF NAMING THIS VARIABLE AS 'SELECTEDACCOUNT' SO I DECIDED TO RENAME IT TO 'CHOSENACCOUNT'
+            chosenAccount: null,
             // Bar Charts
             barChartInstance: null,
             // Doughnut Charts
@@ -200,6 +246,11 @@ export default {
     },
 
     methods: {
+        selectAccount(account) {
+            this.chosenAccount = account;
+            this.fetchAllKPIs();
+        },
+
         async getTopAccount() {
             try {
                 const accountsArray = this.allLinkedinAccounts.map(account => ({ id: account.id }));
@@ -221,8 +272,12 @@ export default {
             }
         },
 
-        filterPostsByStatus() {
-            return this.allLinkedinPosts.filter(post => post.status === 'posted');
+        filterPostsByStatus(account = null) {
+            let posts = this.allLinkedinPosts.filter(post => post.status === 'posted');
+            if (account) {
+                posts = posts.filter(post => post.linkedin_user_id === account.id);
+            }
+            return posts;
         },
 
         getUserLinkedinInfo(linkedinUserId) {
@@ -354,6 +409,12 @@ export default {
                     plugins: {
                         legend: {
                             position: 'bottom',
+                            labels: {
+                                color: 'rgb(255, 255, 255)',
+                                font: {
+                                    size: 12
+                                },
+                            },
                         },
                         title: {
                             display: true,
@@ -451,7 +512,7 @@ export default {
                 this[chartInstanceProperty] = new Chart(ctx, {
                     type: 'pie',
                     data: {
-                        labels: ['Aucune donnée'],
+                        labels: [`Aucune donnée pour ${type} posts`],
                         datasets: [{
                             data: [1],
                             backgroundColor: ['rgba(50, 200, 200, 0.5)'],
@@ -468,8 +529,9 @@ export default {
                             },
                             title: {
                                 display: true,
-                                text: 'Aucune donnée disponible',
+                                text: `${type.charAt(0).toUpperCase()}${type.slice(1)} Posts: Aucune donnée disponible`,
                                 position: 'bottom',
+                                color: 'rgb(255, 255, 255, 1)'
                             },
                         },
                     },
@@ -509,7 +571,7 @@ export default {
                         title: {
                             display: true,
                             position: 'bottom',
-                            text: `${totalPosts} post(s) - ${totalLikes + totalComments} interactions`,
+                            text: `${totalPosts} ${type} post(s) - ${totalLikes + totalComments} interactions`,
                             color: 'rgba(255, 255, 255, 1)'
                         },
                         tooltip: {
@@ -528,57 +590,7 @@ export default {
             });
         },
 
-        async getSocialActions() {
-            this.isLoading = true;
-            this.errorMsg = '';
-            const postedPosts = this.filterPostsByStatus();
-
-            try {
-                for (let i = 0; i < postedPosts.length; i++) {
-                    const post = postedPosts[i];
-                    const linkedinUser = this.getUserLinkedinInfo(post.linkedin_user_id);
-                    const response = await axios.get('/linkedin/get-social-actions', {
-                        params: {
-                            post_id: post.id,
-                            urn: encodeURIComponent(post.post_urn),
-                            linkedin_user_id: post.linkedin_user_id,
-                            linkedin_token: linkedinUser.linkedin_token,
-                        },
-                        headers: {
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                        },
-                    });
-
-                    if (response.status === 200) {
-                        const data = response.data;
-                        this.totalLikes += data.likesSummary.totalLikes;
-                        this.totalComments += data.commentsSummary.aggregatedTotalComments;
-                    } else if (response.status === 404) {
-                        continue;
-                    } else {
-                        this.errorMsg = 'Erreur lors de la récupération des données.';
-                    }
-                }
-            } catch (error) {
-                if (error.response && error.response.status === 400) {
-                    console.error('Validation errors:', error.response.data.errors);
-                    this.errorMsg = 'Erreur de validation : ' + JSON.stringify(error.response.data.errors);
-                } else if (error.response) {
-                    console.error('Post not found:', error.response.data);
-                    this.errorMsg = 'Post non trouvé.';
-                } else if (error.response && error.response.status === 403) {
-                    this.errorMsg = `Vous avez besoin d'au moins 10 Posts publié pour activer vos KPIs`;
-                } else {
-                    console.error('Request error:', error);
-                    this.errorMsg = 'Erreur lors de la récupération des données.';
-                }
-            } finally {
-                this.isLoading = false;
-            }
-        },
-
         async getSocialActionsByType(type) {
-            // Set loading state for this type
             this.isLoading = true;
             this.typeErrors[type] = "";
             
@@ -590,30 +602,27 @@ export default {
                 return;
             }
 
-            const postedPosts = this.filterPostsByStatus();
+            // Filter posts based on the selected account (or all if null)
+            const postedPosts = this.filterPostsByStatus(this.chosenAccount);
             console.log("Total posted posts:", postedPosts.length);
             
             const matchingPosts = postedPosts.filter(post => post.type === type);
             console.log(`Posts of type ${type}:`, matchingPosts.length);
             
-            // Reset counters for this type
             const capitalizedType = type.charAt(0).toUpperCase() + type.slice(1);
             this[`total${capitalizedType}Posts`] = 0;
             this[`totalLikes${capitalizedType}Posts`] = 0;
             this[`totalComments${capitalizedType}Posts`] = 0;
             
-            // Early return if no matching posts
             if (matchingPosts.length === 0) {
                 this.typeErrors[type] = `Aucun post de type ${type} trouvé`;
                 console.warn(this.typeErrors[type]);
                 this.isLoading = false;
-                // Render empty chart
                 this.renderTypeEngagementChart(type);
                 return;
             }
 
             try {
-                // Process only matching posts instead of filtering in the loop
                 for (let i = 0; i < matchingPosts.length; i++) {
                     const post = matchingPosts[i];
                     const linkedinUser = this.getUserLinkedinInfo(post.linkedin_user_id);
@@ -641,13 +650,13 @@ export default {
                             this[`total${capitalizedType}Posts`]++;
                             this[`totalLikes${capitalizedType}Posts`] += response.data.likesSummary.totalLikes;
                             this[`totalComments${capitalizedType}Posts`] += response.data.commentsSummary.aggregatedTotalComments;
-                            
                             console.log(`Social actions for post ${post.id}:`, response.data);
                         } else {
                             this.typeErrors[type] = `Erreur lors de la récupération des données pour le post ${post.id}`;
                             console.error(`Non-200 status for post ${post.id}:`, response.status);
                         }
                     } catch (innerError) {
+                        // Error handling remains the same
                         if (innerError.response) {
                             if (innerError.response.status === 401) {
                                 this.typeErrors[type] = `Token expiré ou invalide`;
@@ -655,7 +664,6 @@ export default {
                                 this.typeErrors[type] = `Permissions insuffisantes pour accéder aux données`;
                             } else if (innerError.response.status === 404) {
                                 console.warn(`Post ${post.id} non trouvé, peut-être supprimé`);
-                                // We don't set error for 404s as these are expected for deleted posts
                             } else {
                                 this.typeErrors[type] = `Erreur: ${innerError.response.data?.error || 'Problème inconnu'}`;
                             }
@@ -666,6 +674,7 @@ export default {
                     }
                 }
             } catch (error) {
+                // Outer error handling remains the same
                 if (error.response) {
                     if (error.response.status === 400) {
                         console.error("Validation errors:", error.response.data.errors);
@@ -682,7 +691,6 @@ export default {
                 }
             } finally {
                 this.isLoading = false;
-                // Update the engagement chart for this type
                 this.renderTypeEngagementChart(type);
             }
         },
@@ -691,10 +699,14 @@ export default {
             this.isLoading = true;
             const types = ['text', 'image', 'video', 'article'];
             
-            // Clear all errors
+            // Clear all errors and reset counters
             this.errorMsg = '';
             types.forEach(type => {
                 this.typeErrors[type] = '';
+                const capitalizedType = type.charAt(0).toUpperCase() + type.slice(1);
+                this[`total${capitalizedType}Posts`] = 0;
+                this[`totalLikes${capitalizedType}Posts`] = 0;
+                this[`totalComments${capitalizedType}Posts`] = 0;
             });
             
             // Fetch data for each type
