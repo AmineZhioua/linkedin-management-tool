@@ -1,6 +1,5 @@
 <template>
     <div class="w-full h-full p-4 overflow-y-scroll">
-        <!-- style="background-color: #FEF4E5;" -->
         <!-- Title & Paragraph -->
         <div class="flex flex-col">
             <div class="flex items-center gap-2 text-black">
@@ -13,7 +12,6 @@
                 />
                 <h1 class="mb-0 fw-semibold">Vos Statistiques</h1>
             </div>
-
             <p class="mt-2 text-lg text-muted">
                 Vue d'ensemble détaillée de vos performances, 
                 basée sur des métriques essentielles pour piloter efficacement votre activité !
@@ -24,7 +22,6 @@
         <div class="flex flex-col gap-3 mt-4">
             <div class="flex items-center justify-between">
                 <h3 class="fw-semibold text-2xl">Taux d'Engagement des Posts :</h3>
-                <!-- Select Dropdown to Use for the "Taux d'Engagement" Fetching per Account -->
                 <div class="relative">
                     <button 
                         @click="chooseAccountDropdown = !chooseAccountDropdown"
@@ -72,7 +69,6 @@
             <div class="grid grid-cols-4 gap-3">
                 <!-- Text Posts Engagement Chart -->
                 <div class="chart-container p-2 pt-4 rounded-xl shadow-lg" style="position: relative; height: 400px; background-color: #18181b;">
-                    <!-- <h1 class="text-white text-lg text-center">Texte posts</h1> -->
                     <canvas id="textEngagementChart"></canvas>
                     <div v-if="isLoading" class="absolute inset-0 rounded-xl flex items-center justify-center bg-opacity-70" style="background-color: #18181b;">
                         <div class="spinner-border text-primary" role="status">
@@ -84,7 +80,6 @@
                 
                 <!-- Image Posts Engagement Chart -->
                 <div class="chart-container p-2 pt-4 rounded-xl shadow-lg" style="position: relative; height: 400px; background-color: #18181b;">
-                    <!-- <h1 class="text-white text-lg text-center">Image posts</h1> -->
                     <canvas id="imageEngagementChart"></canvas>
                     <div v-if="isLoading" class="absolute inset-0 rounded-xl flex items-center justify-center bg-opacity-70" style="background-color: #18181b;">
                         <div class="spinner-border text-primary" role="status">
@@ -95,7 +90,6 @@
                 
                 <!-- Video Posts Engagement Chart -->
                 <div class="chart-container p-2 pt-4 rounded-xl shadow-lg" style="position: relative; height: 400px; background-color: #18181b;">
-                    <!-- <h1 class="text-white text-lg text-center">Vidéo posts</h1> -->
                     <canvas id="videoEngagementChart"></canvas>
                     <div v-if="isLoading" class="absolute inset-0 rounded-xl flex items-center justify-center bg-opacity-70" style="background-color: #18181b;">
                         <div class="spinner-border text-primary" role="status">
@@ -106,7 +100,6 @@
                 
                 <!-- Article Posts Engagement Chart -->
                 <div class="chart-container p-2 pt-4 rounded-xl shadow-lg" style="position: relative; height: 400px; background-color: #18181b;">
-                    <!-- <h1 class="text-white text-lg text-center">Articles posts</h1> -->
                     <canvas id="articleEngagementChart"></canvas>
                     <div v-if="isLoading" class="absolute inset-0 rounded-xl flex items-center justify-center bg-opacity-70" style="background-color: #18181b;">
                         <div class="spinner-border text-primary" role="status">
@@ -117,16 +110,56 @@
             </div>
         </div>
 
-        <!-- Charts Section -->
+        <!-- POSTS DISTRIBUTION BAR & DOUGHNUT CHARTS SECTIONS -->
         <div class="mt-6 flex items-center gap-3">
-            <!-- Bar Chart for The Posts Distribution -->
             <div class="chart-container p-2 pt-4 rounded-lg shadow-lg flex-1" style="position: relative; height: 450px; background-color: #18181b;">
                 <canvas id="postTypeDistributionChart"></canvas>
             </div>
-
-            <!-- Doughnut Chart for the Posts'Publish Success Rate -->
             <div class="chart-container p-2 pt-4 rounded-lg shadow-lg" style="position: relative; height: 450px; background-color: #18181b;">
                 <canvas id="postPuslishSuccesRate" class="mx-2"></canvas>
+            </div>
+        </div>
+
+        <!-- CAMPAIGNS STATS SECTION -->
+        <div class="mt-8">
+            <div class="flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" height="42px" viewBox="0 -960 960 960" width="42px" fill="#000000">
+                    <path d="M720-440v-80h160v80H720Zm48 280-128-96 48-64 128 96-48 64Zm-80-480-48-64 128-96 48 64-128 96ZM200-200v-160h-40q-33 0-56.5-23.5T80-440v-80q0-33 23.5-56.5T160-600h160l200-120v480L320-360h-40v160h-80Zm240-182v-196l-98 58H160v80h182l98 58Zm120 36v-268q27 24 43.5 58.5T620-480q0 41-16.5 75.5T560-346ZM300-480Z"/>
+                </svg>
+                <h1 class="mb-0 fw-semibold text-2xl">Détails de Campagnes :</h1>
+            </div>
+
+            <div class="flex items-center gap-3 mt-3">
+                <!-- Post Volume by Campaign HORIZONTAL Chart -->
+                <div class="chart-container px-4 p-2 pt-4 rounded-lg shadow-lg flex-1" style="position: relative; height: 450px; background-color: #18181b;">
+                    <canvas id="postVolumeByCampaignChart"></canvas>
+                    <div v-if="isLoading" class="absolute inset-0 rounded-xl flex items-center justify-center bg-opacity-70" style="background-color: #18181b;">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Chargement...</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Campaign Status Distribution DOUGHNUT Chart -->
+                <div class="chart-container p-2 pt-4 rounded-lg shadow-lg" style="position: relative; height: 450px; background-color: #18181b;">
+                    <canvas id="campaignStatusDistributionChart" class="mx-2"></canvas>
+                    <div v-if="isLoading" class="absolute inset-0 rounded-xl flex items-center justify-center bg-opacity-70" style="background-color: #18181b;">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Chargement...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Campaigns Social Actions Chart -->
+            <div class="mt-6">
+                <div class="chart-container p-2 pt-4 rounded-lg shadow-lg" style="position: relative; height: 450px; background-color: #18181b;">
+                    <canvas id="campaignSocialActionsChart"></canvas>
+                    <div v-if="isLoading" class="absolute inset-0 rounded-xl flex items-center justify-center bg-opacity-70" style="background-color: #18181b;">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Chargement...</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -138,22 +171,20 @@ import { Chart } from 'chart.js/auto';
 
 export default {
     name: 'KpiSection',
-
     props: {
-        allLinkedinAccounts: {
-            type: Array,
-            required: true,
+        allLinkedinAccounts: { 
+            type: Array, 
+            required: true 
         },
-        allLinkedinPosts: {
-            type: Array,
-            required: true,
+        allLinkedinPosts: { 
+            type: Array, 
+            required: true 
         },
-        allCampaigns: {
-            type: Array,
-            required: true,
+        allCampaigns: { 
+            type: Array, 
+            required: true 
         },
     },
-
     data() {
         return {
             topActiveAccount: null,
@@ -164,90 +195,112 @@ export default {
             selectedWeekStart: null,
             selectedWeekEnd: null,
             chooseAccountDropdown: false,
-            // I WAS SICK OF NAMING THIS VARIABLE AS 'SELECTEDACCOUNT' SO I DECIDED TO RENAME IT TO 'CHOSENACCOUNT'
             chosenAccount: null,
-            // Bar Charts
+            // Chart Instances
             barChartInstance: null,
-            // Doughnut Charts
-            doughnutChartInstance: null,
-            // Publish Success Rate
             doughnutSuccessRateChartInstance: null,
-            // Engagement Charts
+            postVolumeByCampaignChartInstance: null,
+            campaignStatusDistributionChart: null,
             textEngagementChartInstance: null,
             imageEngagementChartInstance: null,
             videoEngagementChartInstance: null,
             articleEngagementChartInstance: null,
+            campaignSocialActionsChartInstance: null,
             isLoading: false,
-            // Text Posts Variables
+            // Post Type Variables
+            // Texts
             totalTextPosts: 0,
             totalLikesTextPosts: 0,
             totalCommentsTextPosts: 0,
-            // Image Posts Variables
+            // Images
             totalImagePosts: 0,
             totalLikesImagePosts: 0,
             totalCommentsImagePosts: 0,
-            // Video Posts Variables
+            // Videos
             totalVideoPost: 0,
             totalLikesVideoPosts: 0,
             totalCommentsVideoPosts: 0,
-            // Article Posts Variables
+            // Articles
             totalArticlePosts: 0,
             totalLikesArticlePosts: 0,
             totalCommentsArticlePosts: 0,
-            // Error tracking per post type
-            typeErrors: {
-                text: '',
-                image: '',
-                video: '',
-                article: ''
-            }
+            // Campaign Social Actions
+            campaignLikes: {},
+            campaignComments: {},
+            typeErrors: { text: '', image: '', video: '', article: '' }
         };
     },
-
     computed: {
         postTypeDistributionData() {
             const types = ['text', 'image', 'video', 'article'];
             const typeCounts = types.reduce((acc, type) => ({ ...acc, [type]: 0 }), {});
             this.allLinkedinPosts.forEach(post => {
-                if(post.type) {
-                    typeCounts[post.type]++;
-                }
+                if (post.type) typeCounts[post.type]++;
             });
-
             return typeCounts;
         },
 
         postStatusDistributionData() {
             const allStatus = ['posted', 'failed', 'queued', 'draft'];
-            const statusCounts = allStatus.reduce((acc, type) => ({...acc, [type]: 0}), {});
+            const statusCounts = allStatus.reduce((acc, type) => ({ ...acc, [type]: 0 }), {});
             this.allLinkedinPosts.forEach(post => {
-                if(post.status) {
-                    statusCounts[post.status]++;
+                if (post.status) statusCounts[post.status]++;
+            });
+            return statusCounts;
+        },
+
+        postVolumeByCampaign() {
+            const postCountsByCampaign = {};
+            this.allLinkedinPosts.forEach(post => {
+                if (post.campaign_id) {
+                    postCountsByCampaign[post.campaign_id] = (postCountsByCampaign[post.campaign_id] || 0) + 1;
                 }
             });
+            let newestCampaigns = [];
+            if(this.allCampaigns.length < 6) {
+                newestCampaigns = this.allCampaigns;
+            } else {
+                newestCampaigns = this.allCampaigns.slice(-6);
+            }
 
+            const labels = newestCampaigns.map(campaign => campaign.name);
+            const data = newestCampaigns.map(campaign => postCountsByCampaign[campaign.id] || 0);
+
+            return {
+                labels,
+                datasets: [{
+                    label: 'Posts per Campaign',
+                    data,
+                    backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            };
+        },
+
+        campaignStatusDistributionData() {
+            const allStatus = ['scheduled', 'failed', 'completed', 'draft'];
+            const statusCounts = allStatus.reduce((acc, status) => ({ ...acc, [status]: 0 }), {});
+
+            this.allCampaigns.forEach(campaign => {
+                if (campaign.status) statusCounts[campaign.status]++;
+            });
             return statusCounts;
         },
     },
-
     mounted() {
         this.getTopAccount();
         this.fetchAllKPIs();
         this.renderCharts();
     },
-
     watch: {
-        allLinkedinPosts: {
-            handler() {
-                this.renderCharts();
-            },
-            deep: true,
-        },
+        allLinkedinPosts: { handler() { this.renderCharts(); }, deep: true },
+        allCampaigns: { handler() { this.renderCharts(); }, deep: true },
     },
-
     methods: {
         selectAccount(account) {
             this.chosenAccount = account;
+            this.chooseAccountDropdown = false;
             this.fetchAllKPIs();
         },
 
@@ -262,10 +315,7 @@ export default {
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                     },
                 });
-
-                if (response.status === 200) {
-                    this.topActiveAccount = response.data.top_account;
-                }
+                if (response.status === 200) this.topActiveAccount = response.data.top_account;
             } catch (error) {
                 this.accountErrorMessage = 'Une erreur s\'est produite lors de la récupération des données';
                 console.error('Error fetching top account:', error);
@@ -274,9 +324,7 @@ export default {
 
         filterPostsByStatus(account = null) {
             let posts = this.allLinkedinPosts.filter(post => post.status === 'posted');
-            if (account) {
-                posts = posts.filter(post => post.linkedin_user_id === account.id);
-            }
+            if (account) posts = posts.filter(post => post.linkedin_user_id === account.id);
             return posts;
         },
 
@@ -286,23 +334,17 @@ export default {
 
         renderCharts() {
             this.renderBarChart();
-            // this.renderDoughnutChart();
             this.renderEngagementCharts();
             this.renderPublishSuccessRateChart();
+            this.renderPostVolumeByCampaignChart();
+            this.renderCampaignStatusDistributionChart();
+            this.renderCampaignSocialActionsChart();
         },
 
-        // FUNCTION USED TO CALL THE DATA AND RENDER THE BAR CHART
         renderBarChart() {
             const canvas = document.getElementById('postTypeDistributionChart');
-            if (!canvas) {
-                console.error('Bar chart canvas not found');
-                return;
-            }
-
-            if (this.barChartInstance) {
-                this.barChartInstance.destroy();
-            }
-
+            if (!canvas) return console.error('Bar chart canvas not found');
+            if (this.barChartInstance) this.barChartInstance.destroy();
             const ctx = canvas.getContext('2d');
             this.barChartInstance = new Chart(ctx, {
                 type: 'bar',
@@ -311,58 +353,18 @@ export default {
                     datasets: [{
                         label: 'Nombre des Posts',
                         data: Object.values(this.postTypeDistributionData),
-                        backgroundColor: [
-                            'rgba(255, 99, 132, 0.3)', // Text
-                            'rgba(54, 162, 235, 0.3)', // Image
-                            'rgba(255, 206, 86, 0.3)', // Video
-                            'rgba(255, 114, 240, 0.3)' // Article
-                        ],
-                        borderColor: [
-                            'rgba(255, 99, 132, 1)',
-                            'rgba(54, 162, 235, 1)',
-                            'rgba(255, 206, 86, 1)',
-                            'rgba(255, 114, 240, 1)'
-                        ],
+                        backgroundColor: ['rgba(255, 99, 132, 0.3)', 'rgba(54, 162, 235, 0.3)', 'rgba(255, 206, 86, 0.3)', 'rgba(255, 114, 240, 0.3)'],
+                        borderColor: ['rgba(255, 99, 132, 1)', 'rgba(54, 162, 235, 1)', 'rgba(255, 206, 86, 1)', 'rgba(255, 114, 240, 1)'],
                         borderWidth: 1,
                     }],
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false,
-                        },
-                    },
+                    plugins: { legend: { display: false } },
                     scales: {
-                        y: {
-                            ticks: {
-                                color: 'rgb(255, 255, 255, 1)'
-                            },
-                            grid: {
-                                color: 'rgb(255, 255, 255, 0.2)'
-                            },
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'Nombre de Posts',
-                                font: {
-                                    size: 16,
-                                },
-                                color: 'rgb(255, 255, 255, 1)',
-                            },
-                        },
-                        x: {
-
-                            title: {
-                                display: true,
-                                text: 'Type de Post',
-                                font: {
-                                    size: 16
-                                },
-                                color: 'rgb(255, 255, 255, 1)',
-                            },
-                        },
+                        y: { ticks: { color: 'rgb(255, 255, 255, 1)' }, grid: { color: 'rgb(255, 255, 255, 0.2)' }, beginAtZero: true, title: { display: true, text: 'Nombre de Posts', font: { size: 16 }, color: 'rgb(255, 255, 255, 1)' } },
+                        x: { title: { display: true, text: 'Type de Post', font: { size: 16 }, color: 'rgb(255, 255, 255, 1)' } },
                     },
                 },
             });
@@ -370,36 +372,18 @@ export default {
 
         renderPublishSuccessRateChart() {
             const canvas = document.getElementById('postPuslishSuccesRate');
-            if (!canvas) {
-                console.error('Bar chart canvas not found');
-                return;
-            }
-
-            if (this.doughnutSuccessRateChartInstance) {
-                this.doughnutSuccessRateChartInstance.destroy();
-            }
-
+            if (!canvas) return console.error('Bar chart canvas not found');
+            if (this.doughnutSuccessRateChartInstance) this.doughnutSuccessRateChartInstance.destroy();
             const ctx = canvas.getContext('2d');
             this.doughnutSuccessRateChartInstance = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
-                    // labels: Object.keys(this.postStatusDistributionData),
                     labels: ['Publié', "Echoué", "En attente", "Brouillons"],
                     datasets: [{
                         label: 'Statut des Posts',
                         data: Object.values(this.postStatusDistributionData),
-                        backgroundColor: [
-                            'rgba(0, 255, 38, 0.5)', // posted
-                            'rgba(255, 0, 21, 0.5)', // failed
-                            'rgba(0, 119, 255, 0.5)', // queued
-                            'rgba(255, 145, 0, 0.5)' // draft
-                        ],
-                        borderColor: [
-                            'rgba(0, 255, 38, 1)',
-                            'rgba(255, 0, 21, 1)',
-                            'rgba(0, 119, 255, 1)',
-                            'rgba(255, 145, 0, 1)'
-                        ],
+                        backgroundColor: ['rgba(0, 255, 38, 0.5)', 'rgba(255, 0, 21, 0.5)', 'rgba(0, 119, 255, 0.5)', 'rgba(255, 145, 0, 0.5)'],
+                        borderColor: ['rgba(0, 255, 38, 1)', 'rgba(255, 0, 21, 1)', 'rgba(0, 119, 255, 1)', 'rgba(255, 145, 0, 1)'],
                         borderWidth: 1,
                     }],
                 },
@@ -407,77 +391,41 @@ export default {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                color: 'rgb(255, 255, 255)',
-                                font: {
-                                    size: 12
-                                },
-                            },
-                        },
-                        title: {
-                            display: true,
-                            position: 'top',
-                            text: 'Distribution des statuts de Posts',
-                            color: 'rgb(255, 255, 255, 1)'
-                        },
+                        legend: { position: 'bottom', labels: { color: 'rgb(255, 255, 255)', font: { size: 12 } } },
+                        title: { display: true, position: 'top', text: 'Distribution des statuts de Posts', color: 'rgb(255, 255, 255, 1)' },
+                    },
+                },
+            });
+        },
+        
+        renderCampaignStatusDistributionChart() {
+            const canvas = document.getElementById('campaignStatusDistributionChart');
+            if (!canvas) return console.error('Bar chart canvas not found');
+            if (this.campaignStatusDistributionChart) this.campaignStatusDistributionChart.destroy();
+            const ctx = canvas.getContext('2d');
+            this.campaignStatusDistributionChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['Complété', "Échoué", "En cours", "Brouillons"],
+                    datasets: [{
+                        label: 'Statut des Campagnes',
+                        data: Object.values(this.campaignStatusDistributionData),
+                        backgroundColor: ['rgba(0, 255, 38, 0.5)', 'rgba(255, 0, 21, 0.5)', 'rgba(0, 119, 255, 0.5)', 'rgba(255, 145, 0, 0.5)'],
+                        borderColor: ['rgba(0, 255, 38, 1)', 'rgba(255, 0, 21, 1)', 'rgba(0, 119, 255, 1)', 'rgba(255, 145, 0, 1)'],
+                        borderWidth: 1,
+                    }],
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: 'rgb(255, 255, 255)', font: { size: 12 } } },
+                        title: { display: true, position: 'top', text: 'Distribution des statuts de Campagnes', color: 'rgb(255, 255, 255, 1)' },
                     },
                 },
             });
         },
 
-        // FUNCTION USED TO CALL THE DATA AND RENDER THE DOUGHNUT CHART
-        // renderDoughnutChart() {
-        //     const canvas = document.getElementById('postTypeDoughnutChart');
-        //     if (!canvas) {
-        //         console.error('Doughnut chart canvas not found');
-        //         return;
-        //     }
-        //     if (this.doughnutChartInstance) {
-        //         this.doughnutChartInstance.destroy();
-        //     }
-        //     const ctx = canvas.getContext('2d');
-        //     this.doughnutChartInstance = new Chart(ctx, {
-        //         type: 'pie',
-        //         data: {
-        //             labels: Object.keys(this.postTypeDistributionData),
-        //             datasets: [{
-        //                 label: 'Types de Posts',
-        //                 data: Object.values(this.postTypeDistributionData),
-        //                 backgroundColor: [
-        //                     'rgba(255, 99, 132, 0.5)', // Text
-        //                     'rgba(54, 162, 235, 0.5)', // Image
-        //                     'rgba(255, 206, 86, 0.5)', // Video
-        //                     'rgba(255, 114, 240, 0.5)' // Article
-        //                 ],
-        //                 borderColor: [
-        //                     'rgba(255, 99, 132, 1)',
-        //                     'rgba(54, 162, 235, 1)',
-        //                     'rgba(255, 206, 86, 1)',
-        //                     'rgba(255, 114, 240, 1)'
-        //                 ],
-        //                 borderWidth: 1,
-        //             }],
-        //         },
-        //         options: {
-        //             responsive: true,
-        //             maintainAspectRatio: false,
-        //             plugins: {
-        //                 legend: {
-        //                     position: 'top',
-        //                 },
-        //                 title: {
-        //                     display: true,
-        //                     position: 'bottom',
-        //                     text: 'Distribution des Types de Posts',
-        //                 },
-        //             },
-        //         },
-        //     });
-        // },
-
-        // NEW FUNCTION TO RENDER ALL ENGAGEMENT CHARTS
         renderEngagementCharts() {
             this.renderTypeEngagementChart('text');
             this.renderTypeEngagementChart('image');
@@ -485,61 +433,36 @@ export default {
             this.renderTypeEngagementChart('article');
         },
 
-        // FUNCTION TO RENDER ENGAGEMENT CHART FOR EACH POST TYPE
         renderTypeEngagementChart(type) {
             const capitalizedType = type.charAt(0).toUpperCase() + type.slice(1);
             const canvasId = `${type}EngagementChart`;
             const chartInstanceProperty = `${type}EngagementChartInstance`;
-            
             const canvas = document.getElementById(canvasId);
-            if (!canvas) {
-                console.error(`${capitalizedType} engagement chart canvas not found`);
-                return;
-            }
-
-            if (this[chartInstanceProperty]) {
-                this[chartInstanceProperty].destroy();
-            }
-
+            if (!canvas) return console.error(`${capitalizedType} engagement chart canvas not found`);
+            if (this[chartInstanceProperty]) this[chartInstanceProperty].destroy();
             const totalLikes = this[`totalLikes${capitalizedType}Posts`] || 0;
             const totalComments = this[`totalComments${capitalizedType}Posts`] || 0;
             const totalPosts = this[`total${capitalizedType}Posts`] || 0;
-
             if (totalPosts === 0) {
                 this.typeErrors[type] = `Aucun post ${type} trouvé ou données non disponibles`;
-                
                 const ctx = canvas.getContext('2d');
                 this[chartInstanceProperty] = new Chart(ctx, {
                     type: 'pie',
                     data: {
                         labels: [`Aucune donnée pour ${type} posts`],
-                        datasets: [{
-                            data: [1],
-                            backgroundColor: ['rgba(50, 200, 200, 0.5)'],
-                            borderColor: ['rgba(200, 200, 200, 1)'],
-                        }],
+                        datasets: [{ data: [1], backgroundColor: ['rgba(50, 200, 200, 0.5)'], borderColor: ['rgba(200, 200, 200, 1)'] }],
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
                         plugins: {
-                            legend: {
-                                display: false,
-                                
-                            },
-                            title: {
-                                display: true,
-                                text: `${type.charAt(0).toUpperCase()}${type.slice(1)} Posts: Aucune donnée disponible`,
-                                position: 'bottom',
-                                color: 'rgb(255, 255, 255, 1)'
-                            },
+                            legend: { display: false },
+                            title: { display: true, text: `${type.charAt(0).toUpperCase()}${type.slice(1)} Posts: Aucune donnée disponible`, position: 'bottom', color: 'rgb(255, 255, 255, 1)' },
                         },
                     },
                 });
                 return;
             }
-
-            // Create data for pie chart
             const ctx = canvas.getContext('2d');
             this[chartInstanceProperty] = new Chart(ctx, {
                 type: 'pie',
@@ -547,14 +470,8 @@ export default {
                     labels: ['Likes', 'Commentaires'],
                     datasets: [{
                         data: [totalLikes, totalComments],
-                        backgroundColor: [
-                            'rgba(54, 162, 235, 0.5)', // Likes
-                            'rgba(255, 206, 86, 0.5)'  // Comments
-                        ],
-                        borderColor: [
-                            'rgba(54, 162, 235, 1)',
-                            'rgba(255, 206, 86, 1)'
-                        ],
+                        backgroundColor: ['rgba(54, 162, 235, 0.5)', 'rgba(255, 206, 86, 0.5)'],
+                        borderColor: ['rgba(54, 162, 235, 1)', 'rgba(255, 206, 86, 1)'],
                         borderWidth: 1,
                     }],
                 },
@@ -562,18 +479,8 @@ export default {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: {
-                            position: 'top',
-                            labels: {
-                                color: 'rgba(255, 255, 255, 1)'
-                            },
-                        },
-                        title: {
-                            display: true,
-                            position: 'bottom',
-                            text: `${totalPosts} ${type} post(s) - ${totalLikes + totalComments} interactions`,
-                            color: 'rgba(255, 255, 255, 1)'
-                        },
+                        legend: { position: 'top', labels: { color: 'rgba(255, 255, 255, 1)' } },
+                        title: { display: true, position: 'bottom', text: `${totalPosts} ${type} post(s) - ${totalLikes + totalComments} interactions`, color: 'rgba(255, 255, 255, 1)' },
                         tooltip: {
                             callbacks: {
                                 label: function(context) {
@@ -590,11 +497,33 @@ export default {
             });
         },
 
+        renderPostVolumeByCampaignChart() {
+            const canvas = document.getElementById('postVolumeByCampaignChart');
+            if (!canvas) return console.error('Post Volume by Campaign chart canvas not found');
+            if (this.postVolumeByCampaignChartInstance) this.postVolumeByCampaignChartInstance.destroy();
+            const ctx = canvas.getContext('2d');
+            this.postVolumeByCampaignChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: this.postVolumeByCampaign,
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { beginAtZero: true, title: { display: true, text: 'Nombre des Posts', color: 'rgb(255, 255, 255, 1)' }, ticks: { color: 'white' } },
+                        y: { title: { display: false, text: 'Campaigns', color: 'white' }, ticks: { color: 'white', autoSkip: false, maxRotation: 0, minRotation: 0 }, grid: { color: 'rgb(255, 255, 255, 0.2)' } }
+                    }
+                }
+            });
+        },
+
         async getSocialActionsByType(type) {
             this.isLoading = true;
             this.typeErrors[type] = "";
-            
+
             const validTypes = ['text', 'image', 'video', 'article'];
+            
             if (!validTypes.includes(type)) {
                 this.typeErrors[type] = `Type de post non reconnu : ${type}`;
                 console.error(this.typeErrors[type]);
@@ -602,21 +531,16 @@ export default {
                 return;
             }
 
-            // Filter posts based on the selected account (or all if null)
             const postedPosts = this.filterPostsByStatus(this.chosenAccount);
-            console.log("Total posted posts:", postedPosts.length);
-            
             const matchingPosts = postedPosts.filter(post => post.type === type);
-            console.log(`Posts of type ${type}:`, matchingPosts.length);
-            
             const capitalizedType = type.charAt(0).toUpperCase() + type.slice(1);
+
             this[`total${capitalizedType}Posts`] = 0;
             this[`totalLikes${capitalizedType}Posts`] = 0;
             this[`totalComments${capitalizedType}Posts`] = 0;
-            
+
             if (matchingPosts.length === 0) {
                 this.typeErrors[type] = `Aucun post de type ${type} trouvé`;
-                console.warn(this.typeErrors[type]);
                 this.isLoading = false;
                 this.renderTypeEngagementChart(type);
                 return;
@@ -626,23 +550,22 @@ export default {
                 for (let i = 0; i < matchingPosts.length; i++) {
                     const post = matchingPosts[i];
                     const linkedinUser = this.getUserLinkedinInfo(post.linkedin_user_id);
-
                     if (!linkedinUser) {
                         console.error(`No LinkedIn user found for linkedin_user_id: ${post.linkedin_user_id}`);
                         this.typeErrors[type] = `Utilisateur LinkedIn non trouvé pour le post ${post.id}`;
                         continue;
                     }
-
                     try {
                         const response = await axios.get('/linkedin/get-social-actions', {
-                            params: {
-                                post_id: post.id,
-                                urn: encodeURIComponent(post.post_urn),
-                                linkedin_user_id: post.linkedin_user_id,
-                                linkedin_token: linkedinUser.linkedin_token,
+                            params: { 
+                                post_id: post.id, 
+                                urn: encodeURIComponent(post.post_urn), 
+                                linkedin_user_id: post.linkedin_user_id, 
+                                linkedin_token: linkedinUser.linkedin_token 
                             },
-                            headers: {
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                            headers: { 
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content') 
                             }
                         });
 
@@ -650,23 +573,15 @@ export default {
                             this[`total${capitalizedType}Posts`]++;
                             this[`totalLikes${capitalizedType}Posts`] += response.data.likesSummary.totalLikes;
                             this[`totalComments${capitalizedType}Posts`] += response.data.commentsSummary.aggregatedTotalComments;
-                            console.log(`Social actions for post ${post.id}:`, response.data);
                         } else {
                             this.typeErrors[type] = `Erreur lors de la récupération des données pour le post ${post.id}`;
-                            console.error(`Non-200 status for post ${post.id}:`, response.status);
                         }
                     } catch (innerError) {
-                        // Error handling remains the same
                         if (innerError.response) {
-                            if (innerError.response.status === 401) {
-                                this.typeErrors[type] = `Token expiré ou invalide`;
-                            } else if (innerError.response.status === 403) {
-                                this.typeErrors[type] = `Permissions insuffisantes pour accéder aux données`;
-                            } else if (innerError.response.status === 404) {
-                                console.warn(`Post ${post.id} non trouvé, peut-être supprimé`);
-                            } else {
-                                this.typeErrors[type] = `Erreur: ${innerError.response.data?.error || 'Problème inconnu'}`;
-                            }
+                            if (innerError.response.status === 401) this.typeErrors[type] = `Token expiré ou invalide`;
+                            else if (innerError.response.status === 403) this.typeErrors[type] = `Permissions insuffisantes pour accéder aux données`;
+                            else if (innerError.response.status === 404) console.warn(`Post ${post.id} non trouvé, peut-être supprimé`);
+                            else this.typeErrors[type] = `Erreur: ${innerError.response.data?.error || 'Problème inconnu'}`;
                         } else {
                             console.error(`Error processing post ${post.id}:`, innerError);
                             this.typeErrors[type] = `Problème de connexion au serveur`;
@@ -674,17 +589,10 @@ export default {
                     }
                 }
             } catch (error) {
-                // Outer error handling remains the same
                 if (error.response) {
-                    if (error.response.status === 400) {
-                        console.error("Validation errors:", error.response.data.errors);
-                        this.typeErrors[type] = `Erreur de validation : ${JSON.stringify(error.response.data.errors)}`;
-                    } else if (error.response.status === 403) {
-                        this.typeErrors[type] = `Vous avez besoin d'au moins 10 Posts publié pour activer vos KPIs`;
-                    } else {
-                        console.error("Request error status:", error.response.status);
-                        this.typeErrors[type] = `Erreur lors de la récupération des données. Status: ${error.response.status}`;
-                    }
+                    if (error.response.status === 400) this.typeErrors[type] = `Erreur de validation : ${JSON.stringify(error.response.data.errors)}`;
+                    else if (error.response.status === 403) this.typeErrors[type] = `Vous avez besoin d'au moins 10 Posts publié pour activer vos KPIs`;
+                    else this.typeErrors[type] = `Erreur lors de la récupération des données. Status: ${error.response.status}`;
                 } else {
                     console.error("Request error:", error);
                     this.typeErrors[type] = "Erreur lors de la récupération des données.";
@@ -695,11 +603,109 @@ export default {
             }
         },
 
+        async getSocialActionsByCampaign() {
+            this.isLoading = true;
+            for (const campaign of this.allCampaigns) {
+                let totalLikes = 0;
+                let totalComments = 0;
+
+                const campaignPosts = this.allLinkedinPosts.filter(post => {
+                    return post.campaign_id === campaign.id && post.status === 'posted'
+                });
+
+                for (const post of campaignPosts) {
+                    try {
+                        const linkedinUser = this.getUserLinkedinInfo(post.linkedin_user_id);
+
+                        const response = await axios.get('/linkedin/get-social-actions', {
+                            params: {
+                                post_id: post.id,
+                                urn: encodeURIComponent(post.post_urn),
+                                linkedin_user_id: post.linkedin_user_id,
+                                linkedin_token: linkedinUser.linkedin_token
+                            },
+                            headers: { 
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                            }
+                        });
+                        if (response.status === 200) {
+                            console.log("response:", response)
+                            totalLikes += response.data.likesSummary?.totalLikes || 0;
+                            totalComments += response.data.commentsSummary?.aggregatedTotalComments || 0;
+                        }
+                    } catch (error) {
+                        if (error.response) {
+                            const status = error.response.status;
+                            if (status === 404) {
+                                console.warn(`Post ${post.id} not found, skipping`);
+                            } else if (status === 401) {
+                                console.error('Token expired or invalid for post', post.id);
+                            } else if (status === 403) {
+                                console.warn('Insufficient permissions for post', post.id);
+                            } else {
+                                console.error(`Error fetching social actions for post ${post.id}:`, error.response.data);
+                            }
+                        } else {
+                            console.error('Network error for post', post.id, error);
+                        }
+                    }
+                }
+                this.campaignLikes[campaign.id] = totalLikes;
+                this.campaignComments[campaign.id] = totalComments;
+            }
+            this.isLoading = false;
+            this.renderCampaignSocialActionsChart();
+        },
+
+        renderCampaignSocialActionsChart() {
+            const canvas = document.getElementById('campaignSocialActionsChart');
+            if (!canvas) {
+                console.error('Campaign Social Actions chart canvas not found');
+                return;
+            }
+
+            // Destroy existing chart instance if it exists
+            if (this.campaignSocialActionsChartInstance) {
+                this.campaignSocialActionsChartInstance.destroy();
+            }
+
+            // Validate campaign data
+            if (!this.allCampaigns || !Array.isArray(this.allCampaigns) || this.allCampaigns.length === 0) {
+                console.warn('No campaigns available to render');
+                canvas.parentElement.innerHTML = 'Pas de données pour le moment';
+                return;
+            }
+
+            const ctx = canvas.getContext('2d');
+            const labels = this.allCampaigns.map(campaign => campaign.name);
+            const likesData = this.allCampaigns.map(campaign => this.campaignLikes[campaign.id] || 0);
+            const commentsData = this.allCampaigns.map(campaign => this.campaignComments[campaign.id] || 0);
+
+            this.campaignSocialActionsChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'Likes', data: likesData, backgroundColor: 'rgba(54, 162, 235, 0.5)', borderColor: 'rgba(54, 162, 235, 1)', borderWidth: 1 },
+                        { label: 'Commentaires', data: commentsData, backgroundColor: 'rgba(255, 206, 86, 0.5)', borderColor: 'rgba(255, 206, 86, 1)', borderWidth: 1 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true, title: { display: true, text: 'Nombre d\'Interactions', color: 'white' }, ticks: { color: 'white' } },
+                        x: { title: { display: true, text: 'Campagnes', color: 'white' }, ticks: { color: 'white' } }
+                    },
+                    plugins: { legend: { position: 'top', labels: { color: 'white' } } }
+                }
+            });
+        },
+
         async fetchAllKPIs() {
             this.isLoading = true;
             const types = ['text', 'image', 'video', 'article'];
-            
-            // Clear all errors and reset counters
             this.errorMsg = '';
             types.forEach(type => {
                 this.typeErrors[type] = '';
@@ -708,12 +714,10 @@ export default {
                 this[`totalLikes${capitalizedType}Posts`] = 0;
                 this[`totalComments${capitalizedType}Posts`] = 0;
             });
-            
-            // Fetch data for each type
             for (const type of types) {
                 await this.getSocialActionsByType(type);
             }
-            
+            await this.getSocialActionsByCampaign();
             this.isLoading = false;
         },
     },

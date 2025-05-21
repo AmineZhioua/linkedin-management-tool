@@ -65,7 +65,7 @@ class KpiController extends Controller
         } else {
             Log::error('LinkedIn API error: ' . $response);
             if ($httpCode == 401) {
-                // TRANSLATE THEM TO FRENCH
+                // DON'T FORGET TO TRANSLATE THEM TO FRENCH
                 return response()->json(['error' => 'Unauthorized: Invalid or expired token'], 401);
             } elseif ($httpCode == 403) {
                 return response()->json(['error' => 'Forbidden: Insufficient permissions'], 403);
