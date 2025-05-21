@@ -226,13 +226,26 @@
 
         <!-- Campaigns DataTable -->
         <div v-if="view && view.name === 'Tableau'" class="p-2 mt-5 rounded-xl" style="background-color: #18181b;">
-            <DataTable :value="campaigns" paginator stripedRows :rows="10" 
+            <DataTable v-model:filters="filters" :value="campaigns" paginator stripedRows :rows="10" filterDisplay="row"
                 :rowsPerPageOptions="[5, 10, 20, 50]" 
+                :globalFilterFields="['name', 'campaign.name', 'campaign.target_audience', 'campaign.status']"
                 tableStyle="min-width: 50rem"
                 paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
                 currentPageReportTemplate="{first} to {last} of {totalRecords}"
                 class="mt-4 w-full"
             >
+                <template #header>
+                    <div class="flex justify-end">
+                        <IconField>
+                            <InputIcon>
+                                <i class="pi pi-search"></i>
+                            </InputIcon>
+                            <InputText v-model="filters['global'].value" placeholder="Nom du Campagne..." />
+                        </IconField>
+                    </div>
+                </template>
+                <!-- <template #empty> Pas de Campagnes pour le moment. </template>
+                <template #loading> Chargement... </template> -->
                 <Column header="Compte">
                     <template #body="slotProps">
                         <div class="flex items-center gap-2">
@@ -358,6 +371,8 @@
 <script>
 import axios from 'axios';
 import Swal from 'sweetalert2';
+import { FilterMatchMode } from '@primevue/core/api';
+
 
 export default {
     name: 'UserPostsCard',
@@ -386,6 +401,13 @@ export default {
                 { name: 'Cartes' },
             ],
             postStatus: "queued",
+            filters: {
+                global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+                name: { value: null, matchMode: FilterMatchMode.STARTS_WITH },
+                'country.name': { value: null, matchMode: FilterMatchMode.STARTS_WITH },
+                representative: { value: null, matchMode: FilterMatchMode.IN },
+                status: { value: null, matchMode: FilterMatchMode.EQUALS },
+            },
             showPortal: false,
             selectedCampaign: null,
             showCampaignPostPortal: false,

@@ -55,7 +55,15 @@ import ScrollPanel from 'primevue/scrollpanel';
 import RadioButton from 'primevue/radiobutton';
 import RadioButtonGroup from 'primevue/radiobuttongroup';
 import ConfirmDialog from "primevue/confirmdialog";
-
+import InputText from 'primevue/inputtext';
+import IconField from 'primevue/iconfield';
+import InputIcon from "primevue/inputicon";
+import Stepper from 'primevue/stepper';
+import StepList from 'primevue/steplist';
+import StepPanels from 'primevue/steppanels';
+import StepItem from 'primevue/stepitem';
+import Step from 'primevue/step';
+import StepPanel from 'primevue/steppanel';
 
 
 const app = createApp();
@@ -113,6 +121,15 @@ app.component("ScrollPanel", ScrollPanel);
 app.component("ConfirmDialog", ConfirmDialog);
 app.component("RadioButton", RadioButton);
 app.component("RadioButtonGroup", RadioButtonGroup);
+app.component("InputText", InputText);
+app.component("IconField", IconField);
+app.component("InputIcon", InputIcon);
+app.component("Stepper", Stepper);
+app.component("StepList", StepList);
+app.component("StepPanels", StepPanels);
+app.component("StepItem", StepItem);
+app.component("Step", Step);
+app.component("StepPanel", StepPanel);
 
 
 app.mount("#app");
