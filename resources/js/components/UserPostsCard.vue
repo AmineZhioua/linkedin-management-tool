@@ -133,7 +133,7 @@
         </div>
 
         <!-- Posts Cards Container -->
-        <div class="grid grid-cols-4 gap-3 w-full h-full pb-3 mt-4" v-if="view && view.name === 'Cartes'">
+        <div class="grid grid-cols-4 gap-3 w-full pb-3 mt-4" v-if="view && view.name === 'Cartes'">
             <linkedin-post 
                 v-for="post in filteredPosts" 
                 :key="post.id" 
@@ -148,7 +148,7 @@
         <!-- DataTable for Tableau view -->
         <!-- Posts DataTable -->
         <div v-if="view && view.name === 'Tableau'" class="p-2 mt-5 rounded-xl" style="background-color: #18181b;">
-            <DataTable :value="userLinkedinPosts" paginator stripedRows :rows="10" 
+            <DataTable :value="userLinkedinPosts" paginator stripedRows :rows="5" 
                 :rowsPerPageOptions="[5, 10, 20, 50]" 
                 tableStyle="min-width: 50rem"
                 paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
@@ -226,7 +226,7 @@
 
         <!-- Campaigns DataTable -->
         <div v-if="view && view.name === 'Tableau'" class="p-2 mt-5 rounded-xl" style="background-color: #18181b;">
-            <DataTable v-model:filters="filters" :value="campaigns" paginator stripedRows :rows="10" filterDisplay="row"
+            <DataTable v-model:filters="filters" :value="campaigns" paginator stripedRows :rows="5" filterDisplay="row"
                 :rowsPerPageOptions="[5, 10, 20, 50]" 
                 :globalFilterFields="['name', 'campaign.name', 'campaign.target_audience', 'campaign.status']"
                 tableStyle="min-width: 50rem"

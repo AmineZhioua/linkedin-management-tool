@@ -34,10 +34,16 @@ Route::get('/edit-account', [EditAccountController::class, 'index'])->name('edit
 Route::put('/edit-account/profile', [EditAccountController::class, 'updateProfile'])->name('edit.account.profile');
 Route::get('/edit-account/user-data', [EditAccountController::class, 'getUserData'])->name('edit.account.user-data');
 
-// Additional Information Routes (Middleware Removed for Testing)
-Route::get('/info-form', [InfoFormController::class, 'index'])->name('info.form');
-Route::post('/edit-account/extra-info/add', [InfoFormController::class, 'addExtraInformation'])->name('edit.account.extra-info.add');
-Route::put('/edit-account/extra-info/update', [InfoFormController::class, 'updateExtraInformation'])->name('edit.account.extra-info.update');
+// Routes & Middleware for the User Additional Information Page and requests
+Route::middleware(['auth', 'verified', 'suspend'])->group(function() {
+    // Route for ADDITIONAL INFORMATION
+    Route::get('/user/additional-infomation', [App\Http\Controllers\InfoFormController::class, 'index'])->name('additional.info');
+    // Route for the post request
+    Route::post('/extra-info/add', [App\Http\Controllers\InfoFormController::class, 'addExtraInformation'])->name('add.extra.info');
+    Route::put('/edit-account/extra-info/update', [InfoFormController::class, 'updateExtraInformation'])->name('edit.account.extra-info.update');
+});
+
+
 
 // Subscription Routes
 Route::middleware(['auth', 'verified', 'check.additional.info', 'suspend'])->group(function () {
@@ -74,6 +80,7 @@ Route::middleware(['auth', 'verified', 'linkedin.valid', 'linkedin.account.exist
     Route::post('/linkedin/schedule-single-post', [LinkedInController::class, 'publishSinglePost']);
     Route::post('/linkedin/create-campaign', [LinkedInController::class, 'createCampaign']);
 });
+
 
 // Other Routes
 Route::delete('/linkedin/delete-post', [App\Http\Controllers\LinkedinPostController::class, 'deletePost'])->name('delete.post');

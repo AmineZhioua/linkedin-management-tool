@@ -30,8 +30,8 @@
             background: #ddd;
         }
         body.no-scroll {
-        overflow: hidden;
-    }
+            overflow: hidden;
+        }
         body::-webkit-scrollbar-thumb {
             background: gray;
             border-radius: 1px;
@@ -40,7 +40,7 @@
 </head>
 <body id="app" class="flex flex-col min-h-screen">
     <!-- Header Section Start -->
-    <header class="flex items-center justify-between py-3 px-3 bg-black">
+    <header class="flex items-center justify-between py-0 px-3 bg-black">
         <!-- Logo Section -->
         <div class="flex items-center gap-2">
             <img 
@@ -57,7 +57,7 @@
             />
         </div>
 
-        <div class="flex flex-row-reverse items-center gap-5">
+        <div class="flex flex-row-reverse items-center gap-4">
             <!-- Profile Dropdown -->
             <div class="relative">
                 <!-- Profile Image Button -->
@@ -71,7 +71,7 @@
 
                 <!-- Dropdown Menu -->
                 <div id="profileDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded shadow-lg z-50">
-                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" @click.prevent="showEditProfile = true">Éditer profil</a>
+                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 rounded hover:bg-gray-100" @click.prevent="showEditProfile = true">Éditer profil</a>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button type="submit" class="w-full text-left block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
@@ -124,18 +124,18 @@
         @close="showEditProfile = false"
     ></edit-account>
 
-    <!-- Script to toggle dropdown -->
-    <script>
-        document.addEventListener('click', function (e) {
-            const btn = document.getElementById('profileDropdownBtn');
-            const menu = document.getElementById('profileDropdown');
+<!-- Script to toggle dropdown -->
+<script>
+    document.addEventListener('click', function (e) {
+        const btn = document.getElementById('profileDropdownBtn');
+        const menu = document.getElementById('profileDropdown');
 
-            if (btn.contains(e.target)) {
-                menu.classList.toggle('hidden');
-            } else if (!menu.contains(e.target)) {
-                menu.classList.add('hidden');
-            }
-        });
-    </script>
+        if (btn.contains(e.target)) {
+            menu.classList.toggle('hidden');
+        } else if (!menu.contains(e.target)) {
+            menu.classList.add('hidden');
+        }
+    });
+</script>
 </body>
 </html>
