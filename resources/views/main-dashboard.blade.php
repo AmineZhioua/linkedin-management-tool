@@ -105,13 +105,17 @@
     <!-- Header Section End -->
 
     <!-- Main Section Start -->
-    <main class="flex-1">
-        <main-section
-            :user-linkedin-accounts="{{ json_encode($userLinkedinAccounts) }}"
-            :user-linkedin-posts="{{ json_encode($userLinkedinPosts) }}"
-            :campaigns="{{ json_encode($userCampaigns) }}"
-        />
-    </main>
+<main class="flex-1">
+  <main-section
+    :user="{{ json_encode($user) }}"
+    :user-linkedin-accounts="{{ json_encode($userLinkedinAccounts) }}"
+    :user-linkedin-posts="{{ json_encode($userLinkedinPosts) }}"
+    :campaigns="{{ json_encode($userCampaigns) }}"
+    :flash-success="{{ json_encode(session('linkedin_success')) }}"
+    :flash-error="{{ json_encode(session('linkedin_error')) }}"
+    :success-payment="{{ json_encode(session('success_payment')) }}"
+  />
+</main>
     <!-- Main Section End -->
 
     <!-- Edit Profile Popup -->

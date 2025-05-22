@@ -5,7 +5,7 @@
     <div class="py-1">
         <!-- LinkedIn Dashboard -->
         <a class="dropdown-item block px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200 border-b border-gray-100" 
-            href="{{ route('dashboard') }}">
+            href="{{ route('main.dashboard') }}">
             <div class="flex items-center gap-2">
                 <img src="/build/assets/icons/linkedin-blue.svg" alt="LinkedIn Icon" height="20" width="20" />
                 <span>LinkedIn Dashboard</span>
@@ -13,13 +13,6 @@
         </a>
 
         <!-- WhatsApp Dashboard -->
-        <a class="dropdown-item block px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200 border-b border-gray-100" 
-            href="{{ route('welcome') }}">
-            <div class="flex items-center gap-2">
-                <img src="/build/assets/icons/whatsapp-green.svg" alt="WhatsApp Icon" height="20" width="20" />
-                <span>WhatsApp Dashboard</span>
-            </div>
-        </a>
 
         <!-- Logout -->
         <a class="dropdown-item block px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200" 
