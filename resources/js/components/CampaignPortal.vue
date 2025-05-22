@@ -423,24 +423,32 @@ export default {
             if (this.isFormValid) {
                 const start = new Date(this.startDate);
                 const end = new Date(this.endDate);
+                
                 let campaignStartDateTime = `${this.startDate}`;
                 let campaignEndDateTime = `${this.endDate}`;
+
                 if (end < start) {
                     console.error("End date is before start date");
                     return;
                 }
                 const startDay = new Date(start);
                 startDay.setHours(0, 0, 0, 0);
+
                 const endDay = new Date(end);
                 endDay.setHours(0, 0, 0, 0);
+
                 const diffTime = Math.abs(endDay - startDay);
                 const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
                 const daysToProcess = diffDays + 1;
+
                 this.postCards = [];
+
                 for (let i = 0; i < daysToProcess; i++) {
                     const currentDate = new Date(start);
+
                     currentDate.setDate(start.getDate() + i);
                     currentDate.setHours(0, 0, 0, 0);
+
                     if (currentDate > endDay) continue;
                     let dayStart = (i === 0) ? new Date(start) : new Date(currentDate);
                     let dayEnd = (currentDate.getTime() === endDay.getTime()) ? new Date(end) : new Date(currentDate).setHours(23, 59, 59, 999);
