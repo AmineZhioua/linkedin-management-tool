@@ -14,7 +14,8 @@ class Boostinteraction extends Model
         'linkedin_user_id',
         'post_id', 
         'post_url', 
-        'status'];
+        'status'
+    ];
 
     public function user()
     {

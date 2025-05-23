@@ -133,198 +133,313 @@
         </div>
 
         <!-- Posts Cards Container -->
-        <div class="grid grid-cols-4 gap-3 w-full pb-3 mt-4" v-if="view && view.name === 'Cartes'">
-            <linkedin-post 
-                v-for="post in filteredPosts" 
-                :key="post.id" 
-                :user-linkedin-accounts="userLinkedinAccounts" 
-                :post="post" 
-                @edit-post="editPost"
-                @delete-post="deletePost"
-                @delete-post-from-linkedin="deletePostFromLinkedIn"
-            />
+        <div class="flex flex-col justify-between h-full relative" v-if="view && view.name === 'Cartes'">
+            <div v-if="filteredPosts.length === 0" class="flex items-center justify-center">
+                <svg viewBox="0 0 200 200" width="220" height="220" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Ghost body -->
+                    <path d="M50 120 Q60 70 100 70 Q140 70 150 120 Q150 130 140 130 Q130 130 125 120 Q120 130 110 130 Q100 130 95 120 Q90 130 80 130 Q70 130 65 120 Q60 130 50 130 Q50 125 50 120Z" fill="#F9F9F9" stroke="#CCC" stroke-width="2"/>
+                    <circle cx="80" cy="100" r="5" fill="#333"/>
+                    <circle cx="120" cy="100" r="5" fill="#333"/>
+                    <path d="M75 90 Q80 85 85 90" stroke="#333" stroke-width="2" fill="none"/>
+                    <path d="M115 90 Q120 85 125 90" stroke="#333" stroke-width="2" fill="none"/>
+                    <circle cx="60" cy="60" r="12" fill="none" stroke="#555" stroke-width="3"/>
+                    <line x1="68" y1="68" x2="75" y2="75" stroke="#555" stroke-width="3"/>
+                    <path d="M90 110 Q100 115 110 110" stroke="#333" stroke-width="2" fill="none"/>
+                    <ellipse cx="100" cy="140" rx="40" ry="6" fill="#eee"/>
+                    <text x="50%" y="180" text-anchor="middle" font-size="14" fill="#666">
+                        Pas des Posts...
+                    </text>
+                </svg>
+            </div>
+
+            <div class="grid grid-cols-4 gap-3 w-full h-full pb-3 mt-4">
+                <linkedin-post 
+                    v-for="post in paginatedPosts" 
+                    :key="post.id" 
+                    :user-linkedin-accounts="userLinkedinAccounts" 
+                    :post="post" 
+                    @edit-post="editPost"
+                    @delete-post="deletePost"
+                    @delete-post-from-linkedin="deletePostFromLinkedIn"
+                />
+            </div>
+            <Paginator 
+                :rows="rowsPerPage" 
+                :totalRecords="filteredPosts.length" 
+                :rowsPerPageOptions="[10, 20, 30]"
+                @page="onPageChange"
+            ></Paginator>
         </div>
 
         <!-- DataTable for Tableau view -->
         <!-- Posts DataTable -->
-        <div v-if="view && view.name === 'Tableau'" class="p-2 mt-5 rounded-xl" style="background-color: #18181b;">
-            <DataTable :value="userLinkedinPosts" paginator stripedRows :rows="5" 
-                :rowsPerPageOptions="[5, 10, 20, 50]" 
-                tableStyle="min-width: 50rem"
-                paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
-                currentPageReportTemplate="{first} to {last} of {totalRecords}"
-                class="mt-4 w-full"
-            >
-                <Column header="Compte">
-                    <template #body="slotProps">
-                        <div class="flex items-center gap-2">
-                            <img 
-                                :src="getProfilePicture(slotProps.data.linkedin_user_id)" 
-                                alt="Profile Picture" 
-                                class="rounded-full" 
-                                style="width: 32px; 
-                                height: 32px;" 
+        <div v-if="view && view.name === 'Tableau'" class="flex flex-col">
+            <div class="flex items-center justify-between mt-5 mb-3">
+                <div class="flex items-center gap-2 mt-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="mb-0" height="40px" viewBox="0 -960 960 960" width="40px" fill="#000000">
+                        <path d="M160-160q-33 0-56.5-23.5T80-240v-480q0-33 23.5-56.5T160-800h640q33 0 56.5 23.5T880-720v480q0 33-23.5 56.5T800-160H160Zm0-80h420v-140H160v140Zm500 0h140v-360H660v360ZM160-460h420v-140H160v140Z"/>
+                    </svg>
+                    <h1 class="fw-semibold text-2xl mb-0">Posts :</h1>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <!-- Filtrer par Status -->
+                    <div class="flex flex-col">
+                        <label for="statuy">Statut</label>
+                        <Select v-model="selectedPostStatus" :options="PostStatuses" showClear optionLabel="name" 
+                            placeholder="Choisissez un statut" class="w-full md:w-56"
+                        >
+                            <template #option="slotProps">
+                                <div
+                                    class="px-2 py-1 rounded"
+                                    :style="{ color: postStatusColors[slotProps.option.value], fontWeight: '500' }"
+                                >
+                                    {{ slotProps.option.name }}
+                                </div>
+                                </template>
+
+                                <!-- Custom display for selected value -->
+                                <template #value="slotProps">
+                                <div v-if="slotProps.value" :style="{ color: postStatusColors[slotProps.value.value], fontWeight: '500' }">
+                                    {{ slotProps.value.name }}
+                                </div>
+                                <span v-else class="text-gray-400">Choisissez un statut</span>
+                            </template>
+                        </Select>
+                    </div>
+
+                    <!-- Filtrer par Date de Début -->
+                    <div>
+                        <label for="date-post">Date de Publication</label>
+                        <DatePicker v-model="filtredScheduledPostTime" showIcon iconDisplay="input" fluid />
+                    </div>
+                </div>
+            </div>
+            <div class="p-2 mt-2 rounded-xl" style="background-color: #18181b;">
+                <DataTable :value="filtredPostsArray" paginator stripedRows :rows="5" 
+                    :rowsPerPageOptions="[5, 10, 20, 50]" 
+                    tableStyle="min-width: 50rem"
+                    paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
+                    currentPageReportTemplate="{first} to {last} of {totalRecords}"
+                    class="mt-4 w-full"
+                >
+                    <Column header="Compte">
+                        <template #body="slotProps">
+                            <div class="flex items-center gap-2">
+                                <img 
+                                    :src="getProfilePicture(slotProps.data.linkedin_user_id)" 
+                                    alt="Profile Picture" 
+                                    class="rounded-full" 
+                                    style="width: 32px; 
+                                    height: 32px;" 
+                                />
+                                <span>{{ getUsername(slotProps.data.linkedin_user_id) }}</span>
+                            </div>
+                        </template>
+                    </Column>
+                    <Column header="Campagne">
+                        <template #body="slotProps">
+                            <div 
+                                class="p-1 rounded-lg text-center" 
+                                :style="{backgroundColor: getCampaignColor(slotProps.data.campaign_id)}"
+                            >
+                                {{ getCampaignName(slotProps.data.campaign_id) }}
+                            </div>
+                        </template>
+                    </Column>
+
+                    <Column field="type" header="Type"></Column>
+
+                    <Column header="Heure de Publication Prévue">
+                        <template #body="slotProps">
+                            {{ formatDate(slotProps.data.scheduled_time) }}
+                        </template>
+                    </Column>
+                    <Column header="Statut">
+                        <template #body="slotProps">
+                            <div 
+                                class="p-1 rounded-lg text-center"
+                                :class="{
+                                    'bg-blue-600 text-white': slotProps.data.status === 'queued',
+                                    'bg-green-600 text-white': slotProps.data.status === 'posted',
+                                    'bg-red-500 text-white': slotProps.data.status === 'failed',
+                                    'bg-orange-500 text-white': slotProps.data.status === 'draft',
+                                }"
+                            >
+                                {{ translatePostStatus(slotProps.data.status) }}
+                            </div>
+                        </template>
+                    </Column>
+                    <Column header="Créé en">
+                        <template #body="slotProps">
+                            {{ formatDate(slotProps.data.created_at) }}
+                        </template>
+                    </Column>
+                    <Column header="Actions">
+                        <template #body="slotProps">
+                            <SplitButton 
+                                icon="pi pi-eye" 
+                                @click="openPostInReadMode(slotProps.data.id)" 
+                                :model="getItemsPostsDatatable(slotProps.data)" 
+                                style="color: red;" 
+                                severity="contrast" 
+                                rounded
                             />
-                            <span>{{ getUsername(slotProps.data.linkedin_user_id) }}</span>
-                        </div>
-                    </template>
-                </Column>
-                <Column header="Campagne">
-                    <template #body="slotProps">
-                        <div 
-                            class="p-1 rounded-lg text-center" 
-                            :style="{backgroundColor: getCampaignColor(slotProps.data.campaign_id)}"
-                        >
-                            {{ getCampaignName(slotProps.data.campaign_id) }}
-                        </div>
-                    </template>
-                </Column>
-
-                <Column field="type" header="Type"></Column>
-
-                <Column header="Scheduled Time">
-                    <template #body="slotProps">
-                        {{ formatDate(slotProps.data.scheduled_time) }}
-                    </template>
-                </Column>
-                <Column header="Statut">
-                    <template #body="slotProps">
-                        <div 
-                            class="p-1 rounded-lg text-center"
-                            :class="{
-                                'bg-blue-600 text-white': slotProps.data.status === 'queued',
-                                'bg-green-600 text-white': slotProps.data.status === 'posted',
-                                'bg-red-500 text-white': slotProps.data.status === 'failed',
-                                'bg-orange-500 text-white': slotProps.data.status === 'draft',
-                            }"
-                        >
-                            {{ translateStatus(slotProps.data.status) }}
-                        </div>
-                    </template>
-                </Column>
-                <Column header="Créé en">
-                    <template #body="slotProps">
-                        {{ formatDate(slotProps.data.created_at) }}
-                    </template>
-                </Column>
-                <Column header="Actions">
-                    <template #body="slotProps">
-                        <SplitButton 
-                            icon="pi pi-eye" 
-                            @click="openPostInReadMode(slotProps.data.id)" 
-                            :model="getItemsPostsDatatable(slotProps.data)" 
-                            style="color: red;" 
-                            severity="contrast" 
-                            rounded
-                        />
-                    </template>
-                </Column>
-            </DataTable>
+                        </template>
+                    </Column>
+                </DataTable>
+            </div>
         </div>
 
 
 
         <!-- Campaigns DataTable -->
-        <div v-if="view && view.name === 'Tableau'" class="p-2 mt-5 rounded-xl" style="background-color: #18181b;">
-            <DataTable v-model:filters="filters" :value="campaigns" paginator stripedRows :rows="5" filterDisplay="row"
-                :rowsPerPageOptions="[5, 10, 20, 50]" 
-                :globalFilterFields="['name', 'campaign.name', 'campaign.target_audience', 'campaign.status']"
-                tableStyle="min-width: 50rem"
-                paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
-                currentPageReportTemplate="{first} to {last} of {totalRecords}"
-                class="mt-4 w-full"
-            >
-                <template #header>
-                    <div class="flex justify-end">
-                        <IconField>
-                            <InputIcon>
-                                <i class="pi pi-search"></i>
-                            </InputIcon>
-                            <InputText v-model="filters['global'].value" placeholder="Nom du Campagne..." />
-                        </IconField>
+        <div v-if="view && view.name === 'Tableau'" class="flex flex-col">
+            <div class="flex items-center justify-between mt-5 mb-3">
+                <!-- Title & Icon -->
+                <div class="flex items-center gap-2 mt-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="mb-0" height="40px" viewBox="0 -960 960 960" width="40px" fill="#000000">
+                        <path d="M160-160q-33 0-56.5-23.5T80-240v-480q0-33 23.5-56.5T160-800h640q33 0 56.5 23.5T880-720v480q0 33-23.5 56.5T800-160H160Zm0-80h420v-140H160v140Zm500 0h140v-360H660v360ZM160-460h420v-140H160v140Z"/>
+                    </svg>
+                    <h1 class="fw-semibold text-2xl mb-0">Campagnes :</h1>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <!-- Filtrer par Status -->
+                    <div class="flex flex-col">
+                        <label for="statuy">Statut</label>
+                        <Select v-model="selectedStatus" :options="statuses" showClear optionLabel="name" placeholder="Choisissez un statut" class="w-full md:w-56">
+                            <template #option="slotProps">
+                                <div
+                                    class="px-2 py-1 rounded"
+                                    :style="{ color: statusColors[slotProps.option.value], fontWeight: '500' }"
+                                >
+                                    {{ slotProps.option.name }}
+                                </div>
+                                </template>
+
+                                <!-- Custom display for selected value -->
+                                <template #value="slotProps">
+                                <div v-if="slotProps.value" :style="{ color: statusColors[slotProps.value.value], fontWeight: '500' }">
+                                    {{ slotProps.value.name }}
+                                </div>
+                                <span v-else class="text-gray-400">Choisissez un statut</span>
+                            </template>
+                        </Select>
                     </div>
-                </template>
-                <!-- <template #empty> Pas de Campagnes pour le moment. </template>
-                <template #loading> Chargement... </template> -->
-                <Column header="Compte">
-                    <template #body="slotProps">
-                        <div class="flex items-center gap-2">
-                            <img 
-                                :src="getProfilePicture(slotProps.data.linkedin_user_id)" 
-                                alt="Profile Picture" 
-                                class="rounded-full" 
-                                style="width: 32px; 
-                                height: 32px;" 
+
+                    <!-- Filtrer par Date de Début -->
+                    <div>
+                        <label for="date-debut">Date de Début</label>
+                        <DatePicker v-model="filtredStartDate" showIcon iconDisplay="input" fluid />
+                    </div>
+
+                    <!-- Filtrer par Date de Fin -->
+                    <div>
+                        <label for="date-debut">Date de Fin</label>
+                        <DatePicker v-model="filtredEndDate" showIcon fluid iconDisplay="input" />
+                    </div>
+                </div>
+
+            </div>
+            <div class="p-2 mt-2 rounded-xl" style="background-color: #18181b;">
+                <DataTable v-model:filters="filters" :value="filteredCampaigns" paginator stripedRows :rows="5" filterDisplay="row"
+                    :rowsPerPageOptions="[5, 10, 20, 50]" 
+                    :globalFilterFields="['name', 'campaign.name', 'campaign.target_audience', 'campaign.status']"
+                    tableStyle="min-width: 50rem"
+                    paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
+                    currentPageReportTemplate="{first} to {last} of {totalRecords}"
+                    class="mt-4 w-full"
+                >
+                    <template #header>
+                        <div class="flex justify-end">
+                            <IconField>
+                                <InputIcon>
+                                    <i class="pi pi-search"></i>
+                                </InputIcon>
+                                <InputText v-model="filters['global'].value" placeholder="Nom du Campagne..." />
+                            </IconField>
+                        </div>
+                    </template>
+                    <Column header="Compte">
+                        <template #body="slotProps">
+                            <div class="flex items-center gap-2">
+                                <img 
+                                    :src="getProfilePicture(slotProps.data.linkedin_user_id)" 
+                                    alt="Profile Picture" 
+                                    class="rounded-full" 
+                                    style="width: 32px; 
+                                    height: 32px;" 
+                                />
+                                <span>{{ getUsername(slotProps.data.linkedin_user_id) }}</span>
+                            </div>
+                        </template>
+                    </Column>
+                    <Column header="Nom">
+                        <template #body="slotProps">
+                            <div class="text-center">
+                                {{ slotProps.data.name }}
+                            </div>
+                        </template>
+                    </Column>
+
+                    <Column field="target_audience" header="Audience"></Column>
+
+                    <Column header="Date de début">
+                        <template #body="slotProps">
+                            {{ formatDate(slotProps.data.start_date) }}
+                        </template>
+                    </Column>
+                    <Column header="Date de fin">
+                        <template #body="slotProps">
+                            {{ formatDate(slotProps.data.end_date) }}
+                        </template>
+                    </Column>
+                    <Column header="Statut">
+                        <template #body="slotProps">
+                            <div 
+                                class="p-1 rounded-lg text-center"
+                                :class="{
+                                    'bg-blue-600 text-white': slotProps.data.status === 'scheduled',
+                                    'bg-green-600 text-white': slotProps.data.status === 'completed',
+                                    'bg-red-500 text-white': slotProps.data.status === 'failed',
+                                    'bg-orange-500 text-white': slotProps.data.status === 'draft',
+                                }"
+                            >
+                                {{ translateStatus(slotProps.data.status) }}
+                            </div>
+                        </template>
+                    </Column>
+                    <Column header="Fréquence">
+                        <template #body="slotProps">
+                            <div class="text-center">
+                                {{ slotProps.data.frequency_per_day }}
+                            </div>
+                        </template>
+                    </Column>
+
+                    <Column header="Couleur">
+                        <template #body="slotProps">
+                            <div 
+                                class="p-2 rounded-lg border"
+                                :style="{backgroundColor: getCampaignColor(slotProps.data.id)}"
+                            ></div>
+                        </template>
+                    </Column>
+                    <Column header="Actions">
+                        <template #body="slotProps">
+                            <SplitButton 
+                                icon="pi pi-eye" 
+                                @click="openCampaignInReadMode(slotProps.data.linkedin_user_id, slotProps.data.id)" 
+                                :model="getItemsCampaignsDatatable(slotProps.data.id)" 
+                                style="color: red;" 
+                                severity="contrast" 
+                                rounded
                             />
-                            <span>{{ getUsername(slotProps.data.linkedin_user_id) }}</span>
-                        </div>
-                    </template>
-                </Column>
-                <Column header="Nom">
-                    <template #body="slotProps">
-                        <div class="text-center">
-                            {{ slotProps.data.name }}
-                        </div>
-                    </template>
-                </Column>
-
-                <Column field="target_audience" header="Audience"></Column>
-
-                <Column header="Date de début">
-                    <template #body="slotProps">
-                        {{ formatDate(slotProps.data.start_date) }}
-                    </template>
-                </Column>
-                <Column header="Date de fin">
-                    <template #body="slotProps">
-                        {{ formatDate(slotProps.data.end_date) }}
-                    </template>
-                </Column>
-                <Column header="Statut">
-                    <template #body="slotProps">
-                        <div 
-                            class="p-1 rounded-lg text-center"
-                            :class="{
-                                'bg-blue-600 text-white': slotProps.data.status === 'scheduled',
-                                'bg-green-600 text-white': slotProps.data.status === 'completed',
-                                'bg-red-500 text-white': slotProps.data.status === 'failed',
-                                'bg-orange-500 text-white': slotProps.data.status === 'draft',
-                            }"
-                        >
-                            {{ translateStatus(slotProps.data.status) }}
-                        </div>
-                    </template>
-                </Column>
-
-                <Column header="Fréquence">
-                    <template #body="slotProps">
-                        <div class="text-center">
-                            {{ slotProps.data.frequency_per_day }}
-                        </div>
-                    </template>
-                </Column>
-
-                <Column header="Couleur">
-                    <template #body="slotProps">
-                        <div 
-                            class="p-2 rounded-lg border"
-                            :style="{backgroundColor: getCampaignColor(slotProps.data.id)}"
-                        ></div>
-                    </template>
-                </Column>
-                <Column header="Actions">
-                    <template #body="slotProps">
-                        <SplitButton 
-                            icon="pi pi-eye" 
-                            @click="openCampaignInReadMode(slotProps.data.linkedin_user_id, slotProps.data.id)" 
-                            :model="getItemsCampaignsDatatable(slotProps.data.id)" 
-                            style="color: red;" 
-                            severity="contrast" 
-                            rounded
-                        />
-                    </template>
-                </Column>
-            </DataTable>
+                        </template>
+                    </Column>
+                </DataTable>
+            </div>
         </div>
 
 
@@ -364,7 +479,6 @@
             @close="showCampaignPostPortal = false; selectedPost = null; campaignPostError = ''"
         />
 
-        <ConfirmDialog></ConfirmDialog>
     </div>
 </template>
 
@@ -425,6 +539,46 @@ export default {
             couleurCampagne: '',
             nomCampagne: '',
             campaignPostError: '',
+            // Variables used For Posts Datatable Filters
+            selectedPostStatus: null,
+            filtredScheduledPostTime: null,
+            PostStatuses: [
+                { name: 'En attente', value: 'queued' },
+                { name: 'Publié', value: 'posted' },
+                { name: 'Échoué', value: 'failed' },
+                { name: 'Brouillon', value: 'draft' }
+            ],
+            postStatusColors: {
+                queued: 'rgb(37 99 235)',
+                posted: '#10b981',
+                failed: '#ef4444',
+                draft: 'rgb(249 115 22)',
+            },
+            // Variables used For Campaigns Datatable Filters
+            filtredStartDate: null,
+            filtredEndDate: null,
+            selectedStatus: null,
+            statuses: [
+                { name: 'En attente', value: 'scheduled' },
+                { name: 'Complété', value: 'completed' },
+                { name: 'Échoué', value: 'failed' },
+                { name: 'Brouillons', value: 'draft' }
+            ],
+            statusColors: {
+                scheduled: 'rgb(37 99 235)',
+                completed: '#10b981',
+                failed: '#ef4444',
+                draft: 'rgb(249 115 22)',
+            },
+            filters: {
+                global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+                name: { value: null, matchMode: FilterMatchMode.STARTS_WITH },
+                'campaign.target_audience': { value: null, matchMode: FilterMatchMode.STARTS_WITH },
+                'campaign.status': { value: null, matchMode: FilterMatchMode.EQUALS },
+            },
+            // Paginator Variables
+            currentPage: 0,
+            rowsPerPage: 10,
         };
     },
 
@@ -444,9 +598,73 @@ export default {
         failedPostsCount() {
             return this.userLinkedinPosts.filter(post => post.status === 'failed').length;
         },
+        filtredPostsArray() {
+            let filtredPosts = this.userLinkedinPosts;
+
+            if(this.selectedPostStatus && this.selectedPostStatus.value) {
+                filtredPosts = filtredPosts.filter(post => post.status === this.selectedPostStatus.value);
+            }
+
+            if (this.filtredScheduledPostTime) {
+                const startFilter = new Date(this.filtredScheduledPostTime);
+                startFilter.setHours(0, 0, 0, 0);
+                filtredPosts = filtredPosts.filter(post => {
+                    const campaignStart = new Date(post.scheduled_time);
+                    campaignStart.setHours(0, 0, 0, 0);
+                    return campaignStart.getTime() === startFilter.getTime();
+                });
+            }
+
+            return filtredPosts;
+        },
+        filteredCampaigns() {
+            let filtered = this.campaigns;
+
+            if (this.selectedStatus && this.selectedStatus.value) {
+                filtered = filtered.filter(campaign => campaign.status === this.selectedStatus.value);
+            }
+
+            if (this.filtredStartDate) {
+                const startFilter = new Date(this.filtredStartDate);
+                startFilter.setHours(0, 0, 0, 0);
+                filtered = filtered.filter(campaign => {
+                    const campaignStart = new Date(campaign.start_date);
+                    campaignStart.setHours(0, 0, 0, 0);
+                    return campaignStart.getTime() === startFilter.getTime();
+                });
+            }
+
+            if (this.filtredEndDate) {
+                const endFilter = new Date(this.filtredEndDate);
+                endFilter.setHours(0, 0, 0, 0);
+                filtered = filtered.filter(campaign => {
+                    const campaignEnd = new Date(campaign.end_date);
+                    campaignEnd.setHours(0, 0, 0, 0);
+                    return campaignEnd.getTime() === endFilter.getTime();
+                });
+            }
+
+            return filtered;
+        },
+        paginatedPosts() {
+            const start = this.currentPage * this.rowsPerPage;
+            const end = start + this.rowsPerPage;
+            return this.filteredPosts.slice(start, end);
+        },
+    },
+
+    watch: {
+        postStatus() {
+            this.currentPage = 0;
+        },
     },
 
     methods: {
+        // METHOD FOR THE PAGINATOR
+        onPageChange(event) {
+            this.currentPage = event.page;
+            this.rowsPerPage = event.rows;
+        },
         // THIS FUNCTION WAS MADE FOR THE ITEMS IN DATATABLE
         getItemsPostsDatatable(post) {
             if(post.status === "queued") {
@@ -657,7 +875,10 @@ export default {
 
         getProfilePicture(linkedinUserId) {
             const account = this.getLinkedinUserByID(linkedinUserId);
-            return account ? account.linkedin_picture : '/images/default-profile.png';
+            if(account) {
+                if(account.linkedin_picture != null) return account.linkedin_picture;
+            }
+            return '/build/assets/images/default-profile.png';
         },
 
         getCampaignByID(id) {
@@ -693,9 +914,19 @@ export default {
 
         translateStatus(status) {
             const statusMap = {
-                'queued': 'en attente',
-                'posted': 'publié',
-                'failed': 'échoué',
+                'scheduled': 'En attente',
+                'completed': 'Complété',
+                'failed': 'Echoué',
+                'draft': 'Brouillons'
+            };
+            return statusMap[status] || status;
+        },
+
+        translatePostStatus(status) {
+            const statusMap = {
+                'queued': 'En attente',
+                'posted': 'Publié',
+                'failed': 'Echoué',
                 'draft': 'Brouillons'
             };
             return statusMap[status] || status;

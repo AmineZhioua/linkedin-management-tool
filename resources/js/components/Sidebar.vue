@@ -1,8 +1,8 @@
 <template>
-  <div class="bg-black min-h-full w-[300px]" style="border-top: 1px solid gray;">
+  <div class="bg-black min-h-full" style="border-top: 1px solid gray;">
     <ul class="list-style-none pl-2 flex flex-col gap-4 py-4 mr-2">
       <li 
-        class="flex items-center gap-2 text-white cursor-pointer hover:bg-pink-300 py-2 px-2 rounded-lg transition-all duration-300"
+        class="flex relative items-center gap-2 text-white cursor-pointer hover:bg-pink-300 py-2 px-2 rounded-lg transition-all duration-300"
         @click="cardsNavigation('dashboard')"    
       >
         <img 
@@ -11,10 +11,12 @@
           height="25" 
           width="25"
         />
-        <span class="text-md fw-semibold">Dashboard</span>
+
+        <p>Dashboard</p>
+        <!-- <span class="text-md fw-semibold">Dashboard</span> -->
       </li>
       <li 
-        class="flex items-center gap-2 text-white cursor-pointer hover:bg-pink-300 py-2 px-2 rounded-lg transition-all duration-300"
+        class="flex relative items-center gap-2 text-white cursor-pointer hover:bg-pink-300 py-2 px-2 rounded-lg transition-all duration-300"
         @click="cardsNavigation('linkedinAccounts')"
       >
         <img 
@@ -23,10 +25,11 @@
           height="25" 
           width="25"
         />
-        <span class="text-md fw-semibold">Vos Comptes</span>
+        <p>Comptes</p>
+        <!-- <span class="text-md fw-semibold">Vos Comptes</span> -->
       </li>
       <li 
-        class="flex items-center gap-2 text-white cursor-pointer hover:bg-pink-300 py-2 px-2 rounded-lg transition-all duration-300"
+        class="flex relative items-center gap-2 text-white cursor-pointer hover:bg-pink-300 py-2 px-2 rounded-lg transition-all duration-300"
         @click="cardsNavigation('userPosts')"
       >
         <img 
@@ -35,10 +38,11 @@
           height="25" 
           width="25"
         />
-        <span class="text-md fw-semibold">Vos Posts</span>
+        <p>Activités</p>
+        <!-- <span class="text-md fw-semibold">Vos Activités</span> -->
       </li>
       <li 
-        class="flex items-center gap-2 text-white cursor-pointer hover:bg-pink-300 py-2 px-2 rounded-lg transition-all duration-300"
+        class="flex relative items-center gap-2 text-white cursor-pointer hover:bg-pink-300 py-2 px-2 rounded-lg transition-all duration-300"
         @click="cardsNavigation('calendar')"
       >
         <img 
@@ -47,10 +51,11 @@
           height="25" 
           width="25"
         />
-        <span class="text-md fw-semibold">Calendrier</span>
+        <p>Calendrier</p>
+        <!-- <span class="text-md fw-semibold">Calendrier</span> -->
       </li>
       <li 
-        class="flex items-center gap-2 text-white cursor-pointer hover:bg-pink-300 py-2 px-2 rounded-lg transition-all duration-300"
+        class="flex relative items-center gap-2 text-white cursor-pointer hover:bg-pink-300 py-2 px-2 rounded-lg transition-all duration-300"
         @click="cardsNavigation('KPIs')"    
       >
         <img 
@@ -59,7 +64,8 @@
           height="25" 
           width="25"
         />
-        <span class="text-md fw-semibold">Vos Statistiques</span>
+        <p>Statistiques</p>
+        <!-- <span class="text-md fw-semibold">Vos Statistiques</span> -->
       </li>
     </ul>
   </div>
@@ -71,15 +77,47 @@ export default {
   emits: ['card-to-set'],
   data() {
     return {
-      card: 'KPIs', // Changed to KPIs for consistency with MainSection
+      card: 'KPIs',
     };
   },
   methods: {
     cardsNavigation(card) {
       this.card = card;
-      console.log('Emitting card:', card); // Debug log
       this.$emit('card-to-set', card);
     },
   },
 };
 </script>
+
+
+<style scoped>
+ul li p {
+  position: absolute;
+  top: 50%;
+  left: 120%;
+  transform: translateY(-50%);
+  color: white;
+  font-weight: 600;
+  padding: 8px 12px;
+  background-color: oklch(82.3% 0.12 346.018);
+  z-index: 50;
+  border-radius: 15px;
+  box-shadow: 0 0 7px 3px #00000057;
+  display: none;
+}
+
+ul li p::before {
+    content: "";
+    position: absolute;
+    border-width: 10px;
+    border-style: solid;
+    border-color: transparent oklch(82.3% 0.12 346.018) transparent transparent;
+    left: -15px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+ul li:hover p {
+  display: block;
+}
+</style>

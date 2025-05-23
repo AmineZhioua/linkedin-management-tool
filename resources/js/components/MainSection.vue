@@ -83,13 +83,13 @@ export default {
 
   data() {
     return {
-      cardToSet: "KPIs", // Default view is KPIs
+      cardToSet: "userPosts",
     };
   },
 
   methods: {
     setCard(card) {
-      this.cardToSet = card; // Update the active card based on sidebar selection
+      this.cardToSet = card;
     },
   },
 };

@@ -63,6 +63,7 @@ import StepPanels from 'primevue/steppanels';
 import StepItem from 'primevue/stepitem';
 import Step from 'primevue/step';
 import StepPanel from 'primevue/steppanel';
+import Paginator from 'primevue/paginator';
 
 const app = createApp({
     data() {
@@ -110,6 +111,7 @@ app.component("sidebar", Sidebar);
 app.component("main-section", MainSection);
 app.component("kpi-section", KpiSection);
 
+
 // PrimeVue Components
 app.component("Button", Button);
 app.component("Select", Select);
@@ -133,5 +135,6 @@ app.component("StepPanels", StepPanels);
 app.component("StepItem", StepItem);
 app.component("Step", Step);
 app.component("StepPanel", StepPanel);
+app.component("Paginator", Paginator);
 
 app.mount("#app");
