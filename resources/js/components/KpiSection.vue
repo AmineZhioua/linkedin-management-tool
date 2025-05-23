@@ -34,10 +34,10 @@
 
             <!-- AVERAGE POSTS PER DAY CARD -->
             <div class="flex justify-between border shadow-md p-4 rounded-lg" style="background-color: #18181b;">
-                <div class="flex flex-col gap-2">
+                <div class="flex justify-between flex-col gap-2">
                     <h1 class="text-white text-xl">Moyenne Posts / Jour</h1>
-                    <h1 class="mb-0 text-white">= {{ allLinkedinPosts.length }}</h1>
-                    <p class="mb-0 text-gray-300 text-sm">Nombre des posts depuis la création de votre compte</p>
+                    <h1 class="mb-0 text-white">= {{ calculateAllTimeAveragePostsPerDay() }}</h1>
+                    <p class="mb-0 text-gray-300 text-sm">Moyenne des posts par jour depuis la création de votre compte</p>
                 </div>
                 <div class="py-2 px-3 text-center rounded-xl h-fit flex items-center justify-center" style="background-color: #ffc53d;">
                     <i class="fa-solid fa-calendar-check text-3xl text-purple-1000"></i>
@@ -45,11 +45,15 @@
             </div>
 
             <!-- BEST POST TYPE CARD -->
-            <div class="flex justify-between border shadow-md p-4 rounded-lg" style="background-color: #18181b;">
+            <div class="flex justify-between border gap-2 shadow-md p-4 rounded-lg" style="background-color: #18181b;">
                 <div class="flex flex-col gap-2">
-                    <h1 class="text-white text-xl">Meilleure type de Post</h1>
-                    <h1 class="mb-1 text-white text-3xl fw-light">Image</h1>
-                    <p class="mb-0 text-gray-300 text-sm">Nombre des posts depuis la création de votre compte</p>
+                    <h1 class="text-white text-xl">Type de post ultime</h1>
+                    <!-- Loading state for the best engagement value -->
+                    <h3 v-if="isBestEngagementChartLoading" class="text-white text-xl mb-2 fw-light">Chargement...</h3>
+                    <!-- The value itself -->
+                    <h1 v-else class="mb-2 text-white text-3xl fw-light">{{ bestEngagementRate }}</h1>
+
+                    <p class="mb-0 text-gray-300 text-sm">Le type du post qui la meilleure performance par rapport aux autres</p>
                 </div>
                 <div class="py-2 px-3 text-center rounded-xl h-fit flex items-center justify-center" style="background-color: #da4dd0;">
                     <i class="fa-solid fa-image text-3xl text-pink-1000"></i>
@@ -380,6 +384,10 @@ export default {
             totalArticlePosts: 0,
             totalLikesArticlePosts: 0,
             totalCommentsArticlePosts: 0,
+            // Best Engagement Rate related Variables
+            isBestEngagementChartLoading: false,
+            bestEngagementRate: 0,
+            bestEngagementRatePostType: '',
             // Campaign Social Actions
             campaignLikes: {},
             campaignComments: {},
@@ -518,6 +526,21 @@ export default {
 
         getUserLinkedinInfo(linkedinUserId) {
             return this.allLinkedinAccounts.find(account => account.id === linkedinUserId);
+        },
+
+        calculateAllTimeAveragePostsPerDay() {
+            const postedPosts = this.allLinkedinPosts.filter(post => post.status === 'posted');
+            
+            if (postedPosts.length === 0) {
+                return 0;
+            }
+            
+            const postDates = postedPosts.map(post => new Date(post.scheduled_time));
+            const earliestDate = new Date(Math.min(...postDates));
+            const now = new Date();
+            const totalDays = Math.ceil((now - earliestDate) / (1000 * 60 * 60 * 24));
+            
+            return Math.round((postedPosts.length / totalDays) * 100) / 100;
         },
 
         renderCharts() {
@@ -828,6 +851,7 @@ export default {
 
         async getSocialActionsByType(type) {
             this.isLoading = true;
+            this.isBestEngagementChartLoading = true;
             this.typeErrors[type] = "";
 
             const validTypes = ['text', 'image', 'video', 'article'];
@@ -883,6 +907,7 @@ export default {
                             this[`totalComments${capitalizedType}Posts`] += response.data.commentsSummary.aggregatedTotalComments;
                         } else {
                             this.typeErrors[type] = `Erreur lors de la récupération des données pour le post ${post.id}`;
+                            this.bestEngagementRate = 0
                         }
                     } catch (innerError) {
                         if (innerError.response) {
@@ -907,6 +932,7 @@ export default {
                 }
             } finally {
                 this.isLoading = false;
+                this.isBestEngagementChartLoading = false;
                 this.renderTypeEngagementChart(type);
             }
         },
@@ -1105,6 +1131,7 @@ export default {
             });
         },
 
+        // THIS FUNCTION WAS UPDATED TO ALSO CALCULATE THE BEST ENGAGEMENT RATE
         async fetchAllKPIs() {
             this.isLoading = true;
             const types = ['text', 'image', 'video', 'article'];
@@ -1116,9 +1143,46 @@ export default {
                 this[`totalLikes${capitalizedType}Posts`] = 0;
                 this[`totalComments${capitalizedType}Posts`] = 0;
             });
-            for (const type of types) {
-                await this.getSocialActionsByType(type);
+            try {
+                for (const type of types) {
+                    await this.getSocialActionsByType(type);
+                }
+
+                const totalPostedPosts = this.allLinkedinPosts.filter(post => post.status === 'posted').length;
+                if (totalPostedPosts > 0) {
+                    const textEngagementRate = (this.totalLikesTextPosts + this.totalCommentsTextPosts) / totalPostedPosts;
+                    const imageEngagementRate = (this.totalLikesImagePosts + this.totalCommentsImagePosts) / totalPostedPosts;
+                    const videoEngagementRate = (this.totalLikesVideoPosts + this.totalCommentsVideoPosts) / totalPostedPosts;
+                    const articleEngagementRate = (this.totalLikesArticlePosts + this.totalCommentsArticlePosts) / totalPostedPosts;
+
+                    this.bestEngagementRate = Math.max(textEngagementRate, imageEngagementRate, videoEngagementRate, articleEngagementRate);
+                    switch(this.bestEngagementRate) {
+                        case(this.bestEngagementRate === textEngagementRate):
+                            this.bestEngagementRatePostType = "Text";
+                            break
+
+                        case(this.bestEngagementRate === imageEngagementRate):
+                            this.bestEngagementRatePostType = "Image";
+                            break;
+                        case(this.bestEngagementRate === videoEngagementRate):
+                            this.bestEngagementRatePostType = "Vidéo";
+                            break;
+                        case(this.bestEngagementRate === articleEngagementRate):
+                            this.bestEngagementRatePostType = "Article";
+                            break;
+                        default: 
+                            this.bestEngagementRatePostType = ''
+                    }
+                } else {
+                    this.bestEngagementRate = 0;
+                }
+            } catch (error) {
+                console.error("Error in fetchAllKPIs:", error);
+                this.errorMsg = "Erreur lors du chargement des KPIs";
+            } finally {
+                this.isBestEngagementChartLoading = false;
             }
+            
             await this.getSocialActionsByCampaign();
             this.isLoading = false;
         },
