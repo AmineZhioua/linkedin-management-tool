@@ -64,6 +64,8 @@ import StepItem from 'primevue/stepitem';
 import Step from 'primevue/step';
 import StepPanel from 'primevue/steppanel';
 import Paginator from 'primevue/paginator';
+import PostsDatatable from "./components/PostsDatatable.vue";
+import CampaignsDatatable from "./components/CampaignsDatatable.vue";
 
 const app = createApp({
     data() {
@@ -110,7 +112,8 @@ app.component("campaign-details", CampaignDetails);
 app.component("sidebar", Sidebar);
 app.component("main-section", MainSection);
 app.component("kpi-section", KpiSection);
-
+app.component("posts-datatable", PostsDatatable);
+app.component("campaigns-datatable", CampaignsDatatable);
 
 // PrimeVue Components
 app.component("Button", Button);
