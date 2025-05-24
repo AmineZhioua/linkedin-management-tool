@@ -147,7 +147,7 @@ export default {
         },
     },
 
-    emits: ['edit-linkedin-post', 'delete-post', 'delete-post-from-linkedin'],
+    emits: ['edit-linkedin-post', 'delete-post', 'delete-post-from-linkedin', 'request-boost-interaction'],
 
     data() {
         return {
@@ -196,7 +196,7 @@ export default {
         getCampaignColor,
         formatDate,
 
-        
+
         // THIS FUNCTION WAS MADE FOR THE ITEMS IN DATATABLE
         getItemsPostsDatatable(post) {
             if(post.status === "queued") {
@@ -223,10 +223,15 @@ export default {
             } else if(post.status === "posted") {
                 return [
                     {
+                        label: 'Demande le Boost d\'interactions',
+                        icon: 'pi pi-bolt',
+                        command: () => this.emitPostToRequestBoost(post)
+                    },
+                    {
                         label: 'Supprimer de LinkedIn',
                         icon: 'pi pi-times',
                         command: () => this.emitPostToDeleteFromLinkedin(post)
-                    },
+                    }
                 ];
             }
         },
@@ -241,6 +246,10 @@ export default {
 
         emitPostToDeleteFromLinkedin(post) {
             this.$emit('delete-post-from-linkedin', post);
+        },
+
+        emitPostToRequestBoost(post) {
+            this.$emit('request-boost-interaction', post);
         },
 
         openReadMode(postId) {

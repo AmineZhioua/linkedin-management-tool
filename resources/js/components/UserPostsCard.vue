@@ -181,6 +181,7 @@
                 @edit-linkedin-post="editPost"
                 @delete-post="deletePost"
                 @delete-post-from-linkedin="deletePostFromLinkedIn"
+                @request-boost-interaction="requestBoost"
                 :open-post-read-mode="openPostInReadMode"
             />
         </div>
@@ -240,6 +241,8 @@
 <script>
 import axios from 'axios';
 import Swal from 'sweetalert2';
+import { useToast } from "vue-toastification";
+
 
 
 export default {
@@ -259,6 +262,11 @@ export default {
             required: false,
             default: () => []
         },
+    },
+
+    setup() {
+        const toast = useToast();
+        return { toast }
     },
 
     data() {
@@ -331,6 +339,74 @@ export default {
         editPost(post) {
             this.selectedPost = post;
             this.showPortal = true;
+        },
+
+        async requestBoost(post) {
+            try {
+                const boostData = new FormData();
+
+                const postUrl = `https://www.linkedin.com/feed/update/${post.post_urn}`;
+
+                boostData.append("post_id", post.id);
+                boostData.append("linkedin_user_id", post.linkedin_user_id);
+                boostData.append("post_url", postUrl);
+
+                const boostResponse = await axios.post("/boost-interaction/request", boostData, {
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    }
+                });
+
+                if(boostResponse.status === 201) {
+                    this.toast.success("La requête de Boost a été envoyé avec succès!", {
+                        position: "bottom-left",
+                        closeOnClick: true,
+                        pauseOnFocusLoss: true,
+                        pauseOnHover: true,
+                        draggable: true,
+                        draggablePercent: 0.6,
+                        showCloseButtonOnHover: false,
+                        hideProgressBar: false,
+                        timeout: 5000,
+                        closeButton: "button",
+                        icon: true,
+                        rtl: false
+                    });
+                } else if(boostResponse.status === 404){
+                    this.toast.error("Post non trouvé !", {
+                        position: "bottom-left",
+                        closeOnClick: true,
+                        pauseOnFocusLoss: true,
+                        pauseOnHover: true,
+                        draggable: true,
+                        draggablePercent: 0.6,
+                        showCloseButtonOnHover: false,
+                        hideProgressBar: false,
+                        timeout: 5000,
+                        closeButton: "button",
+                        icon: false,
+                        rtl: false
+                    });
+                }
+                
+            } catch(error) {
+                console.error(error);
+                this.toast.error("Une erreur s'est produite lors de l'envoi de la requête !", {
+                    position: "bottom-left",
+                    closeOnClick: true,
+                    pauseOnFocusLoss: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    draggablePercent: 0.6,
+                    showCloseButtonOnHover: false,
+                    hideProgressBar: false,
+                    timeout: 5000,
+                    closeButton: "button",
+                    icon: true,
+                    rtl: false
+                });
+            }
         },
 
         async deletePost(postId) {
