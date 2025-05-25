@@ -8,6 +8,8 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use App\Models\ScheduledLinkedinPost;
+use App\Events\PostPosted;
+use App\Events\PostFailed;
 use App\Http\Controllers\LinkedInController;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
@@ -150,7 +152,7 @@ class ScheduleLinkedinSinglePost implements ShouldQueue
 
 
                 // ADD THE NECESSARY EVENT
-                // event(new PostPosted($post, $campaign));
+                event(new PostPosted($post));
                 
             } else {
                 Log::error("Failed to post {$post->id}", [
@@ -162,6 +164,8 @@ class ScheduleLinkedinSinglePost implements ShouldQueue
                     'error'  => $errorMsg,
                     'job_id' => null,
                 ]);
+
+                event(new PostFailed($post));
             }
 
         } catch (\Exception $e) {
@@ -174,6 +178,8 @@ class ScheduleLinkedinSinglePost implements ShouldQueue
                 'error'  => $e->getMessage(),
                 'job_id' => null,
             ]);
+
+            event(new PostFailed($post));
         }
     }
 }

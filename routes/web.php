@@ -95,13 +95,16 @@ Route::post('/linkedin/top-account', [App\Http\Controllers\KpiController::class,
 Route::get('/linkedin/post-consistency', [App\Http\Controllers\KpiController::class, 'getPostConsistency'])->name('post.consistency');
 
 Route::post('/notifications', [App\Http\Controllers\DashboardController::class, 'notification'])->name('notifications');
-Route::get('/get-notifications', [App\Http\Controllers\DashboardController::class, 'getNotifications'])->name('get.notifications');
-Route::put('/linkedin/mark-as-read', [App\Http\Controllers\NotificationsController::class, 'markAsRead'])->name('mark.as.read');
+Route::get('/get-notifications', [App\Http\Controllers\NotificationsController::class, 'getNotifications'])->name('get.notifications');
+Route::post('/linkedin/mark-all-as-read', [App\Http\Controllers\NotificationsController::class, 'markAllAsRead'])->name('mark.as.read');
 Route::post('/boost-interaction/request', [App\Http\Controllers\DashboardController::class, 'requestBoostInteraction'])
     ->name('boost.interaction.request');
 
 Route::get('/main/dashboard', [App\Http\Controllers\MainDashboardController::class, 'index'])->name('main.dashboard');
 Route::delete('/campaign/delete', [App\Http\Controllers\LinkedInController::class, 'deleteCampaign'])->name('delete.campaign');
+
+
+
 
 // Plateforme de Marque Routes
 Route::middleware(['auth', 'verified', 'check.subscriptions', 'check.additional.info', 'suspend'])->group(function () {

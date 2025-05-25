@@ -19,7 +19,6 @@ import CampaignTable from "./components/CampaignTable.vue";
 import CampaignModal from "./components/CampaignModal.vue";
 import PostCard from "./components/PostCard.vue";
 import KpiList from "./components/KpiList.vue";
-import NotificationCard from "./components/NotificationCard.vue";
 import ExtraInfoForm from "./components/ExtraInfoForm.vue";
 import Toast from "vue-toastification";
 import "vue-toastification/dist/index.css";
@@ -66,6 +65,7 @@ import StepPanel from 'primevue/steppanel';
 import Paginator from 'primevue/paginator';
 import PostsDatatable from "./components/PostsDatatable.vue";
 import CampaignsDatatable from "./components/CampaignsDatatable.vue";
+import NotificationsBell from "./components/NotificationsBell.vue";
 
 const app = createApp({
     data() {
@@ -100,7 +100,6 @@ app.component("campaign-modal", CampaignModal);
 app.component("post-card", PostCard);
 app.component("edit-account", EditAccount);
 app.component("kpi-list", KpiList);
-app.component("notification-card", NotificationCard);
 app.component("extra-info-form", ExtraInfoForm);
 app.component("user-posts-card", UserPostsCard);
 app.component("linkedin-post", LinkedinPost);
@@ -114,6 +113,7 @@ app.component("main-section", MainSection);
 app.component("kpi-section", KpiSection);
 app.component("posts-datatable", PostsDatatable);
 app.component("campaigns-datatable", CampaignsDatatable);
+app.component("notifications-bell", NotificationsBell);
 
 // PrimeVue Components
 app.component("Button", Button);

@@ -5,43 +5,54 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\UserNotification;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 
 class NotificationsController extends Controller
 {
-    public function markAsRead(Request $request) {
+    public function getNotifications() {
         try {
-            $validated = $request->validate([
-                'notification_id' => "required|integer|exists:user_notifications,id",
-            ]);
-    
-            // Find the notification by ID
-            $notification = UserNotification::where("id", $validated['notification_id'])->first();
-    
-            if($notification) {
-                $notification->read_at = now();
-                $notification->save();
-    
+            $user_id = Auth::id();
+
+            $notifications = UserNotification::where('user_id', $user_id)
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            $unreadCount = UserNotification::where('user_id', $user_id)
+            ->whereNull('read_at')
+            ->count();
+
+            if ($notifications->isEmpty()) {
                 return response()->json([
-                    'success' => true,
-                    'message' => 'Notification marquée comme lu !'
-                ], 200);
-            } else {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Notification non trouvée!'
-                ], 404);
+                    'status' => 200,
+                    'message' => 'Pas de Notifications pour le moment'
+                ]);
             }
+                
+            return response()->json([
+                "status" => 201,
+                "data" => json_decode($notifications),
+                "unread_count" => $unreadCount,
+            ], 201);
+
         } catch(\Exception $e) {
-            Log::error("Error marking notification as read", [
-                "error" => $e->getMessage(),
-                "trace" => $e->getTraceAsString()
+            Log::error('Error retrieving notifications', [
+                'error' => $e->getMessage(),
             ]);
+            return response()->json(['error' => 'Une erreur s\'est produite lors de la récupération des notifications' . $e], 500);
+        }
+    }
+
+
+    public function markAllAsRead() {
+        $user_id = Auth::id();
+
+        $unreadNotifs = UserNotification::where('user_id', $user_id)
+            ->whereNull('read_at')->update(['read_at' => Carbon::now()->toDateTimeString()]);
 
             return response()->json([
-                'success' => false,
-                'message' => 'Une erreur s\'est produite: ' . $e->getMessage()
-            ], 500);
-        }
+                'status' => 200
+            ], 200);
     }
 }

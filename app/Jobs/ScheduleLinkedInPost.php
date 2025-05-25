@@ -177,6 +177,8 @@ class ScheduleLinkedInPost implements ShouldQueue
                 'error'  => $e->getMessage(),
                 'job_id' => null,
             ]);
+            
+            event(new PostFailed($post));
         }
     }
 }
