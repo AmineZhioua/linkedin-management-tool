@@ -21,7 +21,7 @@
                             class="flex items-center gap-2 p-1 border rounded-full"
                         >
                             <img 
-                                :src="selectedAccount.linkedin_picture"
+                                :src="selectedAccount.linkedin_picture ?? '/build/assets/images/default-profile.png'"
                                 alt="Profile Picture"
                                 height="40"
                                 width="40" 
@@ -43,7 +43,7 @@
                                 @click="selectLinkedinAccount(linkedinAccount)"
                             >
                                 <img 
-                                    :src="linkedinAccount.linkedin_picture" 
+                                    :src="linkedinAccount.linkedin_picture ?? '/build/assets/images/default-profile.png'" 
                                     alt="Profile Picture"
                                     height="40"
                                     width="40" 
@@ -125,6 +125,33 @@
                             <p v-if="validationErrors.file" class="text-red-500 text-sm">
                                 {{ validationErrors.file }}
                             </p>
+                        </div>
+
+                        <!-- Multi File Inpit for Multi Images Posts -->
+                        <div 
+                            class="w-full"
+                            v-if="newPost.type === 'multiimage'"
+                        >
+                            <div class="max-h-[300px] max-w-full overflow-scroll">
+                                <FileUpload 
+                                    name="demo[]" 
+                                    :multiple="true" 
+                                    accept="image/*" 
+                                    :maxFileSize="90000000" 
+                                    :showUploadButton="false" 
+                                    :showCancelButton="false"
+                                    style="background-color: white; border: none;"
+                                    @select="onMultiImageSelect"
+                                    @remove="onMultiImageRemove"
+                                >
+                                    <template #empty>
+                                        <span>Faire glisser et déposez les fichiers ici.</span>
+                                    </template>
+                                </FileUpload>
+                                <p v-if="validationErrors.file" class="text-red-500 text-sm">
+                                    {{ validationErrors.file }}
+                                </p>
+                            </div>
                         </div>
                         
                         <!-- For Type of Article Posts -->
@@ -294,9 +321,34 @@
                     />
                 </div>
 
+                <!-- Multi Image Type Preview -->
+                <div v-if="newPost.type === 'multiimage'" class="w-full h-auto">
+                    <p class="my-2 px-2">{{ newPost.content.caption }}</p>
+                    <div v-if="imageLayout.images.length === 1" class="w-full">
+                        <img :src="imageLayout.images[0]" class="object-fill w-full" alt="Preview" />
+                    </div>
+                    <div v-else-if="imageLayout.images.length === 2" class="grid grid-cols-2">
+                        <img v-for="(image, index) in imageLayout.images" :key="index" :src="image" class="h-[150px] w-full object-cover" alt="Preview" />
+                    </div>
+                    <div v-else-if="imageLayout.images.length === 3" class="grid grid-cols-3">
+                        <img v-for="(image, index) in imageLayout.images" :key="index" :src="image" class="h-[150px] w-full object-cover" alt="Preview" />
+                    </div>
+                    <div v-else-if="imageLayout.images.length >= 4" class="grid grid-cols-1">
+                        <img :src="imageLayout.images[0]" class="max-h-[200px] w-full object-cover" alt="Preview" />
+                        <div class="grid grid-cols-3">
+                            <div v-for="(image, index) in imageLayout.images.slice(1)" :key="index" class="relative">
+                                <img :src="image" class="h-[150px] w-full object-cover" alt="Preview" />
+                                <div v-if="imageLayout.showOverlay && index === 2" class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                                    <span class="text-white text-2xl">+{{ imageLayout.additionalCount }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Video Type Preview -->
                 <div v-if="newPost.type === 'video'" class="w-full h-auto">
-                    <p class="my-2 px-2">{{ newPost.content.caption || 'Votre légende ici...' }}</p>
+                    <p class="my-2 px-2">{{ newPost.content.caption }}</p>
                     <video 
                         v-if="videoPreviewUrl || newPost.content.file_path" 
                         controls 
@@ -309,7 +361,7 @@
 
                 <!-- Article Type Preview -->
                 <div v-if="newPost.type === 'article'" class="w-full h-auto">
-                    <p class="my-2 px-2">{{ newPost.content.caption || 'Votre légende ici...' }}</p>
+                    <p class="my-2 px-2">{{ newPost.content.caption }}</p>
                     <div class="border p-2 rounded-md">
                         <a :href="newPost.content.url || '#'" target="_blank" class="text-blue-600 hover:underline">
                             {{ newPost.content.title || 'Titre de l\'article' }}
@@ -414,6 +466,7 @@ export default {
             postTypes: [
                 { value: "text", label: "Text", icon: "fas fa-align-left" },
                 { value: "image", label: "Image", icon: "fas fa-image" },
+                { value: "multiimage", label: "Multi-Image"},
                 { value: "video", label: "Video", icon: "fas fa-video" },
                 { value: "article", label: "Article", icon: "fas fa-file-alt" },
             ],
@@ -428,9 +481,11 @@ export default {
                     url: "",
                     title: "",
                     description: "",
+                    files: [],
                 },
             },
             showConfirmExit: false,
+            multiImagePreviews: [],
         };
     },
 
@@ -484,6 +539,25 @@ export default {
             immediate: true,
         },
     },
+
+    computed: {
+        imageLayout() {
+            const previews = this.multiImagePreviews;
+            if (!previews || previews.length === 0) {
+                return { images: [], showOverlay: false, additionalCount: 0 };
+            }
+            if (previews.length === 1) {
+                return { images: [previews[0]], showOverlay: false, additionalCount: 0 };
+            }
+            if (previews.length <= 3) {
+                return { images: previews, showOverlay: false, additionalCount: 0 };
+            }
+            // For 4 or more, show first 4 images, with overlay on the 4th if more exist
+            const displayImages = previews.slice(0, 4);
+            const additionalCount = previews.length - 4;
+            return { images: displayImages, showOverlay: additionalCount > 0, additionalCount };
+        }
+    },
     
     methods: {
         selectLinkedinAccount(account) {
@@ -520,6 +594,20 @@ export default {
             const hours = String(date.getHours()).padStart(2, '0');
             const minutes = String(date.getMinutes()).padStart(2, '0');
             return `${year}-${month}-${day}T${hours}:${minutes}`;
+        },
+
+        onMultiImageSelect(event) {
+            const files = event.files;
+            this.newPost.content.files = files;
+            this.multiImagePreviews = files.map(file => URL.createObjectURL(file));
+            this.validateField('files'); 
+        },
+
+        onMultiImageRemove(event) {
+            const fileToRemove = event.file;
+            this.newPost.content.files = this.newPost.content.files.filter(file => file !== fileToRemove);
+            this.multiImagePreviews = this.newPost.content.files.map(file => URL.createObjectURL(file));
+            this.validateField('files');
         },
 
         handleFileUpload(event) {
@@ -574,6 +662,12 @@ export default {
                     errors.title = "Le titre de l'article ne peut pas dépasser 200 caractères !";
                 } else if (title.length < 5) {
                     errors.title = "Le titre de l'article doit contenir au moins 5 caractères !";
+                }
+            } else if(post.type === 'multiimage') {
+                if(post.content.files.length <= 1) {
+                    errors.file = "Veuillez sélectionner au moins 2 fichiers avant de continuer !"; 
+                } else if(post.content.files.length > 9) {
+                    errors.file = "Vous ne pouvez pas dépassez 9 images par post !"
                 }
             }
 
@@ -639,6 +733,14 @@ export default {
                         postData.append("content[description]", this.newPost.content.description);
                         postData.append("content[caption]", this.newPost.content.caption.trim());
                         break;
+                    case 'multiimage':
+                        this.newPost.content.files.forEach((file, index) => {
+                            postData.append(`content[files][${index}]`, file);
+                            postData.append(`content[original_filenames][${index}]`, file.name);
+                        });
+                        postData.append("content[caption]", this.newPost.content.caption.trim());
+                        break;
+
                     default:
                         throw new Error("Type de publication invalide");
                 }
@@ -677,68 +779,16 @@ export default {
                 if (error.response?.status === 401 || 
                     (error.response?.data?.error && error.response?.data?.error.toLowerCase().includes("token")) ||
                     (error.message && error.message.toLowerCase().includes("token"))) {
-                        this.toast.error(`${error}`, {
-                            position: "bottom-right",
-                            timeout: 3000,
-                            closeOnClick: true,
-                            pauseOnFocusLoss: true,
-                            pauseOnHover: true,
-                            draggable: true,
-                            draggablePercent: 0.6,
-                            showCloseButtonOnHover: false,
-                            hideProgressBar: false,
-                            closeButton: "button",
-                            icon: true,
-                            rtl: false
-                        });
+                        this.showErrorToast(error);
                 } else if (error.response?.data?.error) {
                     console.error(error.response.data.error);
-                    this.toast.error(`${error}`, {
-                        position: "bottom-right",
-                        timeout: 3000,
-                        closeOnClick: true,
-                        pauseOnFocusLoss: true,
-                        pauseOnHover: true,
-                        draggable: true,
-                        draggablePercent: 0.6,
-                        showCloseButtonOnHover: false,
-                        hideProgressBar: false,
-                        closeButton: "button",
-                        icon: true,
-                        rtl: false
-                    });
+                    this.showErrorToast(error);
                 } else if (error.response?.data?.message) {
                     console.error(error.response.data.message);
-                    this.toast.error(`${error}`, {
-                        position: "bottom-right",
-                        timeout: 3000,
-                        closeOnClick: true,
-                        pauseOnFocusLoss: true,
-                        pauseOnHover: true,
-                        draggable: true,
-                        draggablePercent: 0.6,
-                        showCloseButtonOnHover: false,
-                        hideProgressBar: false,
-                        closeButton: "button",
-                        icon: true,
-                        rtl: false
-                    });
+                    this.showErrorToast(error);
                 } else if (error.message) {
                     console.error(error.message);
-                    this.toast.error(`${error}`, {
-                        position: "bottom-right",
-                        timeout: 3000,
-                        closeOnClick: true,
-                        pauseOnFocusLoss: true,
-                        pauseOnHover: true,
-                        draggable: true,
-                        draggablePercent: 0.6,
-                        showCloseButtonOnHover: false,
-                        hideProgressBar: false,
-                        closeButton: "button",
-                        icon: true,
-                        rtl: false
-                    });
+                    this.showErrorToast(error);
                 } else {
                     console.error("Une erreur s'est produite lors de la publication des posts");
                     this.toast.error(`Une erreur s'est produite lors de la publication des posts`, {
@@ -757,6 +807,23 @@ export default {
                     });
                 }
             }
+        },
+
+        showErrorToast(error) {
+            this.toast.error(`${error}`, {
+                position: "bottom-right",
+                timeout: 3000,
+                closeOnClick: true,
+                pauseOnFocusLoss: true,
+                pauseOnHover: true,
+                draggable: true,
+                draggablePercent: 0.6,
+                showCloseButtonOnHover: false,
+                hideProgressBar: false,
+                closeButton: "button",
+                icon: true,
+                rtl: false
+            });
         },
 
         async updatePost() {

@@ -82,6 +82,10 @@ Route::middleware(['auth', 'verified', 'linkedin.valid', 'linkedin.account.exist
 });
 
 
+// ROUTE FOR REGISTERING MULTI IMAGE POST MEDIA
+Route::post('/linkedin/register-multi-image', [LinkedInController::class, 'registerMultiImageMedia']);
+
+
 // Other Routes
 Route::delete('/linkedin/delete-post', [App\Http\Controllers\LinkedinPostController::class, 'deletePost'])->name('delete.post');
 Route::put('/linkedin/update-post', [App\Http\Controllers\LinkedinPostController::class, 'updatePost'])->name('update.post');

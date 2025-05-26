@@ -2,7 +2,7 @@
     <div class="bg-black bg-opacity-50 inset-0 h-full w-full absolute"></div>
     <div class="flex items-center w-full p-4 justify-center gap-2 absolute top-[50%] left-[50%] translate-y-[-50%] translate-x-[-50%]">
         <!-- Post Fields -->
-        <div class="bg-white p-4 rounded-lg relative"> 
+        <div class="bg-white p-4 rounded-lg relative min-w-[500px]"> 
             <!-- Close Button & Title -->
             <div class="flex w-full justify-between mb-2">
                 <h3 class="text-xl mb-0">{{ postToEdit ? 'Modifier le Post' : 'Créer un Post' }}</h3>
@@ -18,7 +18,7 @@
                     <select 
                         name="post-type" 
                         id="post-type"
-                        class="py-2 px-3 min-w-[100px] rounded-lg"
+                        class="py-2 px-3 min-w-[100px] rounded-lg bg-gray-200"
                         v-model="postToEdit.type"
                     >
                         <option 
@@ -61,7 +61,7 @@
                             v-model="postToEdit.content.text"
                             name="caption" 
                             id="caption" 
-                            class="border rounded-md w-full p-2 min-h-[300px]" 
+                            class="border rounded-md w-full p-2 min-h-[300px] bg-white" 
                             placeholder="Ecrire quelque chose ou utiliser votre Assistant IA"
                         ></textarea>
 
@@ -86,6 +86,30 @@
                             <p v-if="postToEdit.content.file" class="mt-2 mb-0 text-sm text-gray-600">
                                 Fichier sélectionné : {{ postToEdit.content.fileName || (postToEdit.content.file && postToEdit.content.file.name) }}
                             </p>
+                        </div>
+
+                        <!-- Multi File Input for Multi Images Posts -->
+                        <div 
+                            class="w-full"
+                            v-if="postToEdit.type === 'multiimage'"
+                        >
+                            <div class="max-h-[300px] max-w-full overflow-scroll">
+                                <FileUpload 
+                                    name="demo[]" 
+                                    :multiple="true" 
+                                    accept="image/*" 
+                                    :maxFileSize="90000000" 
+                                    :showUploadButton="false" 
+                                    :showCancelButton="false"
+                                    style="background-color: white; border: none;"
+                                    @select="onMultiImageSelect"
+                                    @remove="onMultiImageRemove"
+                                >
+                                    <template #empty>
+                                        <span>Faire glisser et déposez les fichiers ici.</span>
+                                    </template>
+                                </FileUpload>
+                            </div>
                         </div>
                         
                         <!-- For Type of Article Posts -->
@@ -126,7 +150,7 @@
                             v-model="postToEdit.content.caption"
                             name="caption" 
                             id="caption" 
-                            class="border rounded-md w-full p-2 min-h-[300px]" 
+                            class="border rounded-md w-full p-2 min-h-[300px] bg-white" 
                             placeholder="Ecrire quelque chose ou utiliser votre Assistant IA"
                         ></textarea>
                     </div>
@@ -143,10 +167,6 @@
                         >
                             Enregistrer
                         </button>
-
-                        <!-- <button class="bg-transparent text-black border-gray-600 border py-2 px-3 rounded-md text-md fw-semibold">
-                            Ajouter au Brouillons
-                        </button> -->
                     </div>
 
                     <!-- DateTime Input -->
@@ -154,7 +174,7 @@
                         <input 
                             type="datetime-local" 
                             v-model="postToEdit.scheduledDateTime"
-                            class="border" 
+                            class="border bg-white p-2 rounded-lg" 
                             :min="campaignStartDate"
                             :max="campaignEndDate"
                         />
@@ -224,6 +244,31 @@
                         class="object-fill w-full" 
                         alt="Image Preview"
                     />
+                </div>
+
+                <!-- Multi Image Type Preview -->
+                <div v-if="postToEdit.type === 'multiimage'" class="w-full h-auto">
+                    <p class="my-2 px-2">{{ postToEdit.content.caption }}</p>
+                    <div v-if="imageLayout.images.length === 1" class="w-full">
+                        <img :src="imageLayout.images[0]" class="object-fill w-full" alt="Preview" />
+                    </div>
+                    <div v-else-if="imageLayout.images.length === 2" class="grid grid-cols-2">
+                        <img v-for="(image, index) in imageLayout.images" :key="index" :src="image" class="h-[150px] w-full object-cover" alt="Preview" />
+                    </div>
+                    <div v-else-if="imageLayout.images.length === 3" class="grid grid-cols-3">
+                        <img v-for="(image, index) in imageLayout.images" :key="index" :src="image" class="h-[150px] w-full object-cover" alt="Preview" />
+                    </div>
+                    <div v-else-if="imageLayout.images.length >= 4" class="grid grid-cols-1">
+                        <img :src="imageLayout.images[0]" class="max-h-[200px] w-full object-cover" alt="Preview" />
+                        <div class="grid grid-cols-3">
+                            <div v-for="(image, index) in imageLayout.images.slice(1)" :key="index" class="relative">
+                                <img :src="image" class="h-[150px] w-full object-cover" alt="Preview" />
+                                <div v-if="imageLayout.showOverlay && index === 2" class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                                    <span class="text-white text-2xl">+{{ imageLayout.additionalCount }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Video Type Preview -->
@@ -351,32 +396,60 @@ export default {
             postTypes: [
                 { value: "text", label: "Text", icon: "fas fa-align-left" },
                 { value: "image", label: "Image", icon: "fas fa-image" },
+                { value: "multiimage", label: "Multi-Image", icon: "fas fa-image" },
                 { value: "video", label: "Video", icon: "fas fa-video" },
                 { value: "article", label: "Article", icon: "fas fa-file-alt" },
             ],
             showConfirmExit: false,
+            multiImagePreviews: [],
         };
+    },
+
+    computed: {
+        imageLayout() {
+            const previews = this.multiImagePreviews;
+            if (!previews || previews.length === 0) {
+                return { images: [], showOverlay: false, additionalCount: 0 };
+            }
+            if (previews.length === 1) {
+                return { images: [previews[0]], showOverlay: false, additionalCount: 0 };
+            }
+            if (previews.length <= 3) {
+                return { images: previews, showOverlay: false, additionalCount: 0 };
+            }
+            const displayImages = previews.slice(0, 4);
+            const additionalCount = previews.length - 4;
+            return { images: displayImages, showOverlay: additionalCount > 0, additionalCount };
+        }
     },
 
     watch: {
         selectedPost: {
             handler(newPost) {
                 this.postToEdit = this.deepCopyPost(newPost);
+                if (newPost.type === 'multiimage' && newPost.content.files && newPost.content.files.length > 0) {
+                    this.multiImagePreviews = newPost.content.files.map(file => {
+                        if (file instanceof File) {
+                            return URL.createObjectURL(file);
+                        } else if (typeof file === 'string') {
+                            return this.getMediaUrl(file);
+                        }
+                        return null;
+                    }).filter(url => url !== null);
+                } else {
+                    this.multiImagePreviews = [];
+                }
                 if (newPost.content.file) {
                     if (newPost.type === 'image') {
                         this.imagePreviewUrl = URL.createObjectURL(newPost.content.file);
-                        // console.log('Set imagePreviewUrl from file:', this.imagePreviewUrl);
                     } else if (newPost.type === 'video') {
                         this.videoPreviewUrl = URL.createObjectURL(newPost.content.file);
-                        // console.log('Set videoPreviewUrl from file:', this.videoPreviewUrl);
                     }
                 } else if (newPost.content.file_path) {
                     if (newPost.type === 'image') {
                         this.imagePreviewUrl = this.getMediaUrl(newPost.content.file_path);
-                        // console.log('Set imagePreviewUrl from file_path:', this.imagePreviewUrl);
                     } else if (newPost.type === 'video') {
                         this.videoPreviewUrl = this.getMediaUrl(newPost.content.file_path);
-                        // console.log('Set videoPreviewUrl from file_path:', this.videoPreviewUrl);
                     }
                 } else {
                     this.imagePreviewUrl = null;
@@ -386,7 +459,15 @@ export default {
             immediate: true,
         },
     },
-    
+
+    beforeDestroy() {
+        this.multiImagePreviews.forEach(url => {
+            if (url && url.startsWith('blob:')) {
+                URL.revokeObjectURL(url);
+            }
+        });
+        this.multiImagePreviews = [];
+    },
 
     methods: {
         deepCopyPost(post) {
@@ -403,6 +484,7 @@ export default {
                     title: post.content?.title || "",
                     description: post.content?.description || "",
                     file_path: post.content?.file_path || "",
+                    files: Array.isArray(post.content?.files) ? [...post.content.files] : [],
                 }
             };
             if (post.content?.file) {
@@ -431,19 +513,46 @@ export default {
 
         utcToLocalForInput(utcString) {
             if (!utcString) return this.formatDateTime(new Date());
-            
             const date = new Date(utcString);
             if (isNaN(date.getTime())) {
                 console.error("Invalid date format:", utcString);
                 return this.formatDateTime(new Date());
             }
-            
             const year = date.getFullYear();
             const month = String(date.getMonth() + 1).padStart(2, '0');
             const day = String(date.getDate()).padStart(2, '0');
             const hours = String(date.getHours()).padStart(2, '0');
             const minutes = String(date.getMinutes()).padStart(2, '0');
             return `${year}-${month}-${day}T${hours}:${minutes}`;
+        },
+
+        onMultiImageSelect(event) {
+            const files = event.files;
+            this.postToEdit.content.files = files;
+            this.multiImagePreviews.forEach(url => {
+                if (url && url.startsWith('blob:')) {
+                    URL.revokeObjectURL(url);
+                }
+            });
+            this.multiImagePreviews = files.map(file => URL.createObjectURL(file));
+        },
+
+        onMultiImageRemove(event) {
+            const fileToRemove = event.file;
+            this.postToEdit.content.files = this.postToEdit.content.files.filter(file => file !== fileToRemove);
+            this.multiImagePreviews.forEach(url => {
+                if (url && url.startsWith('blob:')) {
+                    URL.revokeObjectURL(url);
+                }
+            });
+            this.multiImagePreviews = this.postToEdit.content.files.map(file => {
+                if (file instanceof File) {
+                    return URL.createObjectURL(file);
+                } else if (typeof file === 'string') {
+                    return this.getMediaUrl(file);
+                }
+                return null;
+            }).filter(url => url !== null);
         },
 
         handleFileUpload(event) {
@@ -465,7 +574,6 @@ export default {
 
         savePostChanges() {
             const postToSave = this.deepCopyPost(this.postToEdit);
-
             this.onSave(postToSave);
         },
 
@@ -477,7 +585,6 @@ export default {
             this.$emit('close');
             this.showConfirmExit = false;
         },
-        
     },
 };
 </script>

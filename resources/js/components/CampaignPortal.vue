@@ -148,7 +148,7 @@
                     <button
                         @click="generatePosts"
                         :disabled="!isFormValid"
-                        class="bg-blue-500 text-white py-2 rounded-lg disabled:bg-gray-300"
+                        class="bg-blue-500 text-white py-2 rounded-lg disabled:bg-gray-300 w-full"
                     >
                         Génerer les Posts
                     </button>
@@ -174,7 +174,8 @@
                             'bg-green-200 hover:bg-green-400': post.type === 'text',
                             'bg-yellow-200 hover:bg-yellow-400': post.type === 'image',
                             'bg-red-200 hover:bg-red-400': post.type === 'video',
-                            'bg-purple-300 hover:bg-purple-400': post.type === 'article'
+                            'bg-purple-300 hover:bg-purple-400': post.type === 'article',
+                            'bg-pink-400 hover:bg-pink-500': post.type === 'multiimage'
                         }"
                         :key="post.tempId"
                         @click="editCampaignPost(post)"
@@ -368,6 +369,7 @@ export default {
                     case "image":
                     case "video": return !!post.content.file;
                     case "article": return !!post.content.url;
+                    case "multiimage": return true;
                     default: return false;
                 }
             });
@@ -404,6 +406,7 @@ export default {
                 case 'image': return '🖼️';
                 case 'video': return '🎬';
                 case 'article': return '📰';
+                case 'multiimage': return '📷'
                 default: return '📌';
             }
         },
@@ -557,6 +560,15 @@ export default {
                             formData.append("content[caption]", post.content.caption.trim());
                             formData.append("content[original_filename]", post.content.file.name);
                             break;
+                        
+                        case 'multiimage':
+                            post.content.files.forEach((file, index) => {
+                                formData.append(`content[files][${index}]`, file);
+                                formData.append(`content[original_filenames][${index}]`, file.name);
+                            });
+                            formData.append("content[caption]", post.content.caption.trim());
+                            break;
+
                         case "article":
                             formData.append("content[url]", post.content.url);
                             formData.append("content[title]", post.content.title);

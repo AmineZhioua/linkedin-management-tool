@@ -108,6 +108,84 @@ class ScheduleLinkedInPost implements ShouldQueue
                     ]);
                     break;
 
+                case 'multiimage':
+                    $imageUrns = [];
+                
+                    $req = Request::create('/linkedin/register-multi-image', 'POST', [
+                        'token'       => $payload['token'],
+                        'linkedin_id' => $payload['linkedin_id'],
+                        'type'        => 'multiimage',
+                        'content'     => $content,
+                        'caption'     => $content['caption'] ?? null,
+                    ]);
+                
+                    $files = [];
+                    foreach ($content['file_paths'] as $index => $filePath) {
+                        $stream = Storage::disk('linkedin_media')->readStream($filePath);
+                        $originalName = $content['original_filenames'][$index] ?? pathinfo($filePath, PATHINFO_BASENAME);
+                
+                        $files[$index] = new \Illuminate\Http\UploadedFile(
+                            stream_get_meta_data($stream)['uri'],
+                            $originalName,
+                            null,
+                            null,
+                            true
+                        );
+                        
+                        $req->request->set("content.original_filenames.{$index}", $originalName);
+                    }
+                    
+                    // Set the files correctly - this is the key fix
+                    $req->files->set('content', ['files' => $files]);
+                
+                    // Register all images at once
+                    $regResp = $controller->registerMultiImageMedia($req);
+                    $regData = $regResp->getData(true);
+                
+                    if (($regData['status'] ?? 0) !== 200) {
+                        throw new \Exception("Media registration failed: " . ($regData['error'] ?? 'Unknown'));
+                    }
+                
+                    foreach ($regData['data'] as $result) {
+                        $uploadUrl = $result['uploadUrl'];
+                        $imageUrn = $result['imageUrn'];
+                
+                        // Find corresponding file path and original name
+                        $index = array_search($imageUrn, array_column($regData['data'], 'imageUrn'));
+                        $filePath = $content['file_paths'][$index];
+                        $originalName = $content['original_filenames'][$index] ?? pathinfo($filePath, PATHINFO_BASENAME);
+                        $stream = Storage::disk('linkedin_media')->readStream($filePath);
+                
+                        // Upload the image
+                        $upReq = Request::create('/linkedin/upload-media-binary', 'POST', [
+                            'token'      => $payload['token'],
+                            'upload_url' => $uploadUrl,
+                        ]);
+                        $upReq->files->set('media', new \Illuminate\Http\UploadedFile(
+                            stream_get_meta_data($stream)['uri'],
+                            $originalName,
+                            null,
+                            null,
+                            true
+                        ));
+                        $upResp = $controller->uploadMediaBinary($upReq);
+                        $upData = $upResp->getData(true);
+                
+                        if (($upData['status'] ?? 0) !== 200) {
+                            throw new \Exception("Media upload failed for {$filePath}: " . ($upData['error'] ?? 'Unknown'));
+                        }
+                
+                        $imageUrns[] = $imageUrn;
+                    }
+                
+                    $response = $controller->shareMultiImage([
+                        'token'       => $payload['token'],
+                        'linkedin_id' => $payload['linkedin_id'],
+                        'images_urn'  => $imageUrns,
+                        'caption'     => $content['caption'] ?? '',
+                    ]);
+                    break;
+
                 case 'article':
                     $response = $controller->shareArticle(array_merge($payload, [
                         'caption'             => $content['caption'],

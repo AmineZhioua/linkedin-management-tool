@@ -225,7 +225,7 @@ class LinkedInController extends Controller
             // Validate request data
             $validated = $request->validate([
                 'linkedin_id' => 'required|exists:linkedin_users,id',
-                'type' => 'required|in:text,image,video,article',
+                'type' => 'required|in:text,image,video,article,multiimage',
                 'scheduled_date' => 'required|date|after:now',
                 'content' => 'required|array',
                 'campaign_id' => 'required|exists:linkedin_campaigns,id',
@@ -255,6 +255,37 @@ class LinkedInController extends Controller
                         'caption' => $validated['content']['caption'] ?? '',
                         'original_filename' => $validated['content']['original_filename'],
                     ];
+                    break;
+                
+                case 'multiimage': 
+                    $request->validate([
+                        'content.files' => 'required|array',
+                        'content.caption' => 'nullable|string|max:3000'
+                    ]);
+
+                    $files = $request->file('content.files');
+                    $filePaths = [];
+
+                    if($files) {
+                        foreach ($files as $index => $file) {
+                            $originalName = $request->input("content.original_filenames.{$index}");
+                            $path = $file->store('', 'linkedin_media');
+                            $filePaths[] = $path;
+
+                            Log::info('Stored LinkedIn media', [
+                                'path' => $path,
+                                'filePaths' => $filePaths,
+                                'full_path' => Storage::disk('linkedin_media')->path($path)
+                            ]);
+                        }
+
+                        $content = [
+                            'file_paths' => $filePaths,
+                            'caption' => $validated['content']['caption'] ?? '',
+                            'original_filenames' => array_map(fn($i) => $request->input("content.original_filenames.{$i}"), array_keys($files)),
+                        ];
+                    }
+
                     break;
 
                 case 'article':
@@ -338,7 +369,7 @@ class LinkedInController extends Controller
             // Validate request data
             $validated = $request->validate([
                 'linkedin_id' => 'required|exists:linkedin_users,id',
-                'type' => 'required|in:text,image,video,article',
+                'type' => 'required|in:text,image,video,article,multiimage',
                 'scheduled_date' => 'required|date|after:now',
                 'content' => 'required|array',
             ]);
@@ -367,6 +398,37 @@ class LinkedInController extends Controller
                         'caption' => $validated['content']['caption'] ?? '',
                         'original_filename' => $validated['content']['original_filename'],
                     ];
+                    break;
+
+                case 'multiimage': 
+                    $request->validate([
+                        'content.files' => 'required|array',
+                        'content.caption' => 'nullable|string|max:3000'
+                    ]);
+
+                    $files = $request->file('content.files');
+                    $filePaths = [];
+
+                    if($files) {
+                        foreach ($files as $index => $file) {
+                            $originalName = $request->input("content.original_filenames.{$index}");
+                            $path = $file->store('', 'linkedin_media');
+                            $filePaths[] = $path;
+
+                            Log::info('Stored LinkedIn media', [
+                                'path' => $path,
+                                'filePaths' => $filePaths,
+                                'full_path' => Storage::disk('linkedin_media')->path($path)
+                            ]);
+                        }
+
+                        $content = [
+                            'file_paths' => $filePaths,
+                            'caption' => $validated['content']['caption'] ?? '',
+                            'original_filenames' => array_map(fn($i) => $request->input("content.original_filenames.{$i}"), array_keys($files)),
+                        ];
+                    }
+
                     break;
 
                 case 'article':
@@ -696,7 +758,10 @@ class LinkedInController extends Controller
                             "relationshipType" => "OWNER",
                             "identifier" => "urn:li:userGeneratedContent"
                         ]
-                    ]
+                    ],
+                    "supportedUploadMechanism" => [
+                        "SYNCHRONOUS_UPLOAD"
+                    ],
                 ]
             ];
 
@@ -996,6 +1061,186 @@ class LinkedInController extends Controller
 
     }
 
+
+
+    /**
+     * Register Images for the Multi Images Post.
+     */
+    public function registerMultiImageMedia(Request $request)
+    {
+        $validated = $request->validate([
+            'token' => 'required|string',
+            'linkedin_id' => 'required|string',
+            'type' => 'required|in:image,multiimage',
+            'content' => 'required|array',
+            'caption' => 'nullable|string|max:3000'
+        ]);
+
+        $authorUrn = 'urn:li:person:' . $validated['linkedin_id'];
+        $files = $request->file('content.files');
+        $registrationResults = [];
+
+        if ($files) {
+            foreach ($files as $index => $file) {
+                $originalName = $request->input("content.original_filenames.{$index}");
+
+                $registerBodyReq = [
+                    "initializeUploadRequest" => [
+                        "owner" => $authorUrn,
+                    ],
+                ];
+
+                $headers = [
+                    "Authorization: Bearer " . $validated['token'],
+                    "Content-Type: application/json",
+                    "X-Restli-Protocol-Version: 2.0.0",
+                    "Linkedin-version: 202501"
+                ];
+
+                $curl = curl_init();
+                curl_setopt_array($curl, [
+                    CURLOPT_URL => "https://api.linkedin.com/rest/images?action=initializeUpload",
+                    CURLOPT_RETURNTRANSFER => true,
+                    CURLOPT_POST => true,
+                    CURLOPT_POSTFIELDS => json_encode($registerBodyReq),
+                    CURLOPT_HTTPHEADER => $headers,
+                    CURLOPT_TIMEOUT => 1800
+                ]);
+
+                $response = curl_exec($curl);
+                $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+                $responseData = json_decode($response, true);
+
+                curl_close($curl);
+
+                Log::info('LinkedIn Multi Image Asset Registration Response', [
+                    'http_code' => $httpCode,
+                    'response' => $responseData
+                ]);
+
+                if ($httpCode == 200 && isset($responseData['value'])) {
+                    $uploadUrl = $responseData['value']['uploadUrl'] ?? null;
+                    $imageUrn = $responseData['value']['image'] ?? null;
+
+                    if ($uploadUrl && $imageUrn) {
+                        $registrationResults[] = [
+                            'uploadUrl' => $uploadUrl,
+                            'imageUrn' => $imageUrn,
+                        ];
+                    } else {
+                        Log::error('Invalid registration response for file', [
+                            'index' => $index,
+                            'response' => $responseData
+                        ]);
+                    }
+                } else {
+                    Log::error('LinkedIn Multi Image Asset Registration Failed', [
+                        'http_code' => $httpCode,
+                        'response' => $responseData
+                    ]);
+                }
+            }
+
+            if (!empty($registrationResults)) {
+                return response()->json([
+                    'status' => 200,
+                    'data' => $registrationResults,
+                ], 200);
+            } else {
+                return response()->json([
+                    'status' => 400,
+                    'error' => 'No images were successfully registered'
+                ], 400);
+            }
+        }
+
+        return response()->json([
+            'status' => 400,
+            'error' => 'No files provided'
+        ], 400);
+    }
+    
+
+    /**
+     * Function to share a Multi-Image post on LinkedIn
+     */
+    public function shareMultiImage(array $data)
+    {
+        if (request()->isMethod('post')) {
+            $validated = validator($data, [
+                'token' => 'required|string',
+                'linkedin_id' => 'required|string',
+                'images_urn' => 'required|array',
+                'caption' => 'nullable|string',
+            ])->validate();
+        } else {
+            $validated = $data;
+        }
+
+        $postUrl = "https://api.linkedin.com/rest/posts";
+        $authorUrn = 'urn:li:person:' . $validated['linkedin_id'];
+
+        $multiImageBody = [
+            "author" => $authorUrn,
+            "commentary" => $validated["caption"] ?? '',
+            "visibility" => "PUBLIC",
+            "distribution" => [
+                "feedDistribution" => "MAIN_FEED",
+                "targetEntities" => [],
+                "thirdPartyDistributionChannels" => []
+            ],
+            "lifecycleState" => "PUBLISHED",
+            "isReshareDisabledByAuthor" => false,
+            "content" => [
+                "multiImage" => [
+                    "images" => array_map(function ($urn) {
+                        return [
+                            "id" => $urn,
+                            "altText" => "altText"
+                        ];
+                    }, $validated['images_urn'])
+                ]
+            ],
+        ];
+
+        $headers = [
+            "Authorization: Bearer " . $validated['token'],
+            "Content-Type: application/json",
+            "X-Restli-Protocol-Version: 2.0.0",
+            "Linkedin-version: 202501"
+        ];
+
+        $curl = curl_init();
+        curl_setopt_array($curl, [
+            CURLOPT_URL => $postUrl,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => json_encode($multiImageBody),
+            CURLOPT_HTTPHEADER => $headers,
+            CURLOPT_TIMEOUT => 1800
+        ]);
+
+        $response = curl_exec($curl);
+        $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        $responseData = json_decode($response, true);
+        curl_close($curl);
+
+        if ($httpCode >= 200 && $httpCode < 300) {
+            $responseArray = [
+                'status' => 200,
+                'http_code' => $httpCode,
+                'message' => 'Post shared successfully',
+                'data' => $responseData
+            ];
+            return request()->isMethod('post') ? response()->json($responseArray) : $responseArray;
+        } else {
+            $errorResponse = [
+                'status' => $httpCode,
+                'error' => $responseData['message'] ?? 'Unknown error'
+            ];
+            return request()->isMethod('post') ? response()->json($errorResponse, $httpCode) : $errorResponse;
+        }
+    }
     /**
      * Share an article on LinkedIn.
      */

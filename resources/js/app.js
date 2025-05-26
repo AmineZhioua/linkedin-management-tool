@@ -33,6 +33,9 @@ import CampaignDetails from "./components/CampaignDetails.vue";
 import Sidebar from "./components/Sidebar.vue";
 import MainSection from "./components/MainSection.vue";
 import KpiSection from "./components/KpiSection.vue";
+import PostsDatatable from "./components/PostsDatatable.vue";
+import CampaignsDatatable from "./components/CampaignsDatatable.vue";
+import NotificationsBell from "./components/NotificationsBell.vue";
 
 // Importing PrimeVue for UI Components
 import PrimeVue from 'primevue/config';
@@ -63,14 +66,13 @@ import StepItem from 'primevue/stepitem';
 import Step from 'primevue/step';
 import StepPanel from 'primevue/steppanel';
 import Paginator from 'primevue/paginator';
-import PostsDatatable from "./components/PostsDatatable.vue";
-import CampaignsDatatable from "./components/CampaignsDatatable.vue";
-import NotificationsBell from "./components/NotificationsBell.vue";
+import FileUpload from "primevue/fileupload";
+import Galleria from 'primevue/galleria';
 
 const app = createApp({
     data() {
         return {
-            showEditProfile: false // Controls EditAccount.vue popup visibility
+            showEditProfile: false
         };
     }
 });
@@ -139,5 +141,7 @@ app.component("StepItem", StepItem);
 app.component("Step", Step);
 app.component("StepPanel", StepPanel);
 app.component("Paginator", Paginator);
+app.component("FileUpload", FileUpload);
+app.component("Galleria", Galleria);
 
 app.mount("#app");
