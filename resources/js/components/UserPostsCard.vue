@@ -123,8 +123,8 @@
       </div>
   
       <!-- Posts Cards Container -->
-      <div class="flex flex-col justify-between h-full relative" v-if="view && view.name === 'Cartes'">
-        <div v-if="filteredPosts.length === 0" class="flex items-center justify-center">
+        <div class="flex flex-col justify-between h-full relative" v-if="view && view.name === 'Cartes'">
+            <div v-if="filteredPosts.length === 0" class="flex items-center justify-center">
           <svg viewBox="0 0 200 200" width="220" height="220" xmlns="http://www.w3.org/2000/svg">
             <path d="M50 120 Q60 70 100 70 Q140 70 150 120 Q150 130 140 130 Q130 130 125 120 Q120 130 110 130 Q100 130 95 120 Q90 130 80 130 Q70 130 65 120 Q60 130 50 130 Q50 125 50 120Z" fill="#F9F9F9" stroke="#CCC" stroke-width="2"/>
             <circle cx="80" cy="100" r="5" fill="#333"/>
@@ -139,25 +139,27 @@
               Pas des Posts...
             </text>
           </svg>
+            </div>
+            <div class="grid grid-cols-4 gap-3 w-full pb-3 mt-4">
+                <linkedin-post 
+                    v-for="post in paginatedPosts" 
+                    :key="post.id" 
+                    :user-linkedin-accounts="userLinkedinAccounts" 
+                    :post="post" 
+                    @edit-post="editPost"
+                    @delete-post="deletePost"
+                    @delete-post-from-linkedin="deletePostFromLinkedIn"
+                />
+            </div>
+            <div class="py-2">
+                <Paginator 
+                    :rows="rowsPerPage" 
+                    :totalRecords="filteredPosts.length" 
+                    :rowsPerPageOptions="[10, 20, 30]"
+                    @page="onPageChange"
+                ></Paginator>
+            </div>
         </div>
-        <div class="grid grid-cols-4 gap-3 w-full h-full pb-3 mt-4">
-          <linkedin-post 
-            v-for="post in paginatedPosts" 
-            :key="post.id" 
-            :user-linkedin-accounts="userLinkedinAccounts" 
-            :post="post" 
-            @edit-post="editPost"
-            @delete-post="deletePost"
-            @delete-post-from-linkedin="deletePostFromLinkedIn"
-          />
-        </div>
-        <Paginator 
-          :rows="rowsPerPage" 
-          :totalRecords="filteredPosts.length" 
-          :rowsPerPageOptions="[10, 20, 30]"
-          @page="onPageChange"
-        ></Paginator>
-      </div>
   
       <!-- DataTable for Tableau view -->
       <div v-if="view && view.name === 'Tableau'" class="flex flex-col">

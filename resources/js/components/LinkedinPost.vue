@@ -110,6 +110,38 @@
             </p>
         </div>
 
+        <div v-if="post.type === 'multiimage' && multiImagePreviews.length > 0" class="my-2">
+            <p v-if="parsedContent && parsedContent.caption" class="my-2 px-2">
+                {{ displayedCaption }}
+                <span v-if="isCaptionLong && !isExpanded" class="text-blue-500 cursor-pointer" @click="toggleExpand">
+                    voir plus
+                </span>
+                <span v-if="isCaptionLong && isExpanded" class="text-blue-500 cursor-pointer" @click="toggleExpand">
+                    voir moins
+                </span>
+            </p>
+            <div v-if="imageLayout.images.length === 1" class="w-full">
+                <img :src="imageLayout.images[0]" class="object-fill w-full" alt="Preview" />
+            </div>
+            <div v-else-if="imageLayout.images.length === 2" class="grid grid-cols-2">
+                <img v-for="(image, index) in imageLayout.images" :key="index" :src="image" class="h-[150px] w-full object-cover" alt="Preview" />
+            </div>
+            <div v-else-if="imageLayout.images.length === 3" class="grid grid-cols-3">
+                <img v-for="(image, index) in imageLayout.images" :key="index" :src="image" class="h-[150px] w-full object-cover" alt="Preview" />
+            </div>
+            <div v-else-if="imageLayout.images.length >= 4" class="grid grid-cols-1">
+                <img :src="imageLayout.images[0]" class="max-h-[200px] w-full object-cover" alt="Preview" />
+                <div class="grid grid-cols-3">
+                    <div v-for="(image, index) in imageLayout.images.slice(1)" :key="index" class="relative">
+                        <img :src="image" class="h-[150px] w-full object-cover" alt="Preview" />
+                        <div v-if="imageLayout.showOverlay && index === 2" class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                            <span class="text-white text-2xl">+{{ imageLayout.additionalCount }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Video Type Post -->
         <div v-if="post.type === 'video'" class="w-full h-auto">
             <p v-if="parsedContent" class="my-2 px-2">
@@ -122,7 +154,11 @@
                 </span>
             </p>
             <video controls>
-                <source src="/build/assets/images/video.webm" type="video/mp4">
+                <source 
+                    v-if="parsedContent" 
+                    :src="getMediaUrl(parsedContent.file_path)" 
+                    type="video/mp4"
+                />
             </video>
         </div>
 
@@ -230,7 +266,28 @@ export default {
                 return this.isExpanded ? this.parsedContent.caption : this.parsedContent.caption.slice(0, this.maxLength) + '...';
             }
             return '';
-        }
+        },
+        multiImagePreviews() {
+            if (this.post.type === 'multiimage' && this.parsedContent && Array.isArray(this.parsedContent.file_paths)) {
+                return this.parsedContent.file_paths.map(filePath => this.getMediaUrl(filePath));
+            }
+            return [];
+        },
+        imageLayout() {
+            const previews = this.multiImagePreviews;
+            if (!previews || previews.length === 0) {
+                return { images: [], showOverlay: false, additionalCount: 0 };
+            }
+            if (previews.length === 1) {
+                return { images: [previews[0]], showOverlay: false, additionalCount: 0 };
+            }
+            if (previews.length <= 3) {
+                return { images: previews, showOverlay: false, additionalCount: 0 };
+            }
+            const displayImages = previews.slice(0, 4);
+            const additionalCount = previews.length - 4;
+            return { images: displayImages, showOverlay: additionalCount > 0, additionalCount };
+        },
     },
 
     methods: {

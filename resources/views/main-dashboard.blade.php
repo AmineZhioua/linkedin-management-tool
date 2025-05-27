@@ -17,7 +17,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
         body {
-            height: 100vh;
+            height: 100%;
             width: 100%;
             overflow: auto;
             font-family: "Inter", sans-serif !important;
