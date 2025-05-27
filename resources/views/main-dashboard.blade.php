@@ -38,7 +38,7 @@
         }
     </style>
 </head>
-<body id="app" class="flex flex-col min-h-screen">
+<body id="app" class="flex flex-col">
     <!-- Header Section Start -->
     <header class="flex items-center justify-between py-0 px-3 bg-black">
         <!-- Logo Section -->
@@ -98,7 +98,7 @@
     <!-- Header Section End -->
 
     <!-- Main Section Start -->
-    <main class="flex-1">
+    <main class="flex-1 h-[100vh]">
         <main-section
             :user="{{ json_encode($user) }}"
             :user-linkedin-accounts="{{ json_encode($userLinkedinAccounts) }}"

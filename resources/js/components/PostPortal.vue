@@ -403,20 +403,19 @@
                 </div>
             </div>
         </div>
-
-        <!-- Exit Popup -->
-        <div 
-            v-if="showConfirmExit"
-            class="absolute w-full h-full inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" 
-            @click.self="showConfirmExit = false"
-        >
-            <div class="absolute bg-white p-4 rounded-lg">
-                <h3 class="text-xl fw-bold mb-4">Annuler les Modifications ?</h3>
-                <p style="font-size: 15px;">Vous perdrez définitivement toutes les modifications que vous avez apportées</p>
-                <div class="flex justify-end gap-2 mt-4">
-                    <button @click="showConfirmExit = false" class="bg-gray-300 text-black px-4 py-2 rounded text-sm">Continuer à éditer</button>
-                    <button @click="confirmExit" class="bg-red-500 text-white px-4 py-2 rounded text-sm">Ignorer les modifications</button>
-                </div>
+    </div>
+    <!-- Exit Popup -->
+    <div 
+        v-if="showConfirmExit"
+        class="absolute w-full h-full inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" 
+        @click.self="showConfirmExit = false"
+    >
+        <div class="absolute bg-white p-4 rounded-lg">
+            <h3 class="text-xl fw-bold mb-4">Annuler les Modifications ?</h3>
+            <p style="font-size: 15px;">Vous perdrez définitivement toutes les modifications que vous avez apportées</p>
+            <div class="flex justify-end gap-2 mt-4">
+                <button @click="showConfirmExit = false" class="bg-gray-300 text-black px-4 py-2 rounded text-sm">Continuer à éditer</button>
+                <button @click="confirmExit" class="bg-red-500 text-white px-4 py-2 rounded text-sm">Ignorer les modifications</button>
             </div>
         </div>
     </div>

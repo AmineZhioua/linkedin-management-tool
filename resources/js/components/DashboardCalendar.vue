@@ -1,5 +1,5 @@
 <template>
-    <div class="dashboard-calendar py-10">
+    <div class="dashboard-calendar mt-5 border rounded-2xl py-4 px-2">
         <calendar-navigation v-model:currentMonth="currentMonth" v-model:currentYear="currentYear" />
         <loading-overlay :isLoading="isLoading" message="Traitement en cours..." />
         <!-- Day Headers -->
@@ -38,103 +38,31 @@
                             :key="index"
                             class="text-sm py-3 px-2 fw-semibold mb-1 rounded truncate cursor-pointer"
                             :style="{ backgroundColor: campaignData.color }"
-                            @click="getCampaignPostsForDate(campaignData, day)"
+                            @click="openCampaignInReadMode(campaignData.linkedin_user_id, campaignData.id)"
                         >
+                        <!-- @click="getCampaignPostsForDate(campaignData, day)" -->
                             {{ campaignData.name }} ({{ campaignData.postCount }})
                         </div>
                     </div>
                 </div>
             </template>
         </div>
-  
-        <!-- Popover for viewing posts -->
-        <div v-if="showPopover" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click="closePopover">
-            <div class="bg-white relative shadow-lg flex flex-col rounded-lg p-4 z-10 max-w-md w-full min-h-[400px] max-h-[500px]" @click.stop>
-                <div class="flex justify-between items-center">
-                    <h3 class="font-semibold text-lg">Posts for {{ selectedDay }} {{ getMonthName(currentMonth) }} {{ currentYear }}</h3>
-                    <button 
-                        class="text-black text-3xl"
-                        @click="closePopover"
-                    >
-                        ×
-                    </button>
-                </div>
-                
-                <div class="mt-4 flex-1 overflow-y-auto">
-                    <!-- In Case There Are No Posts -->
-                    <div v-if="popoverPosts.length === 0" class="text-center text-gray-500 py-4">
-                        Pas de posts prévus
-                    </div>
-                    
-                    <div v-else class="space-y-2">
-                        <div 
-                            v-for="post in popoverPosts"
-                            :key="post.id || post.tempId"
-                            class="p-3 rounded flex items-center cursor-pointer justify-between gap-2"
-                            :class="{
-                                'bg-green-200': post.type === 'text',
-                                'bg-yellow-200': post.type === 'image',
-                                'bg-red-200': post.type === 'video',
-                                'bg-purple-200': post.type === 'article'
-                            }"
-                        >
-                            <div 
-                                class="flex gap-2 items-center w-full" 
-                                @click="openPost(post)"
-                            >
-                                <div class="flex-1"> 
-                                    <span class="mr-2">{{ getPostTypeIcon(post.type) }}</span>
-                                    <span>{{ formatTime(post.scheduled_time) }}</span>
-                                </div>
 
-                                <!-- Post Status -->
-                                <p 
-                                    class="mb-0 px-4 py-1 rounded-full fw-semibold"
-                                    :class="{
-                                        'text-green-500 bg-green-100': post.status === 'posted',
-                                        'text-red-600 bg-red-300': post.status === 'failed',
-                                        'text-blue-600 bg-blue-300': post.status === 'queued',
-                                    }"
-                                >
-                                    {{ post.status === "posted" ? "Publié" : post.status === "failed" ? "Échoué" : "En attente" }}
-                                </p>
-                            </div>
-                            <!-- Boost Interaction Dropdown Menu -->
-                            <div class="relative z-50">
-                                <button class="ml-1" @click="postDropdown = !postDropdown">
-                                    <i class="fa-solid fa-ellipsis-vertical"></i>
-                                </button>
-
-                                <ul 
-                                    v-if="postDropdown"
-                                    class="bg-gray-50 p-0 absolute top-[30px] right-0 rounded-md min-w-[250px]"
-                                >
-                                    <li class="text-sm flex justify-center px-2 py-3 text-black hover:bg-gray-200 rounded-md">
-                                        <button 
-                                            class="flex items-center gap-2"
-                                            @click="requestBoost(post)"
-                                        >
-                                            <i class="fa-solid fa-rocket text-lg"></i>
-                                            <span class="fw-semibold">
-                                                Activer le Boost d'interaction
-                                            </span>
-                                        </button>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <button 
-                    class="flex items-center justify-center bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded-lg mt-4 gap-2" 
-                    @click="startAdding"
-                >
-                    <img src="/build/assets/icons/add-white.svg" alt="Add Icon" />
-                    <span class="fw-semibold">Ajouter un Post</span>
-                </button>
-            </div>
-        </div>
+        <campaign-portal
+            v-if="showCampaignPortal"
+            ref="campaignPortal"
+            :selected-account="selectedAccount"
+            :read-mode="readModeStatus"
+            :selectedCampaign="selectedCampaign"
+            :linkedin-posts="posts"
+            @campaign-post-editing="editCampaignPost"
+            @posts-generated="handlePostsGenerated"
+            @dates-updated="updateCampaignDates"
+            @update:form-data="updateFormData"
+            @validate="isFormValid = $event"
+            @close-campaign-portal="showCampaignPortal = false; selectedCampaign = null; readModeStatus = false; selectedAccount = null;"
+        />
+        
 
         <!-- POST MODAL POPOVER -->
         <div v-if="isOpen" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -419,6 +347,7 @@
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { useToast } from "vue-toastification";
+import { getLinkedinUserByID } from '../services/datatables';
 
 export default {
     name: 'DashboardCalendar',
@@ -440,17 +369,29 @@ export default {
             type: Number,
             required: true
         },
+        linkedinAccounts: {
+            type: Array,
+            required: true,
+        },
+        showCampaignPortalProp: {
+            type: Boolean,
+            required: false,
+        },
+        isCreatingCampaign: {
+            type: Boolean,
+            required: false,
+        },
     },
     
     setup() {
-        // Toast interface
         const toast = useToast();
-
         return { toast }
     },
     
     data() {
         return {
+            showCampaignPortal:false,
+            readModeStatus: false,
             postDropdown: false,
             selectedDay: null,
             showPopover: false,
@@ -465,7 +406,12 @@ export default {
             isLoadingPosts: false,
             localScheduledDateTime: '',
             popoverPosts: [],
+            // ######
+            selectedAccount: null,
+            campaignPosts: [],
+            isFormValid: false,
             selectedCampaign: null,
+            // ######
             newPost: {
                 type: 'text',
                 scheduled_time: '',
@@ -483,6 +429,10 @@ export default {
     },
   
     methods: {
+        getLinkedinUserByID,
+
+
+
         async requestBoost(post) {
             try {
                 const boostData = new FormData();
@@ -576,6 +526,14 @@ export default {
             };
         },
 
+        getLinkedinUserByCampaign(campaign) {
+            return this.linkedinAccounts.find(account => account.id === campaign.linkedin_user_id);
+        },
+
+        getCampaignPost(campaign) {
+            return this.posts.filter(post => post.campaign_id === campaign.id);
+        },
+
         getCampaignEndStartDates(campaignId) {
             const campaign = this.campaigns.find(c => c.id === campaignId);
             if (campaign) {
@@ -627,7 +585,7 @@ export default {
             } else {
                 this.popoverPosts = [];
                 this.selectedDay = day;
-                this.showPopover = true;
+                this.showCampaignPortal = true;
             }
         },
 
@@ -742,28 +700,6 @@ export default {
         getMediaUrl(filePath) {
             return `/linkedin/${filePath}`;
         },
-
-        openPost(post) {
-            let postContent = post.content;
-            if (typeof post.content === 'string') {
-                try {
-                    postContent = JSON.parse(post.content);
-                } catch (e) {
-                    console.error("Failed to parse post content:", e);
-                    postContent = { text: post.content };
-                }
-            }
-            this.selectedPost = {
-                ...post,
-                content: postContent,
-                scheduledDateTime: post.scheduled_time
-            };
-            this.editedPost = { ...this.selectedPost };
-            this.localScheduledDateTime = this.utcToLocalForInput(post.scheduled_time);
-            this.isOpen = true;
-            this.isEditing = false;
-            this.isAdding = false;
-        },
             
         closeModal() {
             this.isOpen = false;
@@ -786,11 +722,6 @@ export default {
             };
         },
 
-        closePopover() {
-            this.showPopover = false;
-            this.popoverPosts = [];
-            this.selectedCampaign = null;
-        },
 
         startEditing() {
             this.isEditing = true;
@@ -820,6 +751,43 @@ export default {
                 this.newPost.content.fileName = file.name;
             }
         },
+
+        // ########################## NEW METHODS ##########################
+        editCampaignPost(post) {
+            this.selectedPost = { ...post };
+            this.showCampaignPostPortal = true;
+        },
+
+        handlePostsGenerated(posts) {
+            this.campaignPosts = posts.map(post => ({ ...post }));
+        },
+
+        updateCampaignDates({ startDate, endDate }) {
+            this.campaignStartDateTime = startDate;
+            this.campaignEndDateTime = endDate;
+        },
+
+        updateFormData(formData) {
+            this.campaignStartDateTime = formData.startDate;
+            this.campaignEndDateTime = formData.endDate;
+            this.selectedCible = formData.selectedCible;
+            this.frequenceParJour = formData.frequenceParJour;
+            this.descriptionCampagne = formData.descriptionCampagne;
+            this.couleurCampagne = formData.couleurCampagne;
+            this.nomCampagne = formData.nomCampagne;
+        },
+
+        getCampaignByID(id) {
+            return this.campaigns.find(campaign => campaign.id === id);
+        },
+
+        openCampaignInReadMode(linkedin_id, campaign_id) {
+            this.showCampaignPortal = true;
+            this.selectedAccount = this.getLinkedinUserByID(this.linkedinAccounts, linkedin_id);
+            this.selectedCampaign = this.getCampaignByID(campaign_id);
+            this.readModeStatus = true;
+        },
+        // ########################## NEW METHODS ##########################
 
         async createPost() {
             this.isLoading = true;
@@ -1106,6 +1074,7 @@ export default {
 
 <style scoped>
 .dashboard-calendar {
+    /* position: relative; */
     max-width: 100%;
 }
 </style>

@@ -65,7 +65,7 @@ class LinkedinPostController extends Controller
             'post_id' => 'required|integer|exists:scheduled_linkedin_posts,id',
             'job_id' => 'required|integer|exists:jobs,id',
             'linkedin_user_id' => 'required|integer|exists:linkedin_users,id',
-            'type' => 'required|string|in:text,image,video,article',
+            'type' => 'required|string|in:text,image,video,article,multiimage',
             'scheduled_time' => 'required|date|after:now',
             'content' => 'required|string',
         ]);

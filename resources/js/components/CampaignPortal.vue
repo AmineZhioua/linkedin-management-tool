@@ -1,5 +1,5 @@
 <template>
-    <div class="bg-black bg-opacity-50 inset-0 h-full w-full absolute"></div>
+    <div class="bg-black bg-opacity-50 inset-0 h-[100vh] w-full absolute"></div>
     <div class="flex items-center w-full p-4 justify-center gap-2 absolute top-[50%] left-[50%] translate-y-[-50%] translate-x-[-50%]">
         <div class="bg-white p-4 rounded-md">
             <div class="flex flex-col gap-3" v-if="currentStep === 1">

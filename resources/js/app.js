@@ -36,6 +36,8 @@ import KpiSection from "./components/KpiSection.vue";
 import PostsDatatable from "./components/PostsDatatable.vue";
 import CampaignsDatatable from "./components/CampaignsDatatable.vue";
 import NotificationsBell from "./components/NotificationsBell.vue";
+import CalendarSection from "./components/CalendarSection.vue";
+
 
 // Importing PrimeVue for UI Components
 import PrimeVue from 'primevue/config';
@@ -116,6 +118,7 @@ app.component("kpi-section", KpiSection);
 app.component("posts-datatable", PostsDatatable);
 app.component("campaigns-datatable", CampaignsDatatable);
 app.component("notifications-bell", NotificationsBell);
+app.component("calendar-section", CalendarSection);
 
 // PrimeVue Components
 app.component("Button", Button);
