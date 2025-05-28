@@ -14,7 +14,7 @@
         >
             <div 
                 v-for="notification in notifications"
-                class="py-4 px-2 min-w-[300px] cursor-pointer hover:bg-gray-200 border-t-pink-500 border-t-2 flex flex-col gap-2"
+                class="py-4 px-2 min-w-[300px] cursor-pointer hover:bg-gray-200 border-t-black border-t-2 flex flex-col gap-2"
             >
                 <!-- Badge for to display if something FAILS -->
                 <div 

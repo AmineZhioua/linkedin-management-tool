@@ -44,6 +44,7 @@
       @open-post-portal="handleOpenPostPortal"
       @open-campaign-post-portal="handleOpenCampaignPostPortal"
       @open-campaign-read-mode="handleCampaignReadMode"
+      @open-post-read-mode="handleOpenPostPortal"
     />
 
     <!-- Centralized Portal Components -->
@@ -180,9 +181,11 @@ export default {
     },
 
     handleOpenPostPortal(data) {
-      this.selectedPost = data.post;
+      this.selectedPost = data.selectedPost;
       this.readModeStatus = data.readMode || false;
+      this.selectedAccount = data.account || null;
       this.showPortal = true;
+      console.log(data)
     },
 
     handleOpenCampaignPostPortal(data) {
@@ -196,6 +199,13 @@ export default {
       this.selectedCampaign = selectedCampaign;
       this.readModeStatus = true;
       this.showCampaignPortal = true;
+    },
+
+    handlePostReadMode(selectedAccount, post) {
+      this.selectedAccount = selectedAccount;
+      this.selectedPost = post;
+      this.readModeStatus = true;
+      this.showPortal = true;
     },
 
     // Portal Close Handlers

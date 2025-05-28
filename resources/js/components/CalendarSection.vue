@@ -88,40 +88,99 @@
         </div>
 
         <div class="dashboard-calendar mt-5 border rounded-2xl py-4 px-2">
-            <calendar-navigation v-model:currentMonth="currentMonth" v-model:currentYear="currentYear" />
+            <calendar-navigation 
+                :currentMonth="currentMonth" 
+                :currentYear="currentYear" 
+                :viewMode="viewMode" 
+                @update:viewMode="viewMode = $event" 
+                @navigate="handleNavigation" 
+            />
             <loading-overlay :isLoading="isLoading" message="Traitement en cours..." />
-            <div class="grid grid-cols-7 text-center font-medium mb-2">
-                <div class="py-2">Dim</div>
-                <div class="py-2">Lun</div>
-                <div class="py-2">Mar</div>
-                <div class="py-2">Mer</div>
-                <div class="py-2">Jeu</div>
-                <div class="py-2">Ven</div>
-                <div class="py-2">Sam</div>
+            <div class="grid grid-cols-7 text-center font-medium">
+                <div class="py-2 border fw-semibold text-lg bg-gray-200">Dimanche</div>
+                <div class="py-2 border fw-semibold text-lg bg-gray-200">Lundi</div>
+                <div class="py-2 border fw-semibold text-lg bg-gray-200">Mardi</div>
+                <div class="py-2 border fw-semibold text-lg bg-gray-200">Mercredi</div>
+                <div class="py-2 border fw-semibold text-lg bg-gray-200">Jeudi</div>
+                <div class="py-2 border fw-semibold text-lg bg-gray-200">Vendredi</div>
+                <div class="py-2 border fw-semibold text-lg bg-gray-200">Samedi</div>
             </div>
-            <div class="grid grid-cols-7 gap-1">
-                <template v-for="blankDay in Array.from({ length: getFirstDayOfMonth(currentMonth, currentYear) }, (_, i) => i)" :key="'blank-' + blankDay">
-                    <div class="h-32 bg-gray-100 rounded"></div>
+            <div class="grid grid-cols-7">
+                <!-- Blank days for month view only -->
+                <template v-if="viewMode === 'month'">
+                    <template v-for="blankDay in Array.from({ length: displayBlankDays }, (_, i) => i)" :key="'blank-' + blankDay">
+                        <div class="h-48 bg-gray-100"></div>
+                    </template>
                 </template>
-                <template v-for="day in getDaysInMonth(currentMonth, currentYear)" :key="day">
+                <!-- Days for both month and week views -->
+                <template v-for="date in displayDays" :key="date.toISOString()">
                     <div 
-                        class="border h-32 rounded overflow-hidden relative p-1"
+                        class="border h-48 overflow-hidden relative p-1"
                         :class="{
-                            'cursor-pointer hover:bg-gray-200 transition-all duration-200': displayCampaigns(day).isActive && getPostsForDate(day).length > 0,
-                            'cursor-not-allowed': !displayCampaigns(day).isActive
+                            'cursor-pointer hover:bg-gray-200 transition-all duration-200': displayCampaigns(date).isActive && getPostsForDate(date).length > 0,
+                            'cursor-not-allowed': !displayCampaigns(date).isActive,
+                            'h-[400px]': viewMode === 'week'
                         }"
                     >
-                        <div class="text-right text-sm">{{ day }}</div>
-                        <div class="overflow-y-auto" style="max-height: 100px;">
-                            <div 
-                                v-for="(campaignData, index) in getCampaignsForDate(day)"
-                                :key="index"
-                                class="text-sm py-3 px-2 fw-semibold mb-1 rounded truncate cursor-pointer"
-                                :style="{ backgroundColor: campaignData.color }"
-                                @click="openCampaignInReadMode(campaignData.linkedin_user_id, campaignData.id)"
+                        <div class="text-right text-md m-2 flex justify-between items-center">
+                            <p 
+                                class="text-white fw-semibold py-1 px-2 rounded-full month-text"
+                                v-if="viewMode === 'week'"
                             >
-                                {{ campaignData.name }} ({{ campaignData.postCount }})
+                                {{ getMonthName(date.getMonth()) }}
+                            </p>
+                            <p>{{ date.getDate() }}</p>
+                        </div>
+                        <div class="overflow-y-scroll pb-2"
+                            :class="{
+                                'max-h-[300px]': viewMode === 'week',
+                                'max-h-[120px]': viewMode === 'month'
+                            }"
+                        >
+                        <div 
+                            v-for="(item, index) in getItemsForDate(date)"
+                            :key="index"
+                            class="text-sm py-3 bg-gray-50 px-2 fw-semibold mb-1 rounded truncate cursor-pointer shadow-sm"
+                            :style="{ 
+                                borderTop: `8px solid ${item.color}`, 
+                                borderLeft: '1px solid #ddd', borderRight: '1px solid #ddd', borderBottom: '1px solid #ddd'
+                            }"
+                            @click="item.type === 'campaign' ? openCampaignInReadMode(item.linkedin_user_id, item.id) : openPostReadMode(item)"
+                        >
+                            <div class="flex items-center gap-2">
+                                <div class="relative">
+                                    <img 
+                                        :src="getProfilePicture(userLinkedinAccounts, item.linkedin_user_id)" 
+                                        height="40"
+                                        width="40"
+                                        class="rounded-full"
+                                        alt="Photo de Profile"
+                                    />
+                                    <div 
+                                        class="p-1 absolute rounded-full bottom-[-3px] right-[-5px]" 
+                                        style="background-color: rgb(23 92 179); border: 2px solid white;"
+                                    >
+                                        <img 
+                                            src="/build/assets/icons/linkedin.svg" 
+                                            alt="Linkedin Icon" 
+                                            height="8"
+                                            width="8"
+                                        />
+                                    </div>
+                                </div>
+                                <div>
+                                    <p class="mb-0" v-if="item.type === 'campaign'">
+                                        {{ item.name }} ({{ item.postCount }})
+                                    </p>
+                                    <p class="mb-0" v-else>
+                                        {{ translatePostType(item.post_type) }} Post
+                                    </p>
+                                    <p class="mb-0 fw-light text-muted">
+                                        {{ getUsername(userLinkedinAccounts, item.linkedin_user_id) }}
+                                    </p>
+                                </div>
                             </div>
+                        </div>
                         </div>
                     </div>
                 </template>
@@ -134,7 +193,7 @@
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { useToast } from "vue-toastification";
-import { getLinkedinUserByID } from '../services/datatables';
+import { getLinkedinUserByID, getProfilePicture, getUsername } from '../services/datatables';
 
 export default {
     name: 'CalendarSection',
@@ -154,7 +213,7 @@ export default {
         }
     },
 
-    emits: ['open-campaign-portal', 'open-campaign-read-mode'],
+    emits: ['open-campaign-portal', 'open-campaign-read-mode', 'open-post-read-mode', 'open-post-portal'],
 
     setup() {
         const toast = useToast();
@@ -164,19 +223,12 @@ export default {
     data() {
         return {
             selectedDay: null,
-            showPopover: false,
-            currentMonth: null,
-            currentYear: null,
+            selectedDate: new Date(),
+            viewMode: 'month',
             selectedPost: null,
             selectedAccount: null,
-            editedPost: null,
-            isOpen: false,
-            isEditing: false,
             isAdding: false,
             isLoading: false,
-            isLoadingPosts: false,
-            localScheduledDateTime: '',
-            popoverPosts: [],
             campaignPosts: [],
             newPost: {
                 type: 'text',
@@ -196,11 +248,35 @@ export default {
 
     created() {
         const today = new Date();
-        this.currentMonth = today.getMonth();
-        this.currentYear = today.getFullYear();
+        this.selectedDate = new Date(today.getFullYear(), today.getMonth(), 1);
+    },
+
+    computed: {
+        currentMonth() {
+            return this.selectedDate.getMonth();
+        },
+        currentYear() {
+            return this.selectedDate.getFullYear();
+        },
+        displayDays() {
+            if (this.viewMode === 'month') {
+                const daysInMonth = this.getDaysInMonth(this.currentMonth, this.currentYear);
+                return Array.from({ length: daysInMonth }, (_, i) => new Date(this.currentYear, this.currentMonth, i + 1));
+            } else { // week view
+                const weekStart = this.getWeekStartDate(this.selectedDate);
+                return this.getWeekDays(weekStart);
+            }
+        },
+        displayBlankDays() {
+            return this.viewMode === 'month' ? this.getFirstDayOfMonth(this.currentMonth, this.currentYear) : 0;
+        }
     },
 
     methods: {
+        getLinkedinUserByID,
+        getProfilePicture,
+        getUsername,
+
         selectAccount(account) {
             this.selectedAccount = account;
         },
@@ -220,8 +296,6 @@ export default {
         openPostPortal() {
             this.$emit('open-post-portal', { post: null, readMode: false });
         },
-
-        getLinkedinUserByID,
 
         async requestBoost(post) {
             try {
@@ -249,8 +323,36 @@ export default {
             }
         },
 
-        displayCampaigns(day) {
-            const checkDate = new Date(this.currentYear, this.currentMonth, day);
+        handleNavigation(direction) {
+            const date = new Date(this.selectedDate);
+            if (this.viewMode === 'month') {
+                date.setMonth(date.getMonth() + (direction === 'next' ? 1 : -1));
+                date.setDate(1); // Move to the first of the month
+            } else { // week view
+                date.setDate(date.getDate() + (direction === 'next' ? 7 : -7));
+            }
+            this.selectedDate = date;
+        },
+
+        getWeekStartDate(date) {
+            const d = new Date(date);
+            const day = d.getDay(); // 0 = Sunday, 6 = Saturday
+            d.setDate(d.getDate() - day); // Move to Sunday
+            return d;
+        },
+
+        getWeekDays(startDate) {
+            const days = [];
+            for (let i = 0; i < 7; i++) {
+                const day = new Date(startDate);
+                day.setDate(startDate.getDate() + i);
+                days.push(day);
+            }
+            return days;
+        },
+
+        displayCampaigns(date) {
+            const checkDate = new Date(date);
             checkDate.setHours(0, 0, 0, 0);
             for (const campaign of this.allCampaigns) {
                 const startDate = new Date(campaign.start_date);
@@ -270,10 +372,6 @@ export default {
             };
         },
 
-        getCampaignPost(campaign) {
-            return this.allLinkedinPosts.filter(post => post.campaign_id === campaign.id);
-        },
-
         getCampaignEndStartDates(campaignId) {
             const campaign = this.allCampaigns.find(c => c.id === campaignId);
             if (campaign) {
@@ -285,47 +383,9 @@ export default {
             return null;
         },
 
-        async getCampaignPostsForDate(campaign, day) {
-            const clickedDate = new Date(this.currentYear, this.currentMonth, day);
-            const endDate = new Date(campaign.end_date);
-            const startDate = new Date(campaign.start_date);
-            clickedDate.setHours(0, 0, 0, 0);
-            startDate.setHours(0, 0, 0, 0);
-            endDate.setHours(0, 0, 0, 0);
-
-            if (clickedDate >= startDate && clickedDate <= endDate) {
-                this.isLoadingPosts = true;
-                try {
-                    const response = await axios.get('/linkedin/get-campaign-posts-for-day', {
-                        params: {
-                            linkedin_user_id: campaign.linkedin_user_id,
-                            campaign_id: campaign.id,
-                            selected_date: this.toLocalISOString(clickedDate).split('T')[0]
-                        },
-                        headers: {
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                        }
-                    });
-
-                    this.popoverPosts = response.data.map(post => ({
-                        ...post,
-                        content: typeof post.content === 'string' ? JSON.parse(post.content) : post.content
-                    }));
-                    this.selectedDay = day;
-                    this.showPopover = true;
-                } catch (error) {
-                    console.error('Error fetching campaign posts:', error);
-                    this.popoverPosts = [];
-                    this.showPopover = true; 
-                } finally {
-                    this.isLoadingPosts = false;
-                }
-            }
-        },
-
-        getCampaignsForDate(day) {
-            const campaignsForDay = [];
-            const checkDate = new Date(this.currentYear, this.currentMonth, day);
+        getItemsForDate(date) {
+            const itemsForDay = [];
+            const checkDate = new Date(date);
             checkDate.setHours(0, 0, 0, 0);
 
             this.allCampaigns.forEach(campaign => {
@@ -341,12 +401,13 @@ export default {
                         return post.campaign_id === campaign.id && postDate.getTime() === checkDate.getTime();
                     }).length;
 
-                    campaignsForDay.push({
+                    itemsForDay.push({
+                        type: 'campaign',
                         id: campaign.id,
                         user_id: campaign.user_id,
                         name: campaign.name,
                         description: campaign.description,
-                        color: campaign.color,
+                        color: campaign.color || '#e0e0e0', // Fallback color
                         start_date: campaign.start_date,
                         end_date: campaign.end_date,
                         linkedin_user_id: campaign.linkedin_user_id,
@@ -358,7 +419,30 @@ export default {
                 }
             });
 
-            return campaignsForDay;
+            this.allLinkedinPosts.forEach(post => {
+                if (post.campaign_id == null) {
+                    const scheduledPostDate = new Date(post.scheduled_time);
+                    scheduledPostDate.setHours(0, 0, 0, 0);
+
+                    if (scheduledPostDate.getTime() === checkDate.getTime()) {
+                        itemsForDay.push({
+                            type: 'post',
+                            id: post.id,
+                            post_type: post.type,
+                            user_id: post.user_id,
+                            linkedin_user_id: post.linkedin_user_id,
+                            job_id: post.job_id,
+                            status: post.status,
+                            scheduled_time: post.scheduled_time,
+                            post_urn: post.post_urn,
+                            content: post.content,
+                            color: '#000000'
+                        });
+                    }
+                }
+            });
+
+            return itemsForDay;
         },
 
         getDaysInMonth(month, year) {
@@ -370,11 +454,12 @@ export default {
         },
 
         getPostsForDate(date) {
+            const checkDate = new Date(date);
+            checkDate.setHours(0, 0, 0, 0);
             return this.allLinkedinPosts.filter(post => {
                 const postDate = new Date(post.scheduled_time);
-                return postDate.getDate() === date && 
-                    postDate.getMonth() === this.currentMonth && 
-                    postDate.getFullYear() === this.currentYear;
+                postDate.setHours(0, 0, 0, 0);
+                return postDate.getTime() === checkDate.getTime();
             });
         },
 
@@ -415,8 +500,8 @@ export default {
 
         getMonthName(monthIndex) {
             const months = [
-                'January', 'February', 'March', 'April', 'May', 'June',
-                'July', 'August', 'September', 'October', 'November', 'December'
+                'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
+                'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
             ];
             return months[monthIndex];
         },
@@ -431,29 +516,22 @@ export default {
             }
         },
 
-        getMediaUrl(filePath) {
-            return `/linkedin/${filePath}`;
+        translatePostType(type) {
+            switch(type) {
+                case 'text':
+                    return 'Texte'
+                case 'image':
+                    return 'Image';
+                case 'video':
+                    return 'Vidéo';
+                case 'multiimage':
+                    return 'Multi-Image';
+                default: return 'Type inconnu'
+            }
         },
 
-        closeModal() {
-            this.isOpen = false;
-            this.selectedPost = null;
-            this.editedPost = null;
-            this.isEditing = false;
-            this.isAdding = false;
-            this.newPost = {
-                type: 'text',
-                scheduled_time: '',
-                content: {
-                    text: '',
-                    caption: '',
-                    url: '',
-                    title: '',
-                    description: '',
-                    file: null,
-                    fileName: ''
-                }
-            };
+        getMediaUrl(filePath) {
+            return `/linkedin/${filePath}`;
         },
 
         getCampaignByID(id) {
@@ -468,6 +546,16 @@ export default {
             } else {
                 console.error('Account or Campaign not found');
                 this.toast.error('Compte ou campagne introuvable !');
+            }
+        },
+
+        openPostReadMode(post) {
+            const selectedAccount = this.getLinkedinUserByID(this.userLinkedinAccounts, post.linkedin_user_id);
+            if (selectedAccount) {
+                this.$emit('open-post-read-mode', { account: selectedAccount, selectedPost: post, readMode: true });
+            } else {
+                console.error('Account not found');
+                this.toast.error('Compte introuvable !');
             }
         },
 
@@ -550,7 +638,6 @@ export default {
 
                 if (response.status === 200 || response.status === 201) {
                     this.isAdding = false;
-                    this.closeModal();
                     Swal.fire({
                         icon: "success",
                         html: `<p class='fw-semibold'>Post créé avec succès !</p>`,
@@ -566,86 +653,6 @@ export default {
                 }
             } catch (error) {
                 console.error("Error creating post:", error);
-                if (error.response && error.response.status === 422) {
-                    console.log("Validation errors:", error.response.data);
-                }
-            } finally {
-                this.isLoading = false;
-            }
-        },
-
-        async updatePost() {
-            this.isLoading = true;
-            try {
-                this.editedPost.scheduledDateTime = this.localScheduledDateTime;
-                const campaignDates = this.getCampaignEndStartDates(this.editedPost.campaign_id);
-                const scheduledDateTime = new Date(this.editedPost.scheduledDateTime);
-
-                const formData = new FormData();
-                formData.append('post_id', this.editedPost.id);
-                formData.append('linkedin_user_id', this.editedPost.linkedin_user_id);
-                formData.append('job_id', this.editedPost.job_id);
-                formData.append('type', this.editedPost.type);
-                formData.append('scheduled_time', this.editedPost.scheduledDateTime);
-                formData.append('content', JSON.stringify(this.editedPost.content));
-                formData.append('_method', 'PUT');
-
-                if (this.editedPost.content.file) {
-                    formData.append('file', this.editedPost.content.file);
-                }
-
-                if(scheduledDateTime < campaignDates.startDate || scheduledDateTime > campaignDates.endDate) {
-                    Swal.fire({
-                        icon: "error",
-                        title: "Oops...",
-                        html: `<p>La date de publication doit être comprise entre<br><b>${this.formatDateTime(campaignDates.startDate)}</b> et <b>${this.formatDateTime(campaignDates.endDate)}</b>.</p>`,
-                        confirmButtonColor: "#fd0033",
-                        allowOutsideClick: true,
-                        timer: 6000,
-                        timerProgressBar: true,
-                    });
-                    return;
-                }
-
-                if(this.editedPost.type === 'text' && this.editedPost.content.text.trim() === '') {
-                    Swal.fire({
-                        icon: "error",
-                        title: "Oops...",
-                        text: "Le contenu du post ne peut pas être vide.",
-                        confirmButtonColor: "#fd0033",
-                        allowOutsideClick: true,
-                        timer: 6000,
-                        timerProgressBar: true,
-                    });
-                    return;
-                }
-
-                const response = await axios.post('/linkedin/update-post', formData, {
-                    headers: {
-                        'Content-Type': 'multipart/form-data',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                    },
-                });
-
-                if (response.status === 200) {
-                    this.isEditing = false;
-                    this.selectedPost = { ...this.editedPost };
-                    this.closeModal();
-                    Swal.fire({
-                        icon: "success",
-                        html: `<p class='fw-semibold'>Post mis à jour avec succès !</p>`,
-                        allowOutsideClick: false,
-                        timer: 3000,
-                        timerProgressBar: true,
-                        showConfirmButton: false,
-                    }).then((result) => {
-                        if (result.dismiss === Swal.DismissReason.timer) {
-                            window.location.reload();
-                        }
-                    });
-                }
-            } catch (error) {
-                console.error("Error updating post:", error);
                 if (error.response && error.response.status === 422) {
                     console.log("Validation errors:", error.response.data);
                 }
@@ -734,3 +741,13 @@ export default {
     },
 };
 </script>
+
+<style scoped>
+.month-text {
+    background: linear-gradient(
+        135deg,
+        rgb(255 16 185) 0%,
+        rgb(255 125 82) 100%
+    );
+}
+</style>

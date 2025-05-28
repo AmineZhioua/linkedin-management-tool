@@ -456,9 +456,6 @@ export default {
             selectedAccount: this.allLinkedinAccounts[0],
             linkedinAccountDropdown: false,
             currentDateTime: this.formatDateTime(today),
-            // validateFieldDebounced: _.debounce(function(field) {
-            //     this.validateField(field);
-            // }, 300),
             imagePreviewUrl: null,
             validationErrors: {},
             videoPreviewUrl: null,
