@@ -1,6 +1,50 @@
 <template>
     <div class="bg-black bg-opacity-50 inset-0 h-full w-full absolute"></div>
-    <div class="flex items-center w-full p-4 justify-center gap-2 absolute top-[50%] left-[50%] translate-y-[-50%] translate-x-[-50%]">
+    <div class="flex items-center flex-wrap w-full p-4 justify-center gap-2 absolute top-[50%] left-[50%] translate-y-[-50%] translate-x-[-50%] h-[600px]">
+
+        <div class="flex flex-col justify-center gap-4 p-4 bg-white rounded-lg min-w-[450px]">
+            <!-- Heading -->
+            <div class="flex items-center gap-2">
+                <i class="fa-solid fa-robot text-2xl"></i>
+                <h3 class="mb-0 mt-1 fw-semibold text-xl">Assistant AI</h3>
+            </div>
+
+            <!-- Textarea Input -->
+            <div class="flex flex-col gap-2">
+                <p class="mb-2 ml-1 fw-semibold text-black text-md">Quel est le sujet que vous souhaitez écrire ?</p>
+                <textarea 
+                    name="ai-input" 
+                    id="ai-input" 
+                    placeholder="Eg: Faites la promotion de ma nouvelle formation en marketing digitale pour attirer de nouvelles inscriptions. Les inscriptions se terminent dans 5 jours."
+                    class="p-2 bg-white border rounded-md w-full min-h-[300px]"
+                    v-model="prompt"
+                ></textarea>
+            </div>
+
+            <div class="w-ful flex justify-end">
+                <div 
+                    v-if="isGenerating" 
+                    class="py-2 px-3 w-[100px] flex items-center justify-center rounded-md text-white" 
+                    style="border: 2px solid pink;"
+                >
+                    <progress-spinner 
+                        style="width: 15px; height: 15px" strokeWidth="10" fill="transparent" 
+                        animationDuration=".5s" 
+                        aria-label="Custom ProgressSpinner" 
+                    />
+                </div>
+                <button 
+                    v-else
+                    class="flex items-center gap-2 py-2 px-3 rounded-md border w-fit text-white generate-btn"
+                    @click="generateAiContent"
+                >
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    <p class="mb-0 fw-semibold">Générer</p>
+                </button>
+            </div>
+        </div>
+
+
         <!-- Post Fields -->
         <div v-if="!readMode" class="bg-white p-4 rounded-lg relative"> 
             <!-- Close Button & Title -->
@@ -11,6 +55,7 @@
                 </button>
             </div>
 
+            <!-- Post Inputs & Update / Post Buttons -->
             <div class="flex flex-col justify-center gap-4">
                 <!-- Heading -->
                 <div class="flex items-center justify-between">
@@ -247,15 +292,13 @@
                         <p v-if="validationErrors.scheduledDateTime" class="text-red-500 text-sm">
                             {{ validationErrors.scheduledDateTime }}
                         </p>
-
-                        <!-- <DatePicker id="datepicker-12h" v-model="datetime12h" showTime hourFormat="12" fluid style="background-color: white;" /> -->
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Post Preview Section -->
-        <div class="bg-white p-3 rounded-lg min-w-[400px] max-w-[450px] min-h-[400px]">
+        <div class="bg-white p-3 rounded-lg min-w-[400px] max-w-[450px] min-h-[400px] max-h-full overflow-scroll">
             <div class="flex items-center justify-between">
                 <h3 class="text-black text-lg mb-0">Aperçu LinkedIn</h3>
                 <button @click="handleCloseinReadMore" v-if="readMode">
@@ -482,6 +525,10 @@ export default {
             },
             showConfirmExit: false,
             multiImagePreviews: [],
+            // AI related variables
+            prompt: '',
+            output: '',
+            isGenerating: false,
         };
     },
 
@@ -548,7 +595,6 @@ export default {
             if (previews.length <= 3) {
                 return { images: previews, showOverlay: false, additionalCount: 0 };
             }
-            // For 4 or more, show first 4 images, with overlay on the 4th if more exist
             const displayImages = previews.slice(0, 4);
             const additionalCount = previews.length - 4;
             return { images: displayImages, showOverlay: additionalCount > 0, additionalCount };
@@ -962,6 +1008,44 @@ export default {
             return tokenExpirationDate > now;
         },
 
+        async generateAiContent() {
+            const openaiKey = import.meta.env.VITE_OPENAI_API_KEY;
+            this.isGenerating = true;
+
+            try {
+                const response = await axios.post('https://api.openai.com/v1/responses', {
+                    model: 'gpt-4.1',
+                    input: `${this.prompt}` 
+                }, {
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${openaiKey}`
+                    }
+                });
+
+                if (response.status === 200) {
+                    const output = response.data.output;
+                    if (Array.isArray(output) && output.length > 0 && 
+                        Array.isArray(output[0].content) && output[0].content.length > 0) {
+                        const generatedText = output[0].content[0].text;
+                        this.prompt = generatedText;
+                    } else {
+                        console.error('Invalid response structure: output or content missing');
+                        this.prompt = 'une erreur s\'est produite';
+                    }
+                } else {
+                    this.prompt = 'une erreur s\'est produite';
+                }
+
+            } catch(error) {
+                console.log(error);
+                this.showErrorToast("Une erreur s'est produite! Veuillez réessayer.");
+
+            } finally {
+                this.isGenerating = false;
+            }
+        },
+
         handleClose() {
             this.showConfirmExit = true;
         },
@@ -978,3 +1062,14 @@ export default {
     }
 };
 </script>
+
+<style scoped>
+.generate-btn {
+    background: linear-gradient(
+        135deg,
+        rgb(255 16 185) 0%,
+        rgb(255 125 82) 100%
+    );
+    border: none;
+}
+</style>

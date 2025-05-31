@@ -18,7 +18,6 @@ import DashboardCalendar from "./components/DashboardCalendar.vue";
 import CampaignTable from "./components/CampaignTable.vue";
 import CampaignModal from "./components/CampaignModal.vue";
 import PostCard from "./components/PostCard.vue";
-import KpiList from "./components/KpiList.vue";
 import ExtraInfoForm from "./components/ExtraInfoForm.vue";
 import Toast from "vue-toastification";
 import "vue-toastification/dist/index.css";
@@ -70,6 +69,7 @@ import StepPanel from 'primevue/steppanel';
 import Paginator from 'primevue/paginator';
 import FileUpload from "primevue/fileupload";
 import Galleria from 'primevue/galleria';
+import ProgressSpinner from 'primevue/progressspinner'
 
 const app = createApp({
     data() {
@@ -103,7 +103,6 @@ app.component("campaign-table", CampaignTable);
 app.component("campaign-modal", CampaignModal);
 app.component("post-card", PostCard);
 app.component("edit-account", EditAccount);
-app.component("kpi-list", KpiList);
 app.component("extra-info-form", ExtraInfoForm);
 app.component("user-posts-card", UserPostsCard);
 app.component("linkedin-post", LinkedinPost);
@@ -146,5 +145,6 @@ app.component("StepPanel", StepPanel);
 app.component("Paginator", Paginator);
 app.component("FileUpload", FileUpload);
 app.component("Galleria", Galleria);
+app.component("ProgressSpinner", ProgressSpinner);
 
 app.mount("#app");
