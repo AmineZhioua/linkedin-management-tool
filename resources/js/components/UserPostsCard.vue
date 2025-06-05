@@ -53,7 +53,7 @@
           </div>
         </div>
   
-            <!-- New Post & Campaign Buttons Section -->
+        <!-- New Post & Campaign Buttons Section -->
         <div class="flex items-center gap-2">
             <Button 
                 @click="openPostPortal" 
@@ -170,7 +170,7 @@
           @edit-linkedin-post="editPost"
           @delete-post="deletePost"
           @delete-post-from-linkedin="deletePostFromLinkedIn"
-          @request-boost-interaction="requestBoost"
+          @request-boost-interaction="emitBoostData"
           :open-post-read-mode="openPostInReadMode"
         />
       </div>
@@ -211,6 +211,8 @@
         default: () => []
       },
     },
+
+    emits: ['open-post-portal', 'open-boost-form'],
   
     setup() {
       const toast = useToast();
@@ -268,6 +270,10 @@
   
       editPost(post) {
         this.$emit('open-post-portal', { post, readMode: false });
+      },
+
+      emitBoostData(post) {
+        this.$emit('open-boost-form', post);
       },
   
       async requestBoost(post) {

@@ -4,20 +4,19 @@ import "bootstrap";
 import SubscriptionCards from "./components/SubscriptionCards.vue";
 import Popup from "./components/Popup.vue";
 import EditAccount from './components/EditAccount.vue';
-import PlateformeCard from "./components/PlateformeCard.vue";
+// import PlateformeCard from "./components/PlateformeCard.vue";
 import LoadingOverlay from "./components/LoadingOverlay.vue";
 import ProgressIndicator from "./components/ProgressIndicator.vue";
-import LinkedinPostCard from "./components/LinkedinPostCard.vue";
-import PlateformeStart from "./components/PlateformeStart.vue";
-import MarqueComponent from "./components/Marque.vue";
-import MonthCalendar from "./components/MonthCalendar.vue";
-import PostModal from "./components/PostModal.vue";
+// import LinkedinPostCard from "./components/LinkedinPostCard.vue";
+// import PlateformeStart from "./components/PlateformeStart.vue";
+// import MarqueComponent from "./components/Marque.vue";
+// import MonthCalendar from "./components/MonthCalendar.vue";
+// import PostModal from "./components/PostModal.vue";
 import CalendarNavigation from "./components/CalendarNavigation.vue";
 import CampaignForm from "./components/CampaignForm.vue";
 import DashboardCalendar from "./components/DashboardCalendar.vue";
-import CampaignTable from "./components/CampaignTable.vue";
-import CampaignModal from "./components/CampaignModal.vue";
-import PostCard from "./components/PostCard.vue";
+// import CampaignTable from "./components/CampaignTable.vue";
+// import CampaignModal from "./components/CampaignModal.vue";
 import ExtraInfoForm from "./components/ExtraInfoForm.vue";
 import Toast from "vue-toastification";
 import "vue-toastification/dist/index.css";
@@ -36,6 +35,8 @@ import PostsDatatable from "./components/PostsDatatable.vue";
 import CampaignsDatatable from "./components/CampaignsDatatable.vue";
 import NotificationsBell from "./components/NotificationsBell.vue";
 import CalendarSection from "./components/CalendarSection.vue";
+import BoostRequestForm from "./components/BoostRequestForm.vue";
+import BoostRequestDatatable from "./components/BoostRequestDatatable.vue";
 
 
 // Importing PrimeVue for UI Components
@@ -69,7 +70,9 @@ import StepPanel from 'primevue/steppanel';
 import Paginator from 'primevue/paginator';
 import FileUpload from "primevue/fileupload";
 import Galleria from 'primevue/galleria';
-import ProgressSpinner from 'primevue/progressspinner'
+import ProgressSpinner from 'primevue/progressspinner';
+import Dialog from 'primevue/dialog';
+
 
 const app = createApp({
     data() {
@@ -88,20 +91,19 @@ app.use(PrimeVue, {
 
 app.component("subscription-cards", SubscriptionCards);
 app.component("popup", Popup);
-app.component("plateforme-card", PlateformeCard);
+// app.component("plateforme-card", PlateformeCard);
 app.component("loading-overlay", LoadingOverlay);
 app.component("progress-indicator", ProgressIndicator);
-app.component("linkedin-postcard", LinkedinPostCard);
-app.component("plateforme-start", PlateformeStart);
-app.component("marque-component", MarqueComponent);
-app.component("month-calendar", MonthCalendar);
-app.component("post-modal", PostModal);
+// app.component("linkedin-postcard", LinkedinPostCard);
+// app.component("plateforme-start", PlateformeStart);
+// app.component("marque-component", MarqueComponent);
+// app.component("month-calendar", MonthCalendar);
+// app.component("post-modal", PostModal);
 app.component("calendar-navigation", CalendarNavigation);
 app.component("campaign-form", CampaignForm);
 app.component("dashboard-calendar", DashboardCalendar);
-app.component("campaign-table", CampaignTable);
-app.component("campaign-modal", CampaignModal);
-app.component("post-card", PostCard);
+// app.component("campaign-table", CampaignTable);
+// app.component("campaign-modal", CampaignModal);
 app.component("edit-account", EditAccount);
 app.component("extra-info-form", ExtraInfoForm);
 app.component("user-posts-card", UserPostsCard);
@@ -118,6 +120,8 @@ app.component("posts-datatable", PostsDatatable);
 app.component("campaigns-datatable", CampaignsDatatable);
 app.component("notifications-bell", NotificationsBell);
 app.component("calendar-section", CalendarSection);
+app.component("boost-request-form", BoostRequestForm);
+app.component("boost-request-datatable", BoostRequestDatatable);
 
 // PrimeVue Components
 app.component("Button", Button);
@@ -146,5 +150,6 @@ app.component("Paginator", Paginator);
 app.component("FileUpload", FileUpload);
 app.component("Galleria", Galleria);
 app.component("ProgressSpinner", ProgressSpinner);
+app.component("Dialog", Dialog);
 
 app.mount("#app");

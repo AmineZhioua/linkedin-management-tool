@@ -93,7 +93,10 @@ class DashboardController extends Controller
             $validated = $request->validate([
                 "post_id" => "required|integer|exists:scheduled_linkedin_posts,id",
                 "linkedin_user_id" => "required|integer|exists:linkedin_users,id",
-                "post_url" => "required|url"
+                "post_url" => "required|url",
+                "nb_likes" => "required|integer",
+                "nb_comments" => "required|integer",
+                "message" => "nullable|string"
             ]);
         
             $userId = Auth::id();
@@ -108,7 +111,10 @@ class DashboardController extends Controller
                     "linkedin_user_id" => $validated["linkedin_user_id"],
                     "post_id" => $post->id,
                     "post_url" => $validated["post_url"],
-                    "status" => "pending"
+                    "status" => "pending",
+                    "nb_likes" => $validated["nb_likes"],
+                    "nb_comments" => $validated["nb_comments"],
+                    "message" => $validated["message"] ?? null
                 ]);
                                 
                 DB::commit();
@@ -143,6 +149,74 @@ class DashboardController extends Controller
             return response()->json([
                 "status" => 500,
                 "message" => "Une erreur s'est produite lors de l'envoi de la requête !"
+            ], 500);
+        }
+    }
+
+
+    public function deleteBoostRequest(Request $request) {
+        try {
+            $validated = $request->validate([
+                "request_id" => "required|integer|exists:boostinteractions,id"
+            ]);
+
+            $boostRequest = Boostinteraction::where('id', $validated["request_id"])->first();
+            
+            if(!$boostRequest) {
+                return response()->json([
+                    "message" => "Demande de Boost non trouvé !",
+                ], 404);
+            }
+
+            DB::beginTransaction();
+            $boostRequest->delete();
+            DB::commit();
+
+            return response()->json([
+                "message" => "Demande de Boost supprimé avec succès !"
+            ], 200);
+        } catch(\Exception $e) {
+            DB::rollback();
+
+            return response()->json([
+                "message" => "Une erreur s\'est produite ! Veuillez réessayer",
+                "error_occurred" => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+
+
+    public function updateBoostRequest(Request $request) {
+        try {
+            $validated = $request->validate([
+                "request_id" => "required|integer|exists:boostinteractions,id",
+                "nb_likes" => "required|integer",
+                "nb_comments" => "required|integer",
+                "message" => "nullable|string"
+            ]);
+
+            $boostRequestToUpdate = Boostinteraction::where("id", $validated["request_id"])->first();
+
+            if($boostRequestToUpdate) {
+                $boostRequestToUpdate->nb_likes = $validated["nb_likes"];
+                $boostRequestToUpdate->nb_comments = $validated["nb_comments"];
+                $boostRequestToUpdate->message = $validated["message"];
+
+                $boostRequestToUpdate->save();
+
+                return response()->json([
+                    "message" => "Demande de Boost modifié avec succès !"
+                ], 200);
+            } else {
+                return response()->json([
+                    "message" => "Demande de Boost non trouvé !"
+                ], 404);
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                "message" => "Une erreur s'est produite ! Veuillez réessasyer",
+                "error_occurred" => $e->getMessage()
             ], 500);
         }
     }

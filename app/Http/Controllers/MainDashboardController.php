@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Boostinteraction;
 use App\Models\ExtraInformation;
 use App\Models\LinkedinCampaign;
 use App\Models\LinkedinUser;
@@ -18,6 +19,7 @@ class MainDashboardController extends Controller
         $userLinkedinPosts = ScheduledLinkedinPost::where("user_id", $user->id)->get();
         $userCampaigns = LinkedinCampaign::where("user_id", $user->id)->get();
         $userAdditionalInfo = ExtraInformation::where("user_id", $user->id)->first();
+        $userBoostRequests = Boostinteraction::where("user_id", $user->id)->get();
 
         return view('main-dashboard', [
             'user' => $user,
@@ -25,6 +27,7 @@ class MainDashboardController extends Controller
             'userLinkedinPosts' => $userLinkedinPosts,
             'userCampaigns' => $userCampaigns,
             'userAdditionalInfo' => $userAdditionalInfo,
+            'userBoostRequests' => $userBoostRequests,
         ]);
     }
 }

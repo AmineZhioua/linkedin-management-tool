@@ -103,6 +103,8 @@ Route::get('/get-notifications', [App\Http\Controllers\NotificationsController::
 Route::post('/linkedin/mark-all-as-read', [App\Http\Controllers\NotificationsController::class, 'markAllAsRead'])->name('mark.as.read');
 Route::post('/boost-interaction/request', [App\Http\Controllers\DashboardController::class, 'requestBoostInteraction'])
     ->name('boost.interaction.request');
+Route::delete('/boost-interaction/delete', [App\Http\Controllers\DashboardController::class, 'deleteBoostRequest'])->name('delete.boost.request');
+Route::put('/boost-interaction/update', [App\Http\Controllers\DashboardController::class, 'updateBoostRequest'])->name("update.boost.request");
 
 Route::get('/main/dashboard', [App\Http\Controllers\MainDashboardController::class, 'index'])->name('main.dashboard');
 Route::delete('/campaign/delete', [App\Http\Controllers\LinkedInController::class, 'deleteCampaign'])->name('delete.campaign');

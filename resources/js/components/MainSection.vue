@@ -14,6 +14,7 @@
       @open-campaign-portal="handleOpenCampaignPortal"
       @open-post-portal="handleOpenPostPortal"
       @open-campaign-post-portal="handleOpenCampaignPostPortal"
+      @open-boost-form="openBoostForm"
     />
 
     <!-- KPI Section -->
@@ -27,11 +28,10 @@
     <!-- LinkedIn Accounts Section -->
     <linkedin-accounts-section
       v-if="cardToSet === 'linkedinAccounts'"
-      :user="user"
-      :all-linkedin-accounts="userLinkedinAccounts"
-      :flash-success="flashSuccess"
-      :flash-error="flashError"
-      :success-payment="successPayment"
+      :all-user-boost-requests="userBoostRequests"
+      :user-linkedin-accounts="userLinkedinAccounts"
+      @open-post-to-boost="handleOpenPostToBeBoosted"
+      @open-boost-form-editmode="handleOpenBoostFormInEditMode"
     />
 
     <!-- Calendar Section -->
@@ -81,6 +81,14 @@
       :on-save="saveChanges"
       @close="closeCampaignPostPortal"
     />
+
+    <boost-request-form 
+      v-if="displayBoostForm"
+      :post="postToBoost"
+      :boost-request="boostRequestToUpdate"
+      @close-boost-form="closeBoostForm"
+    />
+
   </div>
 </template>
 
@@ -114,6 +122,12 @@ export default {
       type: Array,
       required: true,
     },
+
+    userBoostRequests: {
+      type: Array,
+      required: true,
+    },
+
     campaigns: {
       type: Array,
       required: true,
@@ -123,18 +137,7 @@ export default {
       required: false,
       default: null,
     },
-    flashSuccess: {
-      type: String,
-      default: "",
-    },
-    flashError: {
-      type: String,
-      default: "",
-    },
-    successPayment: {
-      type: String,
-      default: "",
-    },
+
   },
 
   setup() {
@@ -144,17 +147,22 @@ export default {
 
   data() {
     return {
-      cardToSet: "calendar",
+      cardToSet: "userPosts",
+      // Portals variables
       showCampaignPostPortal: false,
       showCampaignPortal: false,
       showPortal: false,
+      // Selection variables
       selectedCampaign: null,
       selectedPost: null,
       selectedAccount: null,
+      // Read mode
       readModeStatus: false,
-      campaignPostError: '',
-      campaignPosts: [],
+      // Error variables
       isFormValid: false,
+      campaignPostError: '',
+      // Campaign related variables
+      campaignPosts: [],
       campaignStartDateTime: null,
       campaignEndDateTime: null,
       selectedCible: '',
@@ -162,6 +170,13 @@ export default {
       descriptionCampagne: '',
       couleurCampagne: '',
       nomCampagne: '',
+      // Boost Request variables
+      nbLikesToRequest: 0,
+      nbCommentsToRequest: 0,
+      boostMessage: '',
+      displayBoostForm: false,
+      postToBoost: null,
+      boostRequestToUpdate: null,
     };
   },
 
@@ -181,11 +196,10 @@ export default {
     },
 
     handleOpenPostPortal(data) {
-      this.selectedPost = data.selectedPost;
+      this.selectedPost = data.post;
       this.readModeStatus = data.readMode || false;
       this.selectedAccount = data.account || null;
       this.showPortal = true;
-      console.log(data)
     },
 
     handleOpenCampaignPostPortal(data) {
@@ -206,6 +220,39 @@ export default {
       this.selectedPost = post;
       this.readModeStatus = true;
       this.showPortal = true;
+    },
+
+    openBoostForm(post) {
+      this.displayBoostForm = true;
+      this.postToBoost = post;
+      this.boostRequestToUpdate = null; // Explicitly null for create mode
+    },
+
+    closeBoostForm() {
+      this.displayBoostForm = false;
+      this.postToBoost = null;
+      this.boostRequestToUpdate = null; // Reset to null
+    },
+
+    handleOpenPostToBeBoosted(postId) {
+      const post = this.userLinkedinPosts.find(post => post.id === postId);
+
+      if(post) {
+        this.selectedPost = post;
+        const account = this.userLinkedinAccounts.find(account => account.id === post.user_id);
+        this.selectedAccount = account;
+        this.readModeStatus = true;
+        this.showPortal = true;
+      } else {
+        this.toast.error("Post non trouvé !");
+      }
+    },
+
+    handleOpenBoostFormInEditMode(boostRequest) {
+      this.displayBoostForm = true;
+      this.boostRequestToUpdate = boostRequest;
+      const post = this.userLinkedinPosts.find(post => post.id === boostRequest.post_id);
+      this.postToBoost = post;
     },
 
     // Portal Close Handlers
@@ -255,10 +302,6 @@ export default {
       this.descriptionCampagne = formData.descriptionCampagne;
       this.couleurCampagne = formData.couleurCampagne;
       this.nomCampagne = formData.nomCampagne;
-    },
-
-    getCampaignByID(id) {
-      return this.campaigns.find(campaign => campaign.id === id);
     },
 
     saveChanges(updatedPost) {

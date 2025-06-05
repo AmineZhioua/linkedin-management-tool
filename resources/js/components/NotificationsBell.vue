@@ -31,7 +31,10 @@
                     <p class="mb-0 text-white text-xs">{{ successMessageBadge(notification) }}</p>
                 </div>
                 <!-- Notification Message -->
-                <p class="text-black mb-0 ml-2">{{ notification.message }}</p>
+                <div class="flex items-center gap-1 px-1">
+                    <p class="text-black mb-0 ml-2">{{ notification.message }}</p>
+                    <img src="/build/assets/icons/mark-read.svg" alt="Mark Icon" />
+                </div>
             </div>
         </div>
     </div>

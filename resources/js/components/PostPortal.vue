@@ -2,7 +2,11 @@
     <div class="bg-black bg-opacity-50 inset-0 h-full w-full absolute"></div>
     <div class="flex items-center flex-wrap w-full p-4 justify-center gap-2 absolute top-[50%] left-[50%] translate-y-[-50%] translate-x-[-50%] h-[600px]">
 
-        <div class="flex flex-col justify-center gap-4 p-4 bg-white rounded-lg min-w-[450px]">
+        <!-- AI Assistant Section -->
+        <div 
+            v-if="!readMode"
+            class="flex flex-col justify-center gap-4 p-4 bg-white rounded-lg min-w-[450px]"
+        >
             <!-- Heading -->
             <div class="flex items-center gap-2">
                 <i class="fa-solid fa-robot text-2xl"></i>

@@ -14,7 +14,10 @@ return new class extends Migration
             $table->foreignId('linkedin_user_id')->constrained('linkedin_users')->onDelete('cascade');
             $table->foreignId('post_id')->constrained('scheduled_linkedin_posts')->onDelete('cascade');
             $table->string('post_url');
+            $table->integer('nb_likes');
+            $table->integer('nb_comments');
             $table->enum('status', ['pending', 'accepted', 'declined'])->default('pending');
+            $table->longText('message')->nullable();
             $table->timestamps();
         });
     }

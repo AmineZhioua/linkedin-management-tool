@@ -104,9 +104,7 @@
             :user-linkedin-accounts="{{ json_encode($userLinkedinAccounts) }}"
             :user-linkedin-posts="{{ json_encode($userLinkedinPosts) }}"
             :campaigns="{{ json_encode($userCampaigns) }}"
-            :flash-success="{{ json_encode(session('linkedin_success')) }}"
-            :flash-error="{{ json_encode(session('linkedin_error')) }}"
-            :success-payment="{{ json_encode(session('success_payment')) }}"
+            :user-boost-requests="{{ json_encode($userBoostRequests) }}"
         />
     </main>
     <!-- Main Section End -->

@@ -13,7 +13,6 @@
         />
 
         <p>Dashboard</p>
-        <!-- <span class="text-md fw-semibold">Dashboard</span> -->
       </li>
       <li 
         class="flex relative items-center gap-2 text-white cursor-pointer hover:bg-pink-300 py-2 px-2 rounded-lg transition-all duration-300"
@@ -25,8 +24,7 @@
           height="25" 
           width="25"
         />
-        <p>Comptes</p>
-        <!-- <span class="text-md fw-semibold">Vos Comptes</span> -->
+        <p>Espace LinkedIn</p>
       </li>
       <li 
         class="flex relative items-center gap-2 text-white cursor-pointer hover:bg-pink-300 py-2 px-2 rounded-lg transition-all duration-300"
@@ -39,7 +37,6 @@
           width="25"
         />
         <p>Activités</p>
-        <!-- <span class="text-md fw-semibold">Vos Activités</span> -->
       </li>
       <li 
         class="flex relative items-center gap-2 text-white cursor-pointer hover:bg-pink-300 py-2 px-2 rounded-lg transition-all duration-300"
@@ -52,7 +49,6 @@
           width="25"
         />
         <p>Calendrier</p>
-        <!-- <span class="text-md fw-semibold">Calendrier</span> -->
       </li>
       <li 
         class="flex relative items-center gap-2 text-white cursor-pointer hover:bg-pink-300 py-2 px-2 rounded-lg transition-all duration-300"
@@ -65,7 +61,6 @@
           width="25"
         />
         <p>Statistiques</p>
-        <!-- <span class="text-md fw-semibold">Vos Statistiques</span> -->
       </li>
     </ul>
   </div>
