@@ -115,6 +115,112 @@ class LinkedinPostController extends Controller
     }
 
 
+    public function saveAsDraft(Request $request) {
+        try {
+            $user = Auth::user();
+
+            $validated = $request->validate([
+                'linkedin_id' => 'required|exists:linkedin_users,id',
+                'type' => 'required|in:text,image,video,article,multiimage',
+                'scheduled_date' => 'required|date|after:now',
+                'content' => 'required|array',
+            ]);
+
+            switch ($validated['type']) {
+                case 'text':
+                    $request->validate(['content.text' => 'required|string|max:3000']);
+                    $content = ['text' => $validated['content']['text']];
+                    break;
+
+                case 'image':
+                case 'video':
+                    $request->validate([
+                        'content.file' => 'required|file|max:50000',
+                        'content.caption' => 'nullable|string',
+                        'content.original_filename' => 'required|string',
+                    ]);
+                    $file = $request->file('content.file');
+                    $path = $file->store('', 'linkedin_media');
+                    Log::info('Stored LinkedIn media', [
+                        'path' => $path,
+                        'full_path' => Storage::disk('linkedin_media')->path($path)
+                    ]);
+                    $content = [
+                        'file_path' => $path,
+                        'caption' => $validated['content']['caption'] ?? '',
+                        'original_filename' => $validated['content']['original_filename'],
+                    ];
+                    break;
+                
+                case 'multiimage': 
+                    $request->validate([
+                        'content.files' => 'required|array',
+                        'content.caption' => 'nullable|string|max:3000'
+                    ]);
+
+                    $files = $request->file('content.files');
+                    $filePaths = [];
+
+                    if($files) {
+                        foreach ($files as $index => $file) {
+                            $originalName = $request->input("content.original_filenames.{$index}");
+                            $path = $file->store('', 'linkedin_media');
+                            $filePaths[] = $path;
+
+                            Log::info('Stored LinkedIn media', [
+                                'path' => $path,
+                                'filePaths' => $filePaths,
+                                'full_path' => Storage::disk('linkedin_media')->path($path)
+                            ]);
+                        }
+
+                        $content = [
+                            'file_paths' => $filePaths,
+                            'caption' => $validated['content']['caption'] ?? '',
+                            'original_filenames' => array_map(fn($i) => $request->input("content.original_filenames.{$i}"), array_keys($files)),
+                        ];
+                    }
+                    break;
+
+                case 'article':
+                    $request->validate([
+                        'content.url' => 'required|url',
+                        'content.title' => 'required|string|max:200',
+                        'content.description' => 'nullable|string|max:500',
+                        'content.caption' => 'nullable|string',
+                    ]);
+                    $content = [
+                        'url' => $validated['content']['url'],
+                        'title' => $validated['content']['title'],
+                        'description' => $validated['content']['description'],
+                        'caption' => $validated['content']['caption'] ?? '',
+                    ];
+                    break;
+
+                default:
+                    return response()->json(['error' => 'Type de post invalide'], 400);
+            }
+
+            $post = ScheduledLinkedinPost::create([
+                'user_id' => $user->id,
+                'linkedin_user_id' => $validated['linkedin_id'],
+                'campaign_id' => null,
+                'type' => $validated['type'],
+                'content' => json_encode($content),
+                'scheduled_time' => $validated['scheduled_date'],
+                'status' => 'draft',
+            ]);
+
+            return response()->json([
+                "message" => "Post ajouté aux Brouillons !"
+            ], 200);
+        } catch(\Exception $e) {
+            return response()->json([
+                "message" => "Une erreur s'est produite ! Veuillez réessayer",
+                "error_occurred" => $e->getMessage(),
+            ], 500);
+        }
+    }
 
     
     public function getCampaignPostsForDay(Request $request) {

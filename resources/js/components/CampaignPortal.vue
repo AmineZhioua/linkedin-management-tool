@@ -520,15 +520,17 @@ export default {
         async submitAllPosts() {
             this.isSubmitting = true;
             this.submissionError = null;
+            
             try {
                 if (!this.isTokenValid()) {
                     this.submissionError = "Votre jeton d'accès LinkedIn a expiré. Veuillez <a href='/linkedin/reconnect'>reconnecter votre compte</a>.";
                     this.isSubmitting = false;
                     return;
                 }
-                console.log(this.selectedAccount.id)
+
                 const sortedPosts = [...this.postCards].sort((a, b) => new Date(a.scheduledDateTime) - new Date(b.scheduledDateTime));
                 const campaignFormData = new FormData();
+
                 campaignFormData.append("linkedin_id", this.selectedAccount.id);
                 campaignFormData.append("name", this.nomCampagne);
                 campaignFormData.append("description", this.descriptionCampagne || '');

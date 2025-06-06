@@ -278,7 +278,10 @@
                             Planifier
                         </button>
 
-                        <button class="bg-transparent text-black border-gray-600 border py-2 px-3 rounded-md text-md fw-semibold">
+                        <button 
+                            @click="savePostDraft"
+                            class="bg-transparent text-black border-gray-600 border py-2 px-3 rounded-md text-md fw-semibold"
+                        >
                             Ajouter au Brouillons
                         </button>
                     </div>
@@ -729,24 +732,12 @@ export default {
             const errors = this.validatePost(this.newPost);
             if (Object.keys(errors).length > 0) {
                 this.validationErrors = errors;
-                this.toast.error("Veuillez corriger les erreurs avant de soumettre.", {
-                    position: "bottom-right",
-                    timeout: 3000,
-                    closeOnClick: true,
-                    pauseOnFocusLoss: true,
-                    pauseOnHover: true,
-                    draggable: true,
-                    draggablePercent: 0.6,
-                    showCloseButtonOnHover: false,
-                    hideProgressBar: false,
-                    closeButton: "button",
-                    icon: true,
-                    rtl: false
-                });
+                this.showErrorToast("Veuillez corriger les erreurs avant de soumettre !");
                 return;
             }
             try {
                 if (!this.isTokenValid()) {
+                    this.showErrorToast("Votre Jeton d'accés LinkedIn est expiré ! Veuillez reconnecter votre compte");
                     return;
                 }
 
@@ -754,10 +745,6 @@ export default {
                 postData.append("linkedin_id", this.selectedAccount.id);
                 postData.append("type", this.newPost.type);
                 postData.append("scheduled_date", this.newPost.scheduledDateTime);
-
-                if (this.selectedPost) {
-                    postData.append("post_id", this.selectedPost.id);
-                }
 
                 switch (this.newPost.type) {
                     case "text":
@@ -837,20 +824,7 @@ export default {
                     this.showErrorToast(error);
                 } else {
                     console.error("Une erreur s'est produite lors de la publication des posts");
-                    this.toast.error(`Une erreur s'est produite lors de la publication des posts`, {
-                        position: "bottom-right",
-                        timeout: 3000,
-                        closeOnClick: true,
-                        pauseOnFocusLoss: true,
-                        pauseOnHover: true,
-                        draggable: true,
-                        draggablePercent: 0.6,
-                        showCloseButtonOnHover: false,
-                        hideProgressBar: false,
-                        closeButton: "button",
-                        icon: true,
-                        rtl: false
-                    });
+                    this.showErrorToast(`Une erreur s'est produite lors de la publication des posts`);
                 }
             }
         },
@@ -875,6 +849,7 @@ export default {
         async updatePost() {
             try {
                 if (!this.isTokenValid()) {
+                    this.showErrorToast("Votre Jeton d'accés LinkedIn est expiré ! Veuillez reconnecter votre compte");
                     return;
                 }
 
@@ -902,20 +877,7 @@ export default {
                 switch (this.newPost.type) {
                     case "text":
                         if (this.newPost.content.text.trim() === '') {
-                            this.toast.error(`Le contenu du post ne peut pas être vide`, {
-                                position: "bottom-right",
-                                timeout: 3000,
-                                closeOnClick: true,
-                                pauseOnFocusLoss: true,
-                                pauseOnHover: true,
-                                draggable: true,
-                                draggablePercent: 0.6,
-                                showCloseButtonOnHover: false,
-                                hideProgressBar: false,
-                                closeButton: "button",
-                                icon: true,
-                                rtl: false
-                            });
+                            this.showErrorToast("Le contenu du post ne peut pas être vide");
                             return;
                         }
                         contentObj.text = this.newPost.content.text.trim();
@@ -989,20 +951,75 @@ export default {
                     errorMessage = error.response.data.message;
                 }
                 
-                this.toast.error(errorMessage, {
-                    position: "bottom-right",
-                    timeout: 3000,
-                    closeOnClick: true,
-                    pauseOnFocusLoss: true,
-                    pauseOnHover: true,
-                    draggable: true,
-                    draggablePercent: 0.6,
-                    showCloseButtonOnHover: false,
-                    hideProgressBar: false,
-                    closeButton: "button",
-                    icon: true,
-                    rtl: false
+                this.showErrorToast(errorMessage);
+            }
+        },
+
+        async savePostDraft() {
+            const errors = this.validatePost(this.newPost);
+            if (Object.keys(errors).length > 0) {
+                this.validationErrors = errors;
+                this.showErrorToast("Veuillez corriger les erreurs avant de soumettre !");
+                return;
+            }
+
+            try {
+                if (!this.isTokenValid()) {
+                    this.showErrorToast("Votre Jeton d'accés LinkedIn est expiré ! Veuillez reconnecter votre compte");
+                    return;
+                }
+
+                const draftData = new FormData();
+
+                draftData.append("linkedin_id", this.selectedAccount.id);
+                draftData.append("type", this.newPost.type);
+                draftData.append("scheduled_date", this.newPost.scheduledDateTime);
+                
+                switch (this.newPost.type) {
+                    case "text":
+                        draftData.append("content[text]", this.newPost.content.text.trim());
+                        break;
+                    case "image":
+                    case "video":
+                        if (this.newPost.content.file) {
+                            draftData.append("content[file]", this.newPost.content.file);
+                            draftData.append("content[original_filename]", this.newPost.content.file.name);
+                        } else if (this.newPost.content.file_path) {
+                            draftData.append("content[file_path]", this.newPost.content.file_path);
+                        }
+                        draftData.append("content[caption]", this.newPost.content.caption.trim());
+                        break;
+                    case "article":
+                        draftData.append("content[url]", this.newPost.content.url);
+                        draftData.append("content[title]", this.newPost.content.title);
+                        draftData.append("content[description]", this.newPost.content.description);
+                        draftData.append("content[caption]", this.newPost.content.caption.trim());
+                        break;
+                    case 'multiimage':
+                        this.newPost.content.files.forEach((file, index) => {
+                            draftData.append(`content[files][${index}]`, file);
+                            draftData.append(`content[original_filenames][${index}]`, file.name);
+                        });
+                        draftData.append("content[caption]", this.newPost.content.caption.trim());
+                        break;
+
+                    default:
+                        throw new Error("Type de publication invalide");
+                }
+
+                const draftResponse = await axios.post('/linkedin/save-draft', draftData, {
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                        "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
+                    },
                 });
+
+                if(draftResponse.status === 200) {
+                    this.toast.success(draftResponse.data.message);
+                }
+            } catch(error) {
+                console.error("Saving Draft Failed", error);
+                this.showErrorToast("Une erreur s'est produite ! Veuillez réessayer");
             }
         },
 

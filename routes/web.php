@@ -89,6 +89,8 @@ Route::post('/linkedin/register-multi-image', [LinkedInController::class, 'regis
 // Other Routes
 Route::delete('/linkedin/delete-post', [App\Http\Controllers\LinkedinPostController::class, 'deletePost'])->name('delete.post');
 Route::put('/linkedin/update-post', [App\Http\Controllers\LinkedinPostController::class, 'updatePost'])->name('update.post');
+Route::post('/linkedin/save-draft', [App\Http\Controllers\LinkedinPostController::class, 'saveAsDraft'])->name('save.post.draft');
+
 Route::get('/linkedin/get-campaign-posts', [App\Http\Controllers\DashboardController::class, 'getPostsForCampaign'])->name('get.posts.campaign');
 Route::get('/linkedin/get-campaign-posts-for-day', [App\Http\Controllers\LinkedinPostController::class, 'getCampaignPostsForDay'])
     ->name('get.posts.campaign.for.day');

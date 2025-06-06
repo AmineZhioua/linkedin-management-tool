@@ -355,7 +355,6 @@ class LinkedInController extends Controller
                 return response()->json(['error' => 'Vous n\'avez pas la permission de créer des posts !'], 403);
             }
 
-            // Check available posts
             $userSubscription = UserSubscription::where('user_id', $user->id)->first();
             
             if (!$userSubscription) {

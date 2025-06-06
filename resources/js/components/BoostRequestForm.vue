@@ -150,20 +150,6 @@ export default {
 
                 } else {
                     await ApiService.requestBoost(this.post, this.nbLikes, this.nbComments, this.message);
-                    this.toast.success("Demande envoyée avec succès !", {
-                        position: "bottom-right",
-                        closeOnClick: true,
-                        pauseOnFocusLoss: true,
-                        pauseOnHover: true,
-                        draggable: true,
-                        draggablePercent: 0.6,
-                        showCloseButtonOnHover: false,
-                        hideProgressBar: false,
-                        timeout: 2000,
-                        closeButton: "button",
-                        icon: true,
-                        rtl: false
-                    });
 
                     setTimeout(() => {
                         window.location.reload();
