@@ -53,7 +53,6 @@
             <!-- Text -->
             <div class="text-center text-black">
                 <h1 class="fw-bold">Connecte-toi !</h1>
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
             </div>
 
             <!-- Google & Apple Buttons -->

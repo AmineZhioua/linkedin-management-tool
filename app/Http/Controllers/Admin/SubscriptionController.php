@@ -180,26 +180,16 @@ class SubscriptionController extends Controller
 
     public function storeCoupon(Request $request)
     {
-        $request->validate([
-            'code' => ['required', 'string', 'max:50', 'unique:coupons,code'],
-            'discount' => ['required', 'numeric', 'min:0'],
-            'type' => ['required', 'in:fixed,percentage'],
-            'expires_at' => ['nullable', 'date', 'after:today'],
+        $validated = $request->validate([
+            'code' => 'required|string|unique:coupons,code',
+            'discount' => 'required|numeric|min:0',
+            'type' => 'required|in:percentage,fixed',
+            'expires_at' => 'nullable|date|after_or_equal:today',
         ]);
-
-        try {
-            Coupon::create([
-                'code' => $request->code,
-                'discount' => $request->discount,
-                'type' => $request->type,
-                'expires_at' => $request->expires_at,
-            ]);
-
-            return redirect()->route('admin.coupons.index')->with('success', 'Coupon created successfully.');
-        } catch (\Exception $e) {
-            Log::error('Failed to create coupon: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Failed to create coupon. Please check the logs.');
-        }
+    
+        Coupon::create($validated);
+    
+        return redirect()->route('admin.coupons.index')->with('success', 'Promo code created successfully.');
     }
 
     public function editCoupon(Coupon $coupon)
@@ -209,26 +199,16 @@ class SubscriptionController extends Controller
 
     public function updateCoupon(Request $request, Coupon $coupon)
     {
-        $request->validate([
-            'code' => ['required', 'string', 'max:50', 'unique:coupons,code,' . $coupon->id],
-            'discount' => ['required', 'numeric', 'min:0'],
-            'type' => ['required', 'in:fixed,percentage'],
-            'expires_at' => ['nullable', 'date', 'after:today'],
+        $validated = $request->validate([
+            'code' => 'required|string|unique:coupons,code,' . $coupon->id,
+            'discount' => 'required|numeric|min:0',
+            'type' => 'required|in:percentage,fixed',
+            'expires_at' => 'nullable|date|after_or_equal:today',
         ]);
-
-        try {
-            $coupon->update([
-                'code' => $request->code,
-                'discount' => $request->discount,
-                'type' => $request->type,
-                'expires_at' => $request->expires_at,
-            ]);
-
-            return redirect()->route('admin.coupons.index')->with('success', 'Coupon updated successfully.');
-        } catch (\Exception $e) {
-            Log::error('Failed to update coupon: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Failed to update coupon. Please check the logs.');
-        }
+    
+        $coupon->update($validated);
+    
+        return redirect()->route('admin.coupons.index')->with('success', 'Promo code updated successfully.');
     }
 
     public function destroyCoupon(Coupon $coupon)

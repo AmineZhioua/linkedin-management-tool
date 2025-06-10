@@ -11,6 +11,9 @@ use App\Http\Controllers\Admin\SubscriptionController as AdminSubscriptionContro
 use App\Http\Controllers\Admin\BoostinteractionController;
 use App\Http\Controllers\EditAccountController;
 use App\Http\Controllers\InfoFormController;
+use App\Http\Controllers\Admin\AdminMetricsController;
+use App\Http\Controllers\Admin\AlertController;
+
 
 Route::get('/', function () {
     return view('welcome');
@@ -169,4 +172,17 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->group(functio
     Route::put('/profile', [UserController::class, 'updateProfile'])->name('admin.profile.update');
     Route::post('/users/suspend', [UserController::class, 'suspend'])->name('admin.users.suspend');
     Route::post('/users/remove-suspension', [UserController::class, 'removeSuspension'])->name('admin.users.remove-suspension');
+    Route::get('/metrics', [AdminMetricsController::class, 'getUserMetrics'])->name('admin.metrics');
+    Route::get('/campaign-metrics', [AdminMetricsController::class, 'getCampaignMetrics'])->name('admin.campaign.metrics');
+    Route::get('/boost-interaction-metrics', [AdminMetricsController::class, 'getBoostInteractionMetrics'])->name('admin.boost.interaction.metrics');
+    Route::get('/post-metrics', [AdminMetricsController::class, 'getPostMetrics'])->name('admin.post.metrics');
+     // Alerts Routes
+     Route::resource('alerts', AlertController::class)->names([
+        'index' => 'admin.alerts.index',
+        'create' => 'admin.alerts.create',
+        'store' => 'admin.alerts.store',
+        'edit' => 'admin.alerts.edit',
+        'update' => 'admin.alerts.update',
+        'destroy' => 'admin.alerts.destroy',
+    ]);
 });

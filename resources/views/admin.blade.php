@@ -63,9 +63,10 @@
                             <span class="app-brand-text demo menu-text fw-bold">Lemonade</span>
                         </a>
                     </div>
+                    
                     <div class="menu-inner-shadow"></div>
                     <ul class="menu-inner py-1">
-                        <li class="menu-item {{ Route::is('admin.dashboard') || Route::is('admin.users.*') || Route::is('admin.subscriptions.*') || Route::is('admin.coupons.*') || Route::is('admin.boostinteractions.*') ? 'active open' : '' }}">
+                    <li class="menu-item {{ Route::is('admin.dashboard') || Route::is('admin.users.*') || Route::is('admin.subscriptions.*') || Route::is('admin.coupons.*') || Route::is('admin.boostinteractions.*') || Route::is('admin.alerts.*') ? 'active open' : '' }}">
                             <a href="javascript:void(0);" class="menu-link menu-toggle">
                                 <i class="menu-icon tf-icons ti ti-smart-home"></i>
                                 <div data-i18n="Dashboards">Dashboard</div>
@@ -96,6 +97,11 @@
                                         <div data-i18n="Boost Interactions">Boost Interactions</div>
                                     </a>
                                 </li>
+                                <li class="menu-item {{ Route::is('admin.alerts.index') || Route::is('admin.alerts.create') || Route::is('admin.alerts.edit') ? 'active' : '' }}">
+                                <a href="{{ route('admin.alerts.index') }}" class="menu-link">
+                                    <div data-i18n="Alerts">Alerts</div>
+                                </a>
+                            </li>
                             </ul>
                         </li>
                     </ul>
@@ -112,107 +118,9 @@
                             </a>
                         </div>
                         <div class="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
-                            <!-- Search -->
-                            <div class="navbar-nav align-items-center">
-                                <div class="nav-item navbar-search-wrapper mb-0">
-                                    <a class="nav-item nav-link search-toggler d-flex align-items-center px-0" href="javascript:void(0);">
-                                        <i class="ti ti-search ti-md me-2"></i>
-                                        <span class="d-none d-md-inline-block text-muted">Search (Ctrl+/)</span>
-                                    </a>
-                                </div>
-                            </div>
-                            <!-- /Search -->
+
                             <ul class="navbar-nav flex-row align-items-center ms-auto">
-                                <!-- Language -->
-                                <li class="nav-item dropdown-language dropdown me-2 me-xl-0">
-                                    <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
-                                        <i class="ti ti-language rounded-circle ti-md"></i>
-                                    </a>
-                                    <ul class="dropdown-menu dropdown-menu-end">
-                                        <li><a class="dropdown-item" href="javascript:void(0);" data-language="en"><span class="align-middle">English</span></a></li>
-                                        <li><a class="dropdown-item" href="javascript:void(0);" data-language="fr"><span class="align-middle">French</span></a></li>
-                                        <li><a class="dropdown-item" href="javascript:void(0);" data-language="de"><span class="align-middle">German</span></a></li>
-                                        <li><a class="dropdown-item" href="javascript:void(0);" data-language="pt"><span class="align-middle">Portuguese</span></a></li>
-                                    </ul>
-                                </li>
-                                <!--/ Language -->
-                                <!-- Style Switcher -->
-                                <li class="nav-item dropdown-style-switcher dropdown me-2 me-xl-0">
-                                    <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
-                                        <i class="ti ti-md"></i>
-                                    </a>
-                                    <ul class="dropdown-menu dropdown-menu-end dropdown-styles">
-                                        <li><a class="dropdown-item" href="javascript:void(0);" data-theme="light"><span class="align-middle"><i class="ti ti-sun me-2"></i>Light</span></a></li>
-                                        <li><a class="dropdown-item" href="javascript:void(0);" data-theme="dark"><span class="align-middle"><i class="ti ti-moon me-2"></i>Dark</span></a></li>
-                                        <li><a class="dropdown-item" href="javascript:void(0);" data-theme="system"><span class="align-middle"><i class="ti ti-device-desktop me-2"></i>System</span></a></li>
-                                    </ul>
-                                </li>
-                                <!-- / Style Switcher-->
-                                <!-- Quick links -->
-                                <li class="nav-item dropdown-shortcuts navbar-dropdown dropdown me-2 me-xl-0">
-                                    <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
-                                        <i class="ti ti-layout-grid-add ti-md"></i>
-                                    </a>
-                                    <div class="dropdown-menu dropdown-menu-end py-0">
-                                        <div class="dropdown-menu-header border-bottom">
-                                            <div class="dropdown-header d-flex align-items-center py-3">
-                                                <h5 class="text-body mb-0 me-auto">Shortcuts</h5>
-                                                <a href="javascript:void(0)" class="dropdown-shortcuts-add text-body" data-bs-toggle="tooltip" data-bs-placement="top" title="Add shortcuts"><i class="ti ti-sm ti-apps"></i></a>
-                                            </div>
-                                        </div>
-                                        <div class="dropdown-shortcuts-list scrollable-container">
-                                            <div class="row row-bordered overflow-visible g-0">
-                                                <div class="dropdown-shortcuts-item col">
-                                                    <span class="dropdown-shortcuts-icon rounded-circle mb-2"><i class="ti ti-calendar fs-4"></i></span>
-                                                    <a href="javascript:void(0)" class="stretched-link">Calendar</a>
-                                                    <small class="text-muted mb-0">Appointments</small>
-                                                </div>
-                                                <div class="dropdown-shortcuts-item col">
-                                                    <span class="dropdown-shortcuts-icon rounded-circle mb-2"><i class="ti ti-file-invoice fs-4"></i></span>
-                                                    <a href="javascript:void(0)" class="stretched-link">Invoice App</a>
-                                                    <small class="text-muted mb-0">Manage Accounts</small>
-                                                </div>
-                                            </div>
-                                            <div class="row row-bordered overflow-visible g-0">
-                                                <div class="dropdown-shortcuts-item col">
-                                                    <span class="dropdown-shortcuts-icon rounded-circle mb-2"><i class="ti ti-users fs-4"></i></span>
-                                                    <a href="{{ route('admin.users.index') }}" class="stretched-link">User App</a>
-                                                    <small class="text-muted mb-0">Manage Users</small>
-                                                </div>
-                                                <div class="dropdown-shortcuts-item col">
-                                                    <span class="dropdown-shortcuts-icon rounded-circle mb-2"><i class="ti ti-lock fs-4"></i></span>
-                                                    <a href="javascript:void(0)" class="stretched-link">Role Management</a>
-                                                    <small class="text-muted mb-0">Permission</small>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </li>
-                                <!-- Quick links -->
-                                <!-- Notification -->
-                                <li class="nav-item dropdown-notifications navbar-dropdown dropdown me-3 me-xl-1">
-                                    <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
-                                        <i class="ti ti-bell ti-md"></i>
-                                        <span class="badge bg-danger rounded-pill badge-notifications">0</span>
-                                    </a>
-                                    <ul class="dropdown-menu dropdown-menu-end py-0">
-                                        <li class="dropdown-menu-header border-bottom">
-                                            <div class="dropdown-header d-flex align-items-center py-3">
-                                                <h5 class="text-body mb-0 me-auto">Notification</h5>
-                                                <a href="javascript:void(0)" class="dropdown-notifications-all text-body" data-bs-toggle="tooltip" data-bs-placement="top" title="Mark all as read"><i class="ti ti-mail-opened fs-4"></i></a>
-                                            </div>
-                                        </li>
-                                        <li class="dropdown-notifications-list scrollable-container">
-                                            <ul class="list-group list-group-flush"></ul>
-                                        </li>
-                                        <li class="dropdown-menu-footer border-top">
-                                            <a href="javascript:void(0);" class="dropdown-item d-flex justify-content-center text-primary p-2 h-px-40 mb-1 align-items-center">
-                                                View all notifications
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </li>
-                                <!--/ Notification -->
+                         
                                 <!-- User -->
                                 <li class="nav-item navbar-dropdown dropdown-user dropdown">
                                     <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
@@ -273,187 +181,200 @@
                             @endif
 
                             @section('dashboard')
-                                @if (Route::is('admin.dashboard'))
-                                    <div class="row">
-                                        <!-- Active Users Card -->
-                                        <div class="col-12 col-xl-6 mb-4">
-                                            <div class="card h-100">
-                                                <div class="card-header d-flex align-items-center justify-content-between">
-                                                    <h5 class="card-title m-0 me-2">Active Users (Last Hour)</h5>
-                                                    <div class="dropdown">
-                                                        <button class="btn p-0" type="button" id="activeUsers" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                                            <i class="ti ti-dots-vertical"></i>
-                                                        </button>
-                                                        <div class="dropdown-menu dropdown-menu-end" aria-labelledby="activeUsers">
-                                                            <a class="dropdown-item" href="javascript:void(0);">Last 24 Hours</a>
-                                                            <a class="dropdown-item" href="javascript:void(0);">Last Week</a>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="card-body row g-3">
-                                                    <div class="col-md-6">
-                                                        <div id="activeUsersChart"></div>
-                                                    </div>
-                                                    <div class="col-md-6 d-flex justify-content-around align-items-center">
-                                                        <div>
-                                                            @php
-                                                                $activeUsers = \App\Models\User::getActiveUsersCount();
-                                                                $totalUsers = \App\Models\User::count();
-                                                                $activePercentage = $totalUsers > 0 ? round(($activeUsers / $totalUsers) * 100, 2) : 0;
-                                                                $inactivePercentage = $totalUsers > 0 ? round(100 - $activePercentage, 2) : 0;
-                                                            @endphp
-                                                            <div class="d-flex align-items-baseline my-3">
-                                                                <span class="text-primary me-2"><i class="ti ti-circle-filled fs-6"></i></span>
-                                                                <div>
-                                                                    <p class="mb-2">Active Users</p>
-                                                                    <h5>{{ $activePercentage }}%</h5>
-                                                                </div>
-                                                            </div>
-                                                            <div class="d-flex align-items-baseline my-3">
-                                                                <span class="text-secondary me-2"><i class="ti ti-circle-filled fs-6"></i></span>
-                                                                <div>
-                                                                    <p class="mb-2">Inactive Users</p>
-                                                                    <h5>{{ $inactivePercentage }}%</h5>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
+  @if (Route::is('admin.dashboard'))
+    <div class="row">
+        <!-- User Metrics Card -->
+        <div class="col-12 col-xl-3 mb-4">
+            <div class="card h-100">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <h5 class="card-title m-0 me-2">User Metrics</h5>
+                    <div class="dropdown">
+                        <button class="btn p-0" type="button" id="userMetricsFilter" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="ti ti-dots-vertical"></i>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-end" aria-labelledby="userMetricsFilter">
+                            <a class="dropdown-item" href="javascript:void(0);" data-filter="suspended">Suspendeded Users/a>
+                            <a class="dropdown-item" href="javascript:void(0);" data-filter="email_verified">Verified Users</a>
+                            <a class="dropdown-item" href="javascript:void(0);" data-filter="active_last_hour">Active Users Last </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="userMetricsChart"></div>
+                    <div class="text-center mt-3" id="userMetricsSummary"></div>
+                </div>
+            </div>
+        </div>
 
-                                        <!-- Campaigns Created Today Card -->
-                                        <div class="col-12 col-xl-6 mb-4">
-                                            <div class="card h-100">
-                                                <div class="card-header d-flex align-items-center justify-content-between">
-                                                    <h5 class="card-title m-0 me-2">Campaigns Created Today</h5>
-                                                    <div class="dropdown">
-                                                        <button class="btn p-0" type="button" id="campaigns" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                                            <i class="ti ti-dots-vertical"></i>
-                                                        </button>
-                                                        <div class="dropdown-menu dropdown-menu-end" aria-labelledby="campaigns">
-                                                            <a class="dropdown-item" href="javascript:void(0);">This Week</a>
-                                                            <a class="dropdown-item" href="javascript:void(0);">This Month</a>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="card-body row g-3">
-                                                    <div class="col-md-6">
-                                                        <div id="campaignsChart"></div>
-                                                    </div>
-                                                    <div class="col-md-6 d-flex justify-content-around align-items-center">
-                                                        <div>
-                                                            @php
-                                                                $campaignsToday = \App\Models\LinkedinCampaign::getCampaignsCreatedTodayCount();
-                                                                $totalCampaigns = \App\Models\LinkedinCampaign::count();
-                                                                $todayPercentage = $totalCampaigns > 0 ? round(($campaignsToday / $totalCampaigns) * 100, 2) : 0;
-                                                                $otherPercentage = $totalCampaigns > 0 ? round(100 - $todayPercentage, 2) : 0;
-                                                            @endphp
-                                                            <div class="d-flex align-items-baseline my-3">
-                                                                <span class="text-success me-2"><i class="ti ti-circle-filled fs-6"></i></span>
-                                                                <div>
-                                                                    <p class="mb-2">Campaigns Today</p>
-                                                                    <h5>{{ $todayPercentage }}%</h5>
-                                                                </div>
-                                                            </div>
-                                                            <div class="d-flex align-items-baseline my-3">
-                                                                <span class="text-warning me-2"><i class="ti ti-circle-filled fs-6"></i></span>
-                                                                <div>
-                                                                    <p class="mb-2">Other Campaigns</p>
-                                                                    <h5>{{ $otherPercentage }}%</h5>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+        <!-- Campaign Metrics Card -->
+        <div class="col-12 col-xl-3 mb-4">
+            <div class="card h-100">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <h5 class="card-title m-0 me-2">Campaign Metrics</h5>
+                </div>
+                <div class="card-body">
+                    <div id="campaignMetricsChart"></div>
+                    <div class="text-center mt-3" id="campaignMetricsSummary"></div>
+                </div>
+            </div>
+        </div>
 
-                                    <!-- ApexCharts JavaScript -->
-                                    <script>
-                                        document.addEventListener('DOMContentLoaded', function () {
-                                            // Active Users Chart
-                                            var activeUsersOptions = {
-                                                chart: {
-                                                    type: 'bar',
-                                                    height: 200,
-                                                    stacked: false,
-                                                    toolbar: { show: false }
-                                                },
-                                                plotOptions: {
-                                                    bar: {
-                                                        horizontal: true
-                                                    }
-                                                },
-                                                series: [{
-                                                    data: [{{ $activePercentage }}, {{ $inactivePercentage }}]
-                                                }],
-                                                xaxis: {
-                                                    categories: ['Active Users', 'Inactive Users'],
-                                                    labels: {
-                                                        formatter: function (val) {
-                                                            return val + '%';
-                                                        }
-                                                    }
-                                                },
-                                                colors: ['#7367F0', '#666EA8'],
-                                                tooltip: {
-                                                    y: {
-                                                        formatter: function (val) {
-                                                            return val + '%';
-                                                        }
-                                                    }
-                                                },
-                                                dataLabels: {
-                                                    enabled: false
-                                                }
-                                            };
-                                            var activeUsersChart = new ApexCharts(document.querySelector("#activeUsersChart"), activeUsersOptions);
-                                            activeUsersChart.render();
+        <!-- Boost Interaction Metrics Card -->
+        <div class="col-12 col-xl-3 mb-4">
+            <div class="card h-100">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <h5 class="card-title m-0 me-2">Boost Interaction Metrics</h5>
+                </div>
+                <div class="card-body">
+                    <div id="boostInteractionMetricsChart"></div>
+                    <div class="text-center mt-3" id="boostInteractionMetricsSummary"></div>
+                </div>
+            </div>
+        </div>
 
-                                            // Campaigns Chart
-                                            var campaignsOptions = {
-                                                chart: {
-                                                    type: 'bar',
-                                                    height: 200,
-                                                    stacked: false,
-                                                    toolbar: { show: false }
-                                                },
-                                                plotOptions: {
-                                                    bar: {
-                                                        horizontal: true
-                                                    }
-                                                },
-                                                series: [{
-                                                    data: [{{ $todayPercentage }}, {{ $otherPercentage }}]
-                                                }],
-                                                xaxis: {
-                                                    categories: ['Campaigns Today', 'Other Campaigns'],
-                                                    labels: {
-                                                        formatter: function (val) {
-                                                            return val + '%';
-                                                        }
-                                                    }
-                                                },
-                                                colors: ['#28C76F', '#FF9F43'],
-                                                tooltip: {
-                                                    y: {
-                                                        formatter: function (val) {
-                                                            return val + '%';
-                                                        }
-                                                    }
-                                                },
-                                                dataLabels: {
-                                                    enabled: false
-                                                }
-                                            };
-                                            var campaignsChart = new ApexCharts(document.querySelector("#campaignsChart"), campaignsOptions);
-                                            campaignsChart.render();
-                                        });
-                                    </script>
-                                @endif
-                            @show
+        <!-- Post Metrics Card -->
+        <div class="col-12 col-xl-3 mb-4">
+            <div class="card h-100">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <h5 class="card-title m-0 me-2">Post Metrics</h5>
+                </div>
+                <div class="card-body">
+                    <div id="postMetricsChart"></div>
+                    <div class="text-center mt-3" id="postMetricsSummary"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ApexCharts JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Function to initialize a donut chart
+            function initializeChart(chartId, summaryId, endpoint, unit = 'items') {
+                var options = {
+                    chart: {
+                        type: 'donut',
+                        height: 250,
+                        toolbar: { show: false }
+                    },
+                    series: [],
+                    labels: [],
+                    colors: ['#7367F0', '#FF9F43', '#28C76F'], // Adjust colors as needed
+                    dataLabels: {
+                        enabled: true,
+                        formatter: function (val, opts) {
+                            return opts.w.config.series[opts.seriesIndex];
+                        }
+                    },
+                    legend: {
+                        show: true,
+                        position: 'bottom'
+                    },
+                    tooltip: {
+                        y: {
+                            formatter: function (val) {
+                                return val + ' ' + unit;
+                            }
+                        }
+                    }
+                };
+                var chart = new ApexCharts(document.querySelector("#" + chartId), options);
+                chart.render();
+
+                // Fetch and update chart data
+                fetch(endpoint, {
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    chart.updateOptions({
+                        series: data.data,
+                        labels: data.labels
+                    });
+                    let summary = '';
+                    data.labels.forEach((label, index) => {
+                        summary += `${label}: ${data.data[index]}<br>`;
+                    });
+                    document.getElementById(summaryId).innerHTML = summary;
+                })
+                .catch(error => console.error('Error fetching metrics:', error));
+            }
+
+            // Initialize User Metrics Chart with filter
+            var userMetricsOptions = {
+                chart: {
+                    type: 'donut',
+                    height: 250,
+                    toolbar: { show: false }
+                },
+                series: [],
+                labels: [],
+                colors: ['#7367F0', '#FF9F43'],
+                dataLabels: {
+                    enabled: true,
+                    formatter: function (val, opts) {
+                        return opts.w.config.series[opts.seriesIndex];
+                    }
+                },
+                legend: {
+                    show: true,
+                    position: 'bottom'
+                },
+                tooltip: {
+                    y: {
+                        formatter: function (val) {
+                            return val + ' users';
+                        }
+                    }
+                }
+            };
+            var userMetricsChart = new ApexCharts(document.querySelector("#userMetricsChart"), userMetricsOptions);
+            userMetricsChart.render();
+
+            function updateUserChart(filter = 'suspended') {
+                fetch('{{ route('admin.metrics') }}?filter=' + filter, {
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    userMetricsChart.updateOptions({
+                        series: data.data,
+                        labels: data.labels
+                    });
+                    let summary = '';
+                    data.labels.forEach((label, index) => {
+                        summary += `${label}: ${data.data[index]} users<br>`;
+                    });
+                    document.getElementById('userMetricsSummary').innerHTML = summary;
+                })
+                .catch(error => console.error('Error fetching user metrics:', error));
+            }
+
+            // Initial user chart load
+            updateUserChart();
+
+            // Handle user filter dropdown clicks
+            document.querySelectorAll('#userMetricsFilter ~ .dropdown-menu .dropdown-item').forEach(item => {
+                item.addEventListener('click', function () {
+                    const filter = this.getAttribute('data-filter');
+                    updateUserChart(filter);
+                });
+            });
+
+            // Initialize other charts
+            initializeChart('campaignMetricsChart', 'campaignMetricsSummary', '{{ route('admin.campaign.metrics') }}', 'campaigns');
+            initializeChart('boostInteractionMetricsChart', 'boostInteractionMetricsSummary', '{{ route('admin.boost.interaction.metrics') }}', 'interactions');
+            initializeChart('postMetricsChart', 'postMetricsSummary', '{{ route('admin.post.metrics') }}', 'posts');
+        });
+    </script>
+@endif
+@show
 
     @section('users-index')
         @if (Route::is('admin.users.index'))
@@ -1236,129 +1157,161 @@
                             @show
 
                             @section('coupons-index')
-                                @if (Route::is('admin.coupons.index'))
-                                    <div class="card">
-                                        <div class="card-header d-flex align-items-center justify-content-between">
-                                            <h5 class="card-title m-0 me-2">Promo Codes</h5>
-                                            <a href="{{ route('admin.coupons.create') }}" class="btn btn-primary">Create Promo Code</a>
-                                        </div>
-                                        <div class="table-responsive">
-                                            <table class="table table-borderless border-top">
-                                                <thead class="border-bottom">
-                                                    <tr>
-                                                        <th>ID</th>
-                                                        <th>Code</th>
-                                                        <th>Discount (%)</th>
-                                                        <th>Expiration Date</th>
-                                                        <th>Actions</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    @foreach ($coupons ?? [] as $coupon)
-                                                        <tr>
-                                                            <td>{{ $coupon->id }}</td>
-                                                            <td>{{ $coupon->code }}</td>
-                                                            <td>{{ number_format($coupon->discount, 2) }}</td>
-                                                            <td>{{ $coupon->expires_at ? $coupon->expires_at->format('Y-m-d') : 'N/A' }}</td>
-                                                            <td>
-                                                                <a href="{{ route('admin.coupons.edit', $coupon) }}" class="btn btn-sm btn-outline-primary me-2">Edit</a>
-                                                                <form action="{{ route('admin.coupons.destroy', $coupon) }}" method="POST" style="display: inline;">
-                                                                    @csrf
-                                                                    @method('DELETE')
-                                                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure?')">Delete</button>
-                                                                </form>
-                                                            </td>
-                                                        </tr>
-                                                    @endforeach
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-                                @endif
-                            @show
+    @if (Route::is('admin.coupons.index'))
+        <div class="card">
+            <div class="card-header d-flex align-items-center justify-content-between">
+                <h5 class="card-title m-0 me-2">Promo Codes</h5>
+                <a href="{{ route('admin.coupons.create') }}" class="btn btn-primary">Create Promo Code</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-borderless border-top" id="couponsTable">
+                    <thead class="border-bottom">
+                        <tr>
+                            <th>ID</th>
+                            <th>Code</th>
+                            <th>Discount (%)</th>
+                            <th>Expiration Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($coupons ?? [] as $coupon)
+                            <tr>
+                                <td>{{ $coupon->id }}</td>
+                                <td>{{ $coupon->code }}</td>
+                                <td>{{ number_format($coupon->discount, 2) }}</td>
+                                <td>{{ $coupon->expires_at ? $coupon->expires_at->format('Y-m-d') : 'N/A' }}</td>
+                                <td>
+                                    <a href="{{ route('admin.coupons.edit', $coupon) }}" class="btn btn-sm btn-outline-primary me-2">Edit</a>
+                                    <form action="{{ route('admin.coupons.destroy', $coupon) }}" method="POST" style="display: inline;">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure?')">Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                $('#couponsTable').DataTable({
+                    dom: 'frtip',
+                    pageLength: 10,
+                    ordering: true,
+                    searching: true,
+                    paging: true,
+                    info: true
+                });
+            });
+        </script>
+    @endif
+@show
 
-                            @section('coupons-create')
-                                @if (Route::is('admin.coupons.create'))
-                                    <div class="card">
-                                        <div class="card-header">
-                                            <h5 class="card-title mb-0">Create Promo Code</h5>
-                                        </div>
-                                        <div class="card-body">
-                                            <form action="{{ route('admin.coupons.store') }}" method="POST">
-                                                @csrf
-                                                <div class="mb-3">
-                                                    <label for="code" class="form-label">Code</label>
-                                                    <input type="text" class="form-control" name="code" id="code" required>
-                                                    @error('code')
-                                                        <div class="text-danger mt-1">{{ $message }}</div>
-                                                    @enderror
-                                                </div>
-                                                <div class="mb-3">
-                                                    <label for="discount" class="form-label">Discount (%)</label>
-                                                    <input type="number" step="0.01" class="form-control" name="discount" id="discount" required>
-                                                    @error('discount')
-                                                        <div class="text-danger mt-1">{{ $message }}</div>
-                                                    @enderror
-                                                </div>
-                                                <div class="mb-3">
-                                                    <label for="expires_at" class="form-label">Expiration Date</label>
-                                                    <input type="date" class="form-control" name="expires_at" id="expires_at">
-                                                    @error('expires_at')
-                                                        <div class="text-danger mt-1">{{ $message }}</div>
-                                                    @enderror
-                                                </div>
-                                                <div>
-                                                    <button type="submit" class="btn btn-primary">Create</button>
-                                                    <a href="{{ route('admin.coupons.index') }}" class="btn btn-link">Cancel</a>
-                                                </div>
-                                            </form>
-                                        </div>
-                                    </div>
-                                @endif
-                            @show
+@section('coupons-create')
+    @if (Route::is('admin.coupons.create'))
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Create Promo Code</h5>
+            </div>
+            <div class="card-body">
+                <form action="{{ route('admin.coupons.store') }}" method="POST">
+                    @csrf
+                    <div class="mb-3">
+                        <label for="code" class="form-label">Code</label>
+                        <input type="text" class="form-control" name="code" id="code" value="{{ old('code') }}" required>
+                        @error('code')
+                            <div class="text-danger mt-1">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div class="mb-3">
+                        <label for="discount" class="form-label">Discount (%)</label>
+                        <input type="number" step="0.01" class="form-control" name="discount" id="discount" value="{{ old('discount') }}" required>
+                        @error('discount')
+                            <div class="text-danger mt-1">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div class="mb-3">
+                        <label for="type" class="form-label">Type</label>
+                        <select class="form-select" name="type" id="type" required>
+                            <option value="percentage" {{ old('type') == 'percentage' ? 'selected' : '' }}>Percentage</option>
+                            <option value="fixed" {{ old('type') == 'fixed' ? 'selected' : '' }}>Fixed</option>
+                        </select>
+                        @error('type')
+                            <div class="text-danger mt-1">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div class="mb-3">
+                        <label for="expires_at" class="form-label">Expiration Date</label>
+                        <input type="date" class="form-control" name="expires_at" id="expires_at" value="{{ old('expires_at') }}">
+                        @error('expires_at')
+                            <div class="text-danger mt-1">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div>
+                        <button type="submit" class="btn btn-primary">Create</button>
+                        <a href="{{ route('admin.coupons.index') }}" class="btn btn-link">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    @endif
+@show
 
-                            @section('coupons-edit')
-                                @if (Route::is('admin.coupons.edit'))
-                                    <div class="card">
-                                        <div class="card-header">
-                                            <h5 class="card-title mb-0">Edit Promo Code</h5>
-                                        </div>
-                                        <div class="card-body">
-                                            <form action="{{ route('admin.coupons.update', $coupon) }}" method="POST">
-                                                @csrf
-                                                @method('PUT')
-                                                <div class="mb-3">
-                                                    <label for="code" class="form-label">Code</label>
-                                                    <input type="text" class="form-control" name="code" id="code" value="{{ old('code', $coupon->code) }}" required>
-                                                    @error('code')
-                                                        <div class="text-danger mt-1">{{ $message }}</div>
-                                                    @enderror
-                                                </div>
-                                                <div class="mb-3">
-                                                    <label for="discount" class="form-label">Discount (%)</label>
-                                                    <input type="number" step="0.01" class="form-control" name="discount" id="discount" value="{{ old('discount', $coupon->discount) }}" required>
-                                                    @error('discount')
-                                                        <div class="text-danger mt-1">{{ $message }}</div>
-                                                    @enderror
-                                                </div>
-                                                <div class="mb-3">
-                                                    <label for="expires_at" class="form-label">Expiration Date</label>
-                                                    <input type="date" class="form-control" name="expires_at" id="expires_at" value="{{ old('expires_at', $coupon->expires_at ? $coupon->expires_at->format('Y-m-d') : '') }}">
-                                                    @error('expires_at')
-                                                        <div class="text-danger mt-1">{{ $message }}</div>
-                                                    @enderror
-                                                </div>
-                                                <div>
-                                                    <button type="submit" class="btn btn-primary">Update</button>
-                                                    <a href="{{ route('admin.coupons.index') }}" class="btn btn-link">Cancel</a>
-                                                </div>
-                                            </form>
-                                        </div>
-                                    </div>
-                                @endif
-                            @show
+@section('coupons-edit')
+    @if (Route::is('admin.coupons.edit'))
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Edit Promo Code</h5>
+            </div>
+            <div class="card-body">
+                <form action="{{ route('admin.coupons.update', $coupon) }}" method="POST">
+                    @csrf
+                    @method('PUT')
+                    <div class="mb-3">
+                        <label for="code" class="form-label">Code</label>
+                        <input type="text" class="form-control" name="code" id="code" value="{{ old('code', $coupon->code) }}" required>
+                        @error('code')
+                            <div class="text-danger mt-1">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div class="mb-3">
+                        <label for="discount" class="form-label">Discount (%)</label>
+                        <input type="number" step="0.01" class="form-control" name="discount" id="discount" value="{{ old('discount', $coupon->discount) }}" required>
+                        @error('discount')
+                            <div class="text-danger mt-1">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div class="mb-3">
+                        <label for="type" class="form-label">Type</label>
+                        <select class="form-select" name="type" id="type" required>
+                            <option value="percentage" {{ old('type', $coupon->type) == 'percentage' ? 'selected' : '' }}>Percentage</option>
+                            <option value="fixed" {{ old('type', $coupon->type) == 'fixed' ? 'selected' : '' }}>Fixed</option>
+                        </select>
+                        @error('type')
+                            <div class="text-danger mt-1">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div class="mb-3">
+                        <label for="expires_at" class="form-label">Expiration Date</label>
+                        <input type="date" class="form-control" name="expires_at" id="expires_at" value="{{ old('expires_at', $coupon->expires_at ? $coupon->expires_at->format('Y-m-d') : '') }}">
+                        @error('expires_at')
+                            <div class="text-danger mt-1">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div>
+                        <button type="submit" class="btn btn-primary">Update</button>
+                        <a href="{{ route('admin.coupons.index') }}" class="btn btn-link">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    @endif
+@show
 
-                            @section('boostinteractions-index')
+@section('boostinteractions-index')
     @if (Route::is('admin.boostinteractions.index'))
         <div class="card">
             <div class="card-header">
@@ -1370,7 +1323,12 @@
                         <tr>
                             <th>ID</th>
                             <th>User</th>
+                            <th>LinkedIn User</th>
+                            <th>Post ID</th>
                             <th>Post URL</th>
+                            <th>Likes</th>
+                            <th>Comments</th>
+                            <th>Message</th>
                             <th>Status</th>
                             <th>Created At</th>
                             <th>Actions</th>
@@ -1381,27 +1339,32 @@
                             <tr>
                                 <td>{{ $boostInteraction->id }}</td>
                                 <td>{{ $boostInteraction->user->name ?? 'N/A' }}</td>
+                                <td>{{ $boostInteraction->linkedinUser->name ?? 'N/A' }}</td>
+                                <td>{{ $boostInteraction->post_id }}</td>
                                 <td>
                                     <a href="{{ $boostInteraction->post_url }}" target="_blank">{{ Str::limit($boostInteraction->post_url, 30) }}</a>
                                 </td>
+                                <td>{{ $boostInteraction->nb_likes }}</td>
+                                <td>{{ $boostInteraction->nb_comments }}</td>
+                                <td>{{ Str::limit($boostInteraction->message, 30) ?? 'N/A' }}</td>
                                 <td>
                                     <span class="badge {{ $boostInteraction->status == 'pending' ? 'bg-warning' : ($boostInteraction->status == 'accepted' ? 'bg-success' : 'bg-danger') }}">
                                         {{ ucfirst($boostInteraction->status) }}
                                     </span>
                                 </td>
-                                <td>{{ $boostInteraction->created_at->format('Y-m-d H:i:s') }}</td>
+                                <td>{{ $boostInteraction->created_at ? $boostInteraction->created_at->format('Y-m-d H:i:s') : 'N/A' }}</td>
                                 <td>
                                     @if ($boostInteraction->status == 'pending')
                                         <form action="{{ route('admin.boostinteractions.update', $boostInteraction) }}" method="POST" style="display: inline;">
                                             @csrf
                                             @method('PUT')
-                                            <input type="hidden" name="status" value="accepted"> <!-- Changed from approved -->
+                                            <input type="hidden" name="status" value="accepted">
                                             <button type="submit" class="btn btn-sm btn-outline-success me-2">Accept</button>
                                         </form>
                                         <form action="{{ route('admin.boostinteractions.update', $boostInteraction) }}" method="POST" style="display: inline;">
                                             @csrf
                                             @method('PUT')
-                                            <input type="hidden" name="status" value="declined"> <!-- Changed from rejected -->
+                                            <input type="hidden" name="status" value="declined">
                                             <button type="submit" class="btn btn-sm btn-outline-danger me-2">Decline</button>
                                         </form>
                                     @endif
@@ -1418,6 +1381,159 @@
                 <div class="mt-3">
                     {{ $boostInteractions->links() }}
                 </div>
+            </div>
+        </div>
+    @endif
+@show
+   <!-- Alerts Index Section -->
+   @section('alerts-index')
+    @if (Route::is('admin.alerts.index'))
+        <div class="card">
+            <div class="card-header d-flex align-items-center justify-content-between">
+                <h5 class="card-title m-0 me-2">Alerts</h5>
+                <div class="d-flex align-items-center">
+                    <form action="{{ route('admin.alerts.index') }}" method="GET" class="d-flex">
+                        <input type="text" class="form-control me-2" name="search" placeholder="Search by message..." value="{{ request('search') }}" style="width: 200px;">
+                        <button type="submit" class="btn btn-outline-primary me-2">Search</button>
+                        <a href="{{ route('admin.alerts.index') }}" class="btn btn-outline-secondary me-2">Clear</a>
+                    </form>
+                    <a href="{{ route('admin.alerts.create') }}" class="btn btn-primary">Create Alert</a>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-borderless border-top" id="alertsTable">
+                    <thead class="border-bottom">
+                        <tr>
+                            <th>ID</th>
+                            <th>Message</th>
+                            <th>Start At</th>
+                            <th>End At</th>
+                            <th>Created At</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($alerts as $alert)
+                            <tr>
+                                <td>{{ $alert->id }}</td>
+                                <td>{{ Str::limit($alert->message, 50) }}</td>
+                                <td>{{ $alert->start_at ? $alert->start_at->format('Y-m-d H:i:s') : 'N/A' }}</td>
+                                <td>{{ $alert->end_at ? $alert->end_at->format('Y-m-d H:i:s') : 'N/A' }}</td>
+                                <td>{{ $alert->created_at->format('Y-m-d H:i:s') }}</td>
+                                <td>
+                                    <a href="{{ route('admin.alerts.edit', $alert) }}" class="btn btn-sm btn-outline-primary me-2">Edit</a>
+                                    <form action="{{ route('admin.alerts.destroy', $alert) }}" method="POST" style="display: inline;">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure?')">Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="6" class="text-center">No alerts found.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+                <div class="mt-3">
+                    {{ $alerts->appends(['search' => request('search')])->links('vendor.pagination.bootstrap-5') }}
+                </div>
+            </div>
+        </div>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                $('#alertsTable').DataTable({
+                    dom: 'frtip',
+                    pageLength: 10,
+                    ordering: false,
+                    searching: false,
+                    paging: false,
+                    info: false
+                });
+            });
+        </script>
+    @endif
+@show
+
+                        <!-- Alerts Create Section -->
+                        @section('alerts-create')
+    @if (Route::is('admin.alerts.create'))
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Create Alert</h5>
+            </div>
+            <div class="card-body">
+                <form action="{{ route('admin.alerts.store') }}" method="POST">
+                    @csrf
+                    <div class="mb-3">
+                        <label for="message" class="form-label">Message</label>
+                        <textarea class="form-control" name="message" id="message" rows="5" required>{{ old('message') }}</textarea>
+                        @error('message')
+                            <div class="text-danger mt-1">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div class="mb-3">
+                        <label for="start_at" class="form-label">Start At</label>
+                        <input type="datetime-local" class="form-control" name="start_at" id="start_at" value="{{ old('start_at') }}">
+                        @error('start_at')
+                            <div class="text-danger mt-1">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div class="mb-3">
+                        <label for="end_at" class="form-label">End At</label>
+                        <input type="datetime-local" class="form-control" name="end_at" id="end_at" value="{{ old('end_at') }}">
+                        @error('end_at')
+                            <div class="text-danger mt-1">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div>
+                        <button type="submit" class="btn btn-primary">Create</button>
+                        <a href="{{ route('admin.alerts.index') }}" class="btn btn-link">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    @endif
+@show
+
+                        <!-- Alerts Edit Section -->
+                        @section('alerts-edit')
+    @if (Route::is('admin.alerts.edit'))
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Edit Alert</h5>
+            </div>
+            <div class="card-body">
+                <form action="{{ route('admin.alerts.update', $alert) }}" method="POST">
+                    @csrf
+                    @method('PUT')
+                    <div class="mb-3">
+                        <label for="message" class="form-label">Message</label>
+                        <textarea class="form-control" name="message" id="message" rows="5" required>{{ old('message', $alert->message) }}</textarea>
+                        @error('message')
+                            <div class="text-danger mt-1">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div class="mb-3">
+                        <label for="start_at" class="form-label">Start At</label>
+                        <input type="datetime-local" class="form-control" name="start_at" id="start_at" value="{{ old('start_at', $alert->start_at ? $alert->start_at->format('Y-m-d\TH:i') : '') }}">
+                        @error('start_at')
+                            <div class="text-danger mt-1">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div class="mb-3">
+                        <label for="end_at" class="form-label">End At</label>
+                        <input type="datetime-local" class="form-control" name="end_at" id="end_at" value="{{ old('end_at', $alert->end_at ? $alert->end_at->format('Y-m-d\TH:i') : '') }}">
+                        @error('end_at')
+                            <div class="text-danger mt-1">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div>
+                        <button type="submit" class="btn btn-primary">Update</button>
+                        <a href="{{ route('admin.alerts.index') }}" class="btn btn-link">Cancel</a>
+                    </div>
+                </form>
             </div>
         </div>
     @endif
@@ -1456,6 +1572,7 @@
         <script src="{{ asset('assets/vendor/libs/typeahead-js/typeahead.js') }}"></script>
         <script src="{{ asset('assets/vendor/js/menu.js') }}"></script>
 
-        <!-- Vendors JS -->
-        <script src="{{ asset('assets/vendor/libs/moment/moment.js') }}"></script>
-        <script src="{{ asset('assets/vendor/libs/datatables-bs
+ <!-- Vendors JS -->
+<script src="{{ asset('assets/vendor/libs/moment/moment.js') }}"></script>
+<script src="{{ asset('assets/vendor/libs/apex-charts/apexcharts.js') }}"></script>
+<script src="{{ asset('assets/vendor/libs/datatables-bs5/datatables.bootstrap5.js') }}"></script>
