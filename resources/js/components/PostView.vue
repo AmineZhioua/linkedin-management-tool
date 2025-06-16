@@ -34,48 +34,110 @@
                         </svg>
                     </div>
                 </div>
-
                 <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" class="cursor-pointer" fill="#585a5d">
                     <path d="M240-400q-33 0-56.5-23.5T160-480q0-33 23.5-56.5T240-560q33 0 56.5 23.5T320-480q0 33-23.5 56.5T240-400Zm240 0q-33 0-56.5-23.5T400-480q0-33 23.5-56.5T480-560q33 0 56.5 23.5T560-480q0 33-23.5 56.5T480-400Zm240 0q-33 0-56.5-23.5T640-480q0-33 23.5-56.5T720-560q33 0 56.5 23.5T800-480q0 33-23.5 56.5T720-400Z"/>
                 </svg>
             </div>
-
+            
             <!-- Preview Content -->
             <!-- Text Type Preview -->
-            <div v-if="post.type === 'text'" class="px-2 my-2 max-h-[300px] overflow-y-scroll">
-                <p class="mb-0 text-black">{{ parsedContent.text }}</p>
+            <div v-if="post.type === 'text'" class="px-2 my-2 max-h-[300px]">
+                <ScrollPanel v-if="parsedContent.caption || parsedContent.text" style="max-width: 700px; height: 200px;" class="p-2 rounded-lg">
+                        <p class="mb-0 text-black">
+                            {{ parsedContent.caption || parsedContent.text }}
+                        </p>
+                </ScrollPanel>
+                <p v-else class="mb-0 text-gray-500">Aucun contenu disponible</p>
             </div>
 
             <!-- Image Type Preview -->
             <div v-if="post.type === 'image'" class="w-full h-auto">
-                <p class="my-2 px-2">{{ parsedContent.caption }}</p>
+                <ScrollPanel v-if="parsedContent.caption" style="max-width: 700px; height: 200px;" class="p-2 rounded-lg">
+                    <p class="my-2 px-2">{{ parsedContent.caption }}</p>
+                </ScrollPanel>
                 <img 
+                    v-if="parsedContent.file_path"
                     :src="getMediaUrl(parsedContent.file_path)" 
                     class="object-fill w-full" 
                     alt="Image Preview"
                 />
+                <div v-else class="px-2 py-4 text-gray-500 text-center">
+                    Aucune image disponible
+                </div>
             </div>
 
             <!-- Video Type Preview -->
             <div v-if="post.type === 'video'" class="w-full h-auto">
-                <p class="my-2 px-2">{{ parsedContent.caption }}</p>
+                <ScrollPanel v-if="parsedContent.caption" style="max-width: 700px; height: 200px;" class="p-2 rounded-lg">
+                    <p class="my-2 px-2">{{ parsedContent.caption }}</p>
+                </ScrollPanel>
                 <video 
+                    v-if="parsedContent.file_path"
                     controls 
                     class="w-full"
                 >
                     <source :src="getMediaUrl(parsedContent.file_path)" type="video/mp4">
                     Votre navigateur ne supporte pas la lecture de vidéos.
                 </video>
+                <div v-else class="px-2 py-4 text-gray-500 text-center">
+                    Aucune vidéo disponible
+                </div>
+            </div>
+
+            <!-- Multi-Image Type Preview -->
+            <div v-if="post.type === 'multiimage'" class="w-full h-auto">
+                <ScrollPanel v-if="parsedContent.caption" style="max-width: 700px; height: 200px;" class="p-2 rounded-lg">
+                    <p class="my-2 px-2">{{ parsedContent.caption }}</p>
+                </ScrollPanel>
+                
+                <div v-if="multiImagePreviews.length > 0">
+                    <!-- Single image -->
+                    <div v-if="multiImagePreviews.length === 1" class="w-full">
+                        <img :src="multiImagePreviews[0]" class="object-fill w-full" alt="Preview" />
+                    </div>
+                    
+                    <!-- Two images -->
+                    <div v-else-if="multiImagePreviews.length === 2" class="grid grid-cols-2">
+                        <img v-for="(image, index) in multiImagePreviews" :key="index" 
+                             :src="image" class="h-[200px] w-full object-cover" alt="Preview" />
+                    </div>
+                    
+                    <!-- Three images -->
+                    <div v-else-if="multiImagePreviews.length === 3" class="grid grid-cols-3">
+                        <img v-for="(image, index) in multiImagePreviews" :key="index" 
+                             :src="image" class="h-[150px] w-full object-cover" alt="Preview" />
+                    </div>
+                    
+                    <!-- Four or more images -->
+                    <div v-else-if="multiImagePreviews.length >= 4" class="grid grid-cols-1">
+                        <img :src="multiImagePreviews[0]" class="max-h-[200px] w-full object-cover" alt="Preview" />
+                        <div class="grid grid-cols-3">
+                            <div v-for="(image, index) in multiImagePreviews.slice(1, 4)" :key="index" class="relative">
+                                <img :src="image" class="h-[150px] w-full object-cover" alt="Preview" />
+                                <div v-if="index === 2 && multiImagePreviews.length > 4" 
+                                     class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                                    <span class="text-white text-2xl">+{{ multiImagePreviews.length - 4 }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div v-else class="px-2 py-4 text-gray-500 text-center">
+                    Aucune image disponible
+                </div>
             </div>
 
             <!-- Article Type Preview -->
             <div v-if="post.type === 'article'" class="w-full h-auto">
-                <p class="my-2 px-2">{{ parsedContent.caption || 'Votre légende ici...' }}</p>
-                <div class="border p-2 rounded-md">
-                    <a :href="parsedContent.url || '#'" target="_blank" class="text-blue-600 hover:underline">
+                <ScrollPanel v-if="parsedContent.caption" style="max-width: 700px; height: 200px;" class="p-2 rounded-lg">
+                    <p class="my-2 px-2">{{ parsedContent.caption }}</p>
+                </ScrollPanel>
+                <div class="border p-2 rounded-md mx-2 mb-2">
+                    <a :href="parsedContent.url || '#'" target="_blank" class="text-blue-600 hover:underline block">
                         {{ parsedContent.title || 'Titre de l\'article' }}
                     </a>
-                    <p class="text-gray-500">{{ parsedContent.description || 'Description de l\'article' }}</p>
+                    <p class="text-gray-500 mt-1">{{ parsedContent.description || 'Description de l\'article' }}</p>
+                    <p v-if="parsedContent.url" class="text-gray-400 text-sm mt-1">{{ parsedContent.url }}</p>
                 </div>
             </div>
 
@@ -131,18 +193,92 @@ export default {
 
     computed: {
         parsedContent() {
+            console.log('Raw post.content:', this.post.content);
+            
+            if (!this.post.content) {
+                return {
+                    caption: '',
+                    text: '',
+                    file_path: '',
+                    file_paths: [],
+                    url: '',
+                    title: '',
+                    description: ''
+                };
+            }
+
             try {
-                return JSON.parse(this.post.content);
+                let content = this.post.content;
+                
+                // Handle string content that needs parsing
+                if (typeof content === 'string') {
+                    content = JSON.parse(content);
+                }
+                
+                // Handle double-encoded JSON strings (like your sample data)
+                if (typeof content.caption === 'string' && content.caption.startsWith('"') && content.caption.endsWith('"')) {
+                    try {
+                        content.caption = JSON.parse(content.caption);
+                    } catch (e) {
+                        // If parsing fails, just remove the outer quotes
+                        content.caption = content.caption.slice(1, -1);
+                    }
+                }
+                
+                // Normalize content structure
+                const parsedContent = {
+                    caption: content.caption || content.text || '',
+                    text: content.text || content.caption || '',
+                    file_path: content.file_path || '',
+                    file_paths: content.file_paths || 
+                               (Array.isArray(content.files) ? content.files : []) ||
+                               (content.file_path ? [content.file_path] : []),
+                    url: content.url || '',
+                    title: content.title || '',
+                    description: content.description || ''
+                };
+                
+                console.log('Parsed content:', parsedContent);
+                return parsedContent;
+                
             } catch (error) {
                 console.error("Failed to parse post content:", error);
-                return {};
+                
+                // Fallback handling
+                const fallbackText = typeof this.post.content === 'string' ? 
+                                    this.post.content : 
+                                    (this.post.content?.text || this.post.content?.caption || '');
+                
+                return {
+                    caption: fallbackText,
+                    text: fallbackText,
+                    file_path: this.post.content?.file_path || '',
+                    file_paths: [],
+                    url: this.post.content?.url || '',
+                    title: this.post.content?.title || '',
+                    description: this.post.content?.description || ''
+                };
             }
         },
+
+        multiImagePreviews() {
+            if (this.post.type === 'multiimage' && this.parsedContent.file_paths) {
+                const paths = Array.isArray(this.parsedContent.file_paths) ? 
+                             this.parsedContent.file_paths : 
+                             [this.parsedContent.file_paths];
+                
+                console.log('Multi-image paths:', paths);
+                return paths.map(path => this.getMediaUrl(path)).filter(url => url);
+            }
+            return [];
+        }
     },
 
     methods: {
         getMediaUrl(filePath) {
-            return filePath ? `/linkedin/${filePath}` : '';
+            if (!filePath) return '';
+            // Handle full URLs vs relative paths
+            return filePath.startsWith('http') ? filePath : `/linkedin/${filePath}`;
         },
     },
 };

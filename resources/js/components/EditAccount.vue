@@ -51,7 +51,7 @@
                                         id="name" 
                                         name="name" 
                                         v-model="profile.name" 
-                                        class="border rounded-md w-full p-3 text-base focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 transition-all duration-200"
+                                        class="border rounded-md w-full p-3 bg-white text-base focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 transition-all duration-200"
                                         required
                                     >
                                 </div>
@@ -63,7 +63,7 @@
                                         id="email" 
                                         name="email" 
                                         v-model="profile.email" 
-                                        class="border rounded-md w-full p-3 text-base focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 transition-all duration-200"
+                                        class="border rounded-md w-full p-3 bg-white text-base focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 transition-all duration-200"
                                         required
                                     >
                                 </div>
@@ -75,7 +75,7 @@
                                         id="password" 
                                         name="password" 
                                         v-model="profile.password" 
-                                        class="border rounded-md w-full p-3 text-base focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 transition-all duration-200"
+                                        class="border rounded-md w-full p-3 bg-white text-base focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 transition-all duration-200"
                                     >
                                     <p class="mt-1 text-sm text-gray-500">Laissez vide pour conserver le mot de passe actuel</p>
                                 </div>
@@ -87,7 +87,7 @@
                                         id="password_confirmation" 
                                         name="password_confirmation" 
                                         v-model="profile.password_confirmation" 
-                                        class="border rounded-md w-full p-3 text-base focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 transition-all duration-200"
+                                        class="border rounded-md w-full bg-white p-3 text-base focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 transition-all duration-200"
                                     >
                                 </div>
                             </div>
@@ -161,7 +161,7 @@
                                             id="profession" 
                                             name="profession" 
                                             v-model="extraInfo.profession" 
-                                            class="border rounded-md w-full p-3 text-base focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 transition-all duration-200"
+                                            class="border rounded-md w-full p-3 bg-white text-base focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 transition-all duration-200"
                                             required
                                         >
                                     </div>
@@ -173,7 +173,7 @@
                                             id="telephone" 
                                             name="telephone" 
                                             v-model="extraInfo.telephone" 
-                                            class="border rounded-md w-full p-3 text-base focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 transition-all duration-200"
+                                            class="border rounded-md w-full p-3 bg-white text-base focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 transition-all duration-200"
                                             required
                                         >
                                     </div>
@@ -185,7 +185,7 @@
                                             id="adresse" 
                                             name="adresse" 
                                             v-model="extraInfo.adresse" 
-                                            class="border rounded-md w-full p-3 text-base focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 transition-all duration-200"
+                                            class="border rounded-md w-full p-3 bg-white text-base focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 transition-all duration-200"
                                             required
                                         >
                                     </div>
@@ -197,7 +197,7 @@
                                             id="nom_entreprise" 
                                             name="nom_entreprise" 
                                             v-model="extraInfo.nom_entreprise" 
-                                            class="border rounded-md w-full p-3 text-base focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 transition-all duration-200"
+                                            class="border rounded-md w-full p-3 bg-white text-base focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 transition-all duration-200"
                                             required
                                         >
                                     </div>
@@ -209,7 +209,7 @@
                                             id="adresse_entreprise" 
                                             name="adresse_entreprise" 
                                             v-model="extraInfo.adresse_entreprise" 
-                                            class="border rounded-md w-full p-3 text-base focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 transition-all duration-200"
+                                            class="border rounded-md w-full p-3 bg-white text-base focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 transition-all duration-200"
                                             required
                                         >
                                     </div>

@@ -48,6 +48,18 @@ function formatDate(dateString) {
     return `${dayOfWeek} ${dayOfMonth}, ${year} à ${hours}:${minutes}${ampm}`;
 };
 
+function formatDateForEngagement(dateString) {
+    const date = new Date(dateString);
+    
+    const month = date.getMonth() + 1;
+    
+    const dayOfMonth = date.getDate();
+    
+    const year = date.getFullYear();
+    
+    
+    return `${dayOfMonth}/${month}/${year}`;
+};
 
 
 export {
@@ -56,4 +68,5 @@ export {
     getProfilePicture,
     getCampaignColor,
     formatDate,
+    formatDateForEngagement,
 };

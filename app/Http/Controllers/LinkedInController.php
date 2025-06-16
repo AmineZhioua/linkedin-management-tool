@@ -233,8 +233,8 @@ class LinkedInController extends Controller
 
             switch ($validated['type']) {
                 case 'text':
-                    $request->validate(['content.text' => 'required|string|max:3000']);
-                    $content = ['text' => $validated['content']['text']];
+                    $request->validate(['content.caption' => 'required|string|max:3000']);
+                    $content = ['caption' => $validated['content']['caption']];
                     break;
 
                 case 'image':
@@ -375,8 +375,8 @@ class LinkedInController extends Controller
 
             switch ($validated['type']) {
                 case 'text':
-                    $request->validate(['content.text' => 'required|string|max:3000']);
-                    $content = ['text' => $validated['content']['text']];
+                    $request->validate(['content.caption' => 'required|string|max:3000']);
+                    $content = ['caption' => $validated['content']['caption']];
                     break;
 
                 case 'image':
@@ -1381,7 +1381,7 @@ class LinkedInController extends Controller
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_CUSTOMREQUEST => "DELETE",
             CURLOPT_HTTPHEADER => $headers,
-            CURLOPT_TIMEOUT => 1800
+            CURLOPT_TIMEOUT => 600
         ]);
     
         $response = curl_exec($curl);

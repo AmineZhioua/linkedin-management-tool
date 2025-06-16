@@ -9,8 +9,7 @@
             :key="linkedinAccount.id"
             @click="selectAccount(linkedinAccount)"
             class="flex items-center justify-end gap-2 py-2 px-3 rounded-xl cursor-pointer shadow-lg"
-            style="background-color: #18181b;"
-            :class="{ 'text-red-500 border': this.selectedAccount === linkedinAccount }"
+            :class="selectedAccount && selectedAccount.id === linkedinAccount.id ? 'bg-gray-500' : 'bg-black'"
           >
             <div class="relative">
               <img 
@@ -182,13 +181,14 @@
           :campaigns="campaigns"
           :linkedin-accounts="userLinkedinAccounts" 
           @delete-campaign="deleteCampaign"
+          @edit-campaign="handleEditCampaign"
           :open-campaign-read-mode="openCampaignInReadMode"
         />
       </div>
     </div>
   </template>
   
-  <script>
+<script>
   import axios from 'axios';
   import Swal from 'sweetalert2';
   import { useToast } from "vue-toastification";
@@ -212,7 +212,7 @@
       },
     },
 
-    emits: ['open-post-portal', 'open-boost-form'],
+    emits: ['open-post-portal', 'open-boost-form', 'open-campaign-portal', 'open-campaign-to-edit'],
   
     setup() {
       const toast = useToast();
@@ -339,12 +339,12 @@
               throw new Error("Failed to delete post");
             }
           } catch (error) {
-            console.error("Error deleting post:", error);
-            await Swal.fire({
-              icon: "error",
-              title: "Oops...",
-              text: "Une erreur s'est produite lors de la suppression du post !",
-            });
+              console.error("Error deleting post:", error);
+              await Swal.fire({
+                icon: "error",
+                title: "Oops...",
+                text: "Une erreur s'est produite lors de la suppression du post !",
+              });
           }
         }
       },
@@ -441,6 +441,10 @@
           }
         }
       },
+
+      handleEditCampaign(campaign, campaignOwner) {
+        this.$emit('open-campaign-to-edit', campaign, campaignOwner);
+      },
   
       getLinkedinUserByID(id) {
         return this.userLinkedinAccounts.find(account => account.id === id);
@@ -489,7 +493,7 @@
         } else {
           Swal.fire({
             title: "<h3 class='text-black fw-semibold'>Compte?</h3>",
-            html: "<p class='text-muted fw-light text-md mb-0'>Veuillez choisir un compte avant tout</p>",
+            html: "<p class='text-muted fw-light text-md mb-0'>Veuillez choisir un compte tout d'abord</p>",
             icon: "warning",
           });
         }

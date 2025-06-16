@@ -163,7 +163,7 @@
         </div>
 
         <!-- Image Type Post -->
-        <div v-if="post.type === 'image'" class="w-full h-auto">
+        <div v-if="post.type === 'image'" class="w-full h-auto"> 
             <p v-if="parsedContent" class="my-2 px-2">
                 {{ displayedCaption }}
                 <span v-if="isCaptionLong && !isExpanded" class="text-blue-500 cursor-pointer" @click="toggleExpand">
@@ -176,7 +176,7 @@
             <img 
                 v-if="parsedContent"
                 :src="getMediaUrl(parsedContent.file_path)" 
-                class="object-fill" 
+                class="object-fill w-full" 
                 alt="Picture"
             />
         </div>
@@ -246,18 +246,19 @@ export default {
     mounted() {
         this.getLinkedinUserbyPost(this.post);
         this.parseContent();
+        console.log(this.post)
     },
 
     computed: {
         isTextLong() {
-            return this.post.type === 'text' && this.parsedContent && this.parsedContent.text && this.parsedContent.text.length > this.maxLength;
+            return this.post.type === 'text' && this.parsedContent && this.parsedContent.caption && this.parsedContent.caption.length > this.maxLength;
         },
         isCaptionLong() {
             return (this.post.type === 'video' || this.post.type === 'image') && this.parsedContent && this.parsedContent.caption && this.parsedContent.caption.length > this.maxLength;
         },
         displayedText() {
-            if (this.post.type === 'text' && this.parsedContent && this.parsedContent.text) {
-                return this.isExpanded ? this.parsedContent.text : this.parsedContent.text.slice(0, this.maxLength) + '...';
+            if (this.post.type === 'text' && this.parsedContent && this.parsedContent.caption) {
+                return this.isExpanded ? this.parsedContent.caption : this.parsedContent.caption.slice(0, this.maxLength) + '...';
             }
             return '';
         },

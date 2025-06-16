@@ -15,6 +15,7 @@
       @open-post-portal="handleOpenPostPortal"
       @open-campaign-post-portal="handleOpenCampaignPostPortal"
       @open-boost-form="openBoostForm"
+      @open-campaign-to-edit="openCampaignPortalForEdit"
     />
 
     <!-- KPI Section -->
@@ -45,6 +46,15 @@
       @open-campaign-post-portal="handleOpenCampaignPostPortal"
       @open-campaign-read-mode="handleCampaignReadMode"
       @open-post-read-mode="handleOpenPostPortal"
+      @open-campaign-portal-edit-mode="openCampaignPortalForEdit"
+      @open-post-portal-edit-mode="handleOpenPostPortal"
+    />
+
+    <commhub-section
+      v-if="cardToSet === 'commhub'"
+      :user-linkedin-accounts="userLinkedinAccounts"
+      :all-linkedin-posts="userLinkedinPosts"
+      @open-ai-comment-portal="handleOpenAICommentPortal"
     />
 
     <!-- Centralized Portal Components -->
@@ -53,6 +63,7 @@
       ref="campaignPortal"
       :selected-account="selectedAccount"
       :read-mode="readModeStatus"
+      :edit-mode="campaignEditMode"
       :selected-campaign="selectedCampaign"
       :linkedin-posts="userLinkedinPosts"
       @campaign-post-editing="editCampaignPost"
@@ -89,6 +100,15 @@
       @close-boost-form="closeBoostForm"
     />
 
+    <ai-comment-portal
+      v-if="showAICommentPortal"
+      @close-ai-comment-portal="showAICommentPortal = false"
+    />
+
+    <!-- <recommendation-portal 
+
+    /> -->
+
   </div>
 </template>
 
@@ -98,7 +118,6 @@ import UserPostsCard from "./UserPostsCard.vue";
 import KpiSection from "./KpiSection.vue";
 import CalendarSection from "./CalendarSection.vue";
 import LinkedinAccountsSection from "./LinkedinAccountsSection.vue";
-import Swal from 'sweetalert2';
 import { useToast } from "vue-toastification";
 import { getLinkedinUserByID } from '../services/datatables';
 
@@ -147,7 +166,7 @@ export default {
 
   data() {
     return {
-      cardToSet: "userPosts",
+      cardToSet: "calendar",
       // Portals variables
       showCampaignPostPortal: false,
       showCampaignPortal: false,
@@ -170,6 +189,7 @@ export default {
       descriptionCampagne: '',
       couleurCampagne: '',
       nomCampagne: '',
+      campaignEditMode: false,
       // Boost Request variables
       nbLikesToRequest: 0,
       nbCommentsToRequest: 0,
@@ -177,6 +197,8 @@ export default {
       displayBoostForm: false,
       postToBoost: null,
       boostRequestToUpdate: null,
+      // AI Comment Portal variables
+      showAICommentPortal: false,
     };
   },
 
@@ -206,6 +228,13 @@ export default {
       this.selectedAccount = data.account;
       this.selectedPost = data.post;
       this.showCampaignPostPortal = true;
+    },
+
+    openCampaignPortalForEdit(campaign, campaignOwner) {
+      this.showCampaignPortal = true;
+      this.selectedAccount = campaignOwner;
+      this.selectedCampaign = campaign;
+      this.campaignEditMode = true;
     },
 
     handleCampaignReadMode(selectedAccount, selectedCampaign) {
@@ -253,6 +282,10 @@ export default {
       this.boostRequestToUpdate = boostRequest;
       const post = this.userLinkedinPosts.find(post => post.id === boostRequest.post_id);
       this.postToBoost = post;
+    },
+
+    handleOpenAICommentPortal() {
+      this.showAICommentPortal = true;
     },
 
     // Portal Close Handlers
@@ -311,61 +344,76 @@ export default {
       const end = new Date(this.campaignEndDateTime);
 
       if (scheduled < now) {
-        this.campaignPostError = "La date de publication ne peut pas être dans le passé!";
-        return;
+          this.campaignPostError = "La date de publication ne peut pas être dans le passé!";
+          return;
       }
       if (scheduled < start || scheduled > end) {
-        this.campaignPostError = `La date de publication doit être comprise entre ${this.campaignDateTimeOutput(this.campaignStartDateTime)} et ${this.campaignDateTimeOutput(this.campaignEndDateTime)} !`;
-        return;
+          this.campaignPostError = `La date de publication doit être comprise entre ${this.campaignDateTimeOutput(this.campaignStartDateTime)} et ${this.campaignDateTimeOutput(this.campaignEndDateTime)} !`;
+          return;
       }
 
-      if (updatedPost.type === "text" && updatedPost.content.text.trim() === "") {
-        this.campaignPostError = "Le contenu du post ne peut pas être vide !";
-        return;
-      } else if (updatedPost.type === "text" && updatedPost.content.text.length > 3000) {
-        this.campaignPostError = "Le contenu du post ne peut pas dépasser 3000 caractères !";
-        return;
-      } else if (updatedPost.type === "text" && updatedPost.content.text.length < 50) {
-        this.campaignPostError = "Le contenu du post doit contenir au moins 50 caractères !";
-        return;
+      if (updatedPost.type === "text" && updatedPost.content.caption.trim() === "") {
+          this.campaignPostError = "Le contenu du post ne peut pas être vide !";
+          return;
+      } else if (updatedPost.type === "text" && updatedPost.content.caption.length > 3000) {
+          this.campaignPostError = "Le contenu du post ne peut pas dépasser 3000 caractères !";
+          return;
+      } else if (updatedPost.type === "text" && updatedPost.content.caption.length < 50) {
+          this.campaignPostError = "Le contenu du post doit contenir au moins 50 caractères !";
+          return;
       }
-      if ((updatedPost.type === "image" || updatedPost.type === "video") && !updatedPost.content.file) {
-        this.campaignPostError = "Veuillez sélectionner un fichier pour le publier !";
-        return;
+      if ((updatedPost.type === "image" || updatedPost.type === "video") && !updatedPost.content.file && !updatedPost.content.file_path) {
+          this.campaignPostError = "Veuillez sélectionner un fichier pour le publier !";
+          return;
       }
       if (updatedPost.type === "article") {
-        const { url, title } = updatedPost.content;
-        if (!url.trim() || !title.trim()) {
-          this.campaignPostError = "Veuillez remplir au moins l'URL et le titre de l'article.";
-          return;
-        } else if (!url.startsWith("https://")) {
-          this.campaignPostError = "L'URL de l'article doit commencer par 'https://'";
-          return;
-        } else if (title.length > 200) {
-          this.campaignPostError = "Le titre de l'article ne peut pas dépasser 200 caractères !";
-          return;
-        } else if (title.length < 5) {
-          this.campaignPostError = "Le titre de l'article doit contenir au moins 5 caractères !";
-          return;
-        }
+          const { url, title } = updatedPost.content;
+          if (!url.trim() || !title.trim()) {
+              this.campaignPostError = "Veuillez remplir au moins l'URL et le titre de l'article.";
+              return;
+          } else if (!url.startsWith("https://")) {
+              this.campaignPostError = "L'URL de l'article doit commencer par 'https://'";
+              return;
+          } else if (title.length > 200) {
+              this.campaignPostError = "Le titre de l'article ne peut pas dépasser 200 caractères !";
+              return;
+          } else if (title.length < 5) {
+              this.campaignPostError = "Le titre de l'article doit contenir au moins 5 caractères !";
+              return;
+          }
       }
 
-      const postToSave = { ...updatedPost };
-      if (updatedPost.content) {
-        postToSave.content = { ...updatedPost.content };
-        if (updatedPost.content.file) {
-          postToSave.content.file = updatedPost.content.file;
-        }
-      }
+      // Deep copy the updated post
+      const postToSave = {
+          id: updatedPost.id,
+          tempId: updatedPost.tempId || `temp-${Date.now()}`,
+          job_id: updatedPost.job_id,
+          scheduledDateTime: updatedPost.scheduledDateTime,
+          type: updatedPost.type,
+          content: {
+              text: updatedPost.content?.text || '',
+              caption: updatedPost.content?.caption || '',
+              url: updatedPost.content?.url || '',
+              title: updatedPost.content?.title || '',
+              description: updatedPost.content?.description || '',
+              file_path: updatedPost.content?.file_path || '',
+              files: Array.isArray(updatedPost.content?.files) ? updatedPost.content.files.map(file => file) : [], // Preserve File objects
+              original_filenames: Array.isArray(updatedPost.content?.original_filenames) ? [...updatedPost.content.original_filenames] : [],
+              file: updatedPost.content?.file || null,
+              fileName: updatedPost.content?.fileName || (updatedPost.content?.file?.name || null),
+          },
+          accountId: updatedPost.accountId,
+          isExisting: updatedPost.isExisting || false,
+      };
 
-      const index = this.campaignPosts.findIndex(p => p.tempId === updatedPost.tempId);
+      const index = this.campaignPosts.findIndex(p => p.tempId === postToSave.tempId);
       if (index !== -1) {
-        this.campaignPosts.splice(index, 1, { ...postToSave });
-        if (this.$refs.campaignPortal) {
-          this.$refs.campaignPortal.updatePost({ ...postToSave });
-        }
+          this.campaignPosts.splice(index, 1, { ...postToSave });
+          if (this.$refs.campaignPortal) {
+              this.$refs.campaignPortal.updatePost({ ...postToSave });
+          }
       } else {
-        console.error("Post not found in campaignPosts");
+          console.error("Post not found in campaignPosts");
       }
 
       this.showCampaignPostPortal = false;

@@ -5,7 +5,7 @@
         <!-- AI Assistant Section -->
         <div 
             v-if="!readMode"
-            class="flex flex-col justify-center gap-4 p-4 bg-white rounded-lg min-w-[450px]"
+            class="flex flex-col justify-between h-full gap-4 p-4 bg-white rounded-lg min-w-[450px]"
         >
             <!-- Heading -->
             <div class="flex items-center gap-2">
@@ -25,7 +25,7 @@
                 ></textarea>
             </div>
 
-            <div class="w-ful flex justify-end">
+            <div class="w-full flex justify-end">
                 <div 
                     v-if="isGenerating" 
                     class="py-2 px-3 w-[100px] flex items-center justify-center rounded-md text-white" 
@@ -50,7 +50,7 @@
 
 
         <!-- Post Fields -->
-        <div v-if="!readMode" class="bg-white p-4 rounded-lg relative"> 
+        <div v-if="!readMode" class="bg-white flex flex-col justify-between h-full p-4 rounded-lg relative overflow-y-scroll"> 
             <!-- Close Button & Title -->
             <div class="flex w-full justify-between mb-2">
                 <h3 class="text-xl mb-0">{{ selectedPost ? 'Modifier le Post' : 'Créer un Post' }}</h3>
@@ -140,7 +140,7 @@
                         <!-- For Type of Text Posts -->
                         <textarea 
                             v-if="newPost.type === 'text'"
-                            v-model="newPost.content.text"
+                            v-model="newPost.content.caption"
                             name="caption" 
                             id="caption" 
                             class="border rounded-md w-full p-2 min-h-[300px] bg-white" 
@@ -305,7 +305,7 @@
         </div>
 
         <!-- Post Preview Section -->
-        <div class="bg-white p-3 rounded-lg min-w-[400px] max-w-[450px] min-h-[400px] max-h-full overflow-scroll">
+        <div class="bg-white p-3 rounded-lg min-w-[400px] max-w-[450px] min-h-[400px] h-full overflow-y-scroll">
             <div class="flex items-center justify-between">
                 <h3 class="text-black text-lg mb-0">Aperçu LinkedIn</h3>
                 <button @click="handleCloseinReadMore" v-if="readMode">
@@ -356,13 +356,19 @@
 
                 <!-- Preview Content -->
                 <!-- Text Type Preview -->
-                <div v-if="newPost.type === 'text'" class="px-2 my-2 max-h-[300px] overflow-y-scroll">
-                    <p class="mb-0 text-black">{{ newPost.content.text }}</p>
+                <div v-if="newPost.type === 'text'" class="px-2 my-2 max-h-[300px]">
+                    <ScrollPanel style="max-width: 700px; height: 200px;" class="p-2 rounded-lg">
+                        <p>{{ newPost.content.caption }}</p>
+                    </ScrollPanel>
+                    <!-- <p class="mb-0 text-black">{{ newPost.content.caption }}</p> -->
                 </div>
 
                 <!-- Image Type Preview -->
                 <div v-if="newPost.type === 'image'" class="w-full h-auto">
-                    <p class="my-2 px-2">{{ newPost.content.caption }}</p>
+                    <ScrollPanel style="max-width: 700px; height: 200px;" class="p-2 rounded-lg">
+                        <p>{{ newPost.content.caption }}</p>
+                    </ScrollPanel>
+                    <!-- <p class="my-2 px-2">{{ newPost.content.caption }}</p> -->
                     <img 
                         v-if="imagePreviewUrl || newPost.content.file_path"
                         :src="imagePreviewUrl || getMediaUrl(newPost.content.file_path)" 
@@ -373,7 +379,10 @@
 
                 <!-- Multi Image Type Preview -->
                 <div v-if="newPost.type === 'multiimage'" class="w-full h-auto">
-                    <p class="my-2 px-2">{{ newPost.content.caption }}</p>
+                    <ScrollPanel style="max-width: 700px; height: 200px;" class="p-2 rounded-lg">
+                        <p>{{ newPost.content.caption }}</p>
+                    </ScrollPanel>
+                    <!-- <p class="my-2 px-2">{{ newPost.content.caption }}</p> -->
                     <div v-if="imageLayout.images.length === 1" class="w-full">
                         <img :src="imageLayout.images[0]" class="object-fill w-full" alt="Preview" />
                     </div>
@@ -398,7 +407,10 @@
 
                 <!-- Video Type Preview -->
                 <div v-if="newPost.type === 'video'" class="w-full h-auto">
-                    <p class="my-2 px-2">{{ newPost.content.caption }}</p>
+                    <ScrollPanel style="max-width: 700px; height: 200px;" class="p-2 rounded-lg">
+                        <p>{{ newPost.content.caption }}</p>
+                    </ScrollPanel>
+                    <!-- <p class="my-2 px-2">{{ newPost.content.caption }}</p> -->
                     <video 
                         v-if="videoPreviewUrl || newPost.content.file_path" 
                         controls 
@@ -411,7 +423,10 @@
 
                 <!-- Article Type Preview -->
                 <div v-if="newPost.type === 'article'" class="w-full h-auto">
-                    <p class="my-2 px-2">{{ newPost.content.caption }}</p>
+                    <ScrollPanel style="max-width: 700px; height: 200px;" class="p-2 rounded-lg">
+                        <p>{{ newPost.content.caption }}</p>
+                    </ScrollPanel>
+                    <!-- <p class="my-2 px-2">{{ newPost.content.caption }}</p> -->
                     <div class="border p-2 rounded-md">
                         <a :href="newPost.content.url || '#'" target="_blank" class="text-blue-600 hover:underline">
                             {{ newPost.content.title || 'Titre de l\'article' }}
@@ -544,7 +559,6 @@ export default {
             handler(newPost) {
                 if (newPost) {
                     const parsedContent = typeof newPost.content === 'string' ? JSON.parse(newPost.content) : newPost.content || {};
-                    
                     let scheduledDateTime = this.utcToLocalForInput(newPost.scheduled_time);
 
                     this.newPost = {
@@ -558,6 +572,8 @@ export default {
                             url: parsedContent.url || '',
                             title: parsedContent.title || '',
                             description: parsedContent.description || '',
+                            files: [],
+                            file_paths: parsedContent.file_paths || (Array.isArray(parsedContent.files) ? parsedContent.files : []) || [],
                         },
                     };
                     this.selectedAccount = this.allLinkedinAccounts.find(account => account.id === newPost.linkedin_user_id);
@@ -565,6 +581,8 @@ export default {
                         this.imagePreviewUrl = this.getMediaUrl(parsedContent.file_path);
                     } else if (newPost.type === 'video') {
                         this.videoPreviewUrl = this.getMediaUrl(parsedContent.file_path);
+                    } else if (newPost.type === 'multiimage') {
+                        this.multiImagePreviews = (parsedContent.file_paths || parsedContent.files || []).map(path => this.getMediaUrl(path)).filter(url => url);
                     }
                 } else {
                     const today = new Date();
@@ -579,10 +597,13 @@ export default {
                             url: "",
                             title: "",
                             description: "",
+                            files: [],
+                            file_paths: [],
                         },
                     };
                     this.imagePreviewUrl = null;
                     this.videoPreviewUrl = null;
+                    this.multiImagePreviews = [];
                     this.selectedAccount = this.allLinkedinAccounts[0];
                 }
             },
@@ -594,7 +615,21 @@ export default {
         imageLayout() {
             const previews = this.multiImagePreviews;
             if (!previews || previews.length === 0) {
-                return { images: [], showOverlay: false, additionalCount: 0 };
+                // Fallback to newPost.content.file_paths for readMode
+                const filePaths = this.newPost.content.file_paths || [];
+                const fallbackPreviews = filePaths.map(path => this.getMediaUrl(path)).filter(url => url);
+                if (fallbackPreviews.length === 0) {
+                    return { images: [], showOverlay: false, additionalCount: 0 };
+                }
+                if (fallbackPreviews.length === 1) {
+                    return { images: [fallbackPreviews[0]], showOverlay: false, additionalCount: 0 };
+                }
+                if (fallbackPreviews.length <= 3) {
+                    return { images: fallbackPreviews, showOverlay: false, additionalCount: 0 };
+                }
+                const displayImages = fallbackPreviews.slice(0, 4);
+                const additionalCount = fallbackPreviews.length - 4;
+                return { images: displayImages, showOverlay: additionalCount > 0, additionalCount };
             }
             if (previews.length === 1) {
                 return { images: [previews[0]], showOverlay: false, additionalCount: 0 };
@@ -856,10 +891,10 @@ export default {
                 const updateData = new FormData();
 
                 updateData.append("post_id", this.selectedPost.id);
-                updateData.append("linkedin_user_id", this.selectedAccount.id);
+                updateData.append("linkedin_id", this.selectedAccount.id);
                 updateData.append('job_id', this.selectedPost.job_id);
                 updateData.append("type", this.newPost.type);
-                updateData.append("scheduled_time", this.newPost.scheduledDateTime);
+                updateData.append("scheduled_date", this.newPost.scheduledDateTime);
                 
                 let contentObj = {};
                 
@@ -1059,7 +1094,7 @@ export default {
                 }
 
             } catch(error) {
-                console.log(error);
+                console.error(error);
                 this.showErrorToast("Une erreur s'est produite! Veuillez réessayer.");
 
             } finally {

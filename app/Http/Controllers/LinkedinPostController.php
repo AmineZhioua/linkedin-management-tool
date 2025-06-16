@@ -64,21 +64,21 @@ class LinkedinPostController extends Controller
         $validated = $request->validate([
             'post_id' => 'required|integer|exists:scheduled_linkedin_posts,id',
             'job_id' => 'required|integer|exists:jobs,id',
-            'linkedin_user_id' => 'required|integer|exists:linkedin_users,id',
+            'linkedin_id' => 'required|integer|exists:linkedin_users,id',
             'type' => 'required|string|in:text,image,video,article,multiimage',
-            'scheduled_time' => 'required|date|after:now',
+            'scheduled_date' => 'required|date|after:now',
             'content' => 'required|string',
         ]);
 
         $postToUpdate = ScheduledLinkedinPost::where('id', $validated['post_id'])
-            ->where('linkedin_user_id', $validated['linkedin_user_id'])
+            ->where('linkedin_user_id', $validated['linkedin_id'])
             ->first();
 
         if ($postToUpdate) {
             DB::table('jobs')->where('id', $postToUpdate->job_id)->delete();
 
             $postToUpdate->type = $validated['type'];
-            $postToUpdate->scheduled_time = $validated['scheduled_time'];
+            $postToUpdate->scheduled_time = $validated['scheduled_date'];
             $content = $validated['content'];
 
             if ($request->hasFile('file')) {
@@ -91,7 +91,7 @@ class LinkedinPostController extends Controller
             $postToUpdate->content = $content;
             $postToUpdate->save();
 
-            ScheduleLinkedInPost::dispatch($postToUpdate)->delay(Carbon::parse($validated['scheduled_time']));
+            ScheduleLinkedInPost::dispatch($postToUpdate)->delay(Carbon::parse($validated['scheduled_date']));
 
             $newJobId = DB::table('jobs')
                 ->where('payload', 'like', '%ScheduleLinkedInPost%')

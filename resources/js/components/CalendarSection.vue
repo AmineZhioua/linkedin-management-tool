@@ -24,8 +24,7 @@
                     :key="linkedinAccount.id"
                     @click="selectAccount(linkedinAccount)"
                     class="flex items-center justify-end gap-2 py-2 px-3 rounded-xl cursor-pointer shadow-lg"
-                    style="background-color: #18181b;"
-                    :class="{ 'text-red-500 border': this.selectedAccount === linkedinAccount }"
+                    :class="selectedAccount && selectedAccount.id === linkedinAccount.id ? 'bg-gray-500' : 'bg-black'"
                 >
                     <div class="relative">
                         <img 
@@ -137,50 +136,71 @@
                                 'max-h-[120px]': viewMode === 'month'
                             }"
                         >
-                        <div 
-                            v-for="(item, index) in getItemsForDate(date)"
-                            :key="index"
-                            class="text-sm py-3 bg-gray-50 px-2 fw-semibold mb-1 rounded truncate cursor-pointer shadow-sm"
-                            :style="{ 
-                                borderTop: `8px solid ${item.color}`, 
-                                borderLeft: '1px solid #ddd', borderRight: '1px solid #ddd', borderBottom: '1px solid #ddd'
-                            }"
-                            @click="item.type === 'campaign' ? openCampaignInReadMode(item.linkedin_user_id, item.id) : openPostReadMode(item)"
-                        >
-                            <div class="flex items-center gap-2">
-                                <div class="relative">
-                                    <img 
-                                        :src="getProfilePicture(userLinkedinAccounts, item.linkedin_user_id)" 
-                                        height="40"
-                                        width="40"
-                                        class="rounded-full"
-                                        alt="Photo de Profile"
-                                    />
-                                    <div 
-                                        class="p-1 absolute rounded-full bottom-[-3px] right-[-5px]" 
-                                        style="background-color: rgb(23 92 179); border: 2px solid white;"
-                                    >
-                                        <img 
-                                            src="/build/assets/icons/linkedin.svg" 
-                                            alt="Linkedin Icon" 
-                                            height="8"
-                                            width="8"
-                                        />
+                            <div 
+                                v-for="(item, index) in getItemsForDate(date)"
+                                :key="index"
+                                class="text-sm py-3 bg-gray-50 px-2 fw-semibold mb-1 rounded truncate cursor-pointer shadow-sm"
+                                :style="{ 
+                                    borderTop: `8px solid ${item.color}`, 
+                                    borderLeft: '1px solid #ddd', borderRight: '1px solid #ddd', borderBottom: '1px solid #ddd'
+                                }"
+                            >
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-2"
+                                        @click="item.type === 'campaign' ? openCampaignInReadMode(item.linkedin_user_id, item.id) : openPostReadMode(item)">
+                                        <div class="relative">
+                                            <img 
+                                                :src="getProfilePicture(userLinkedinAccounts, item.linkedin_user_id)" 
+                                                height="40"
+                                                width="40"
+                                                class="rounded-full"
+                                                alt="Photo de Profile"
+                                            />
+                                            <div 
+                                                class="p-1 absolute rounded-full bottom-[-3px] right-[-5px]" 
+                                                style="background-color: rgb(23 92 179); border: 2px solid white;"
+                                            >
+                                                <img 
+                                                    src="/build/assets/icons/linkedin.svg" 
+                                                    alt="Linkedin Icon" 
+                                                    height="8"
+                                                    width="8"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div class="flex-1">
+                                            <p class="mb-0" v-if="item.type === 'campaign'">
+                                                {{ item.name }} ({{ item.postCount }})
+                                            </p>
+                                            <p class="mb-0" v-else>
+                                                {{ translatePostType(item.post_type) }} Post
+                                            </p>
+                                            <p class="mb-0 fw-light text-muted">
+                                                {{ getUsername(userLinkedinAccounts, item.linkedin_user_id) }}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex flex-col px-1">
+                                        <button 
+                                            @click="item.type === 'campaign' ? deleteCampaign(item.id) : 
+                                                (item.status === 'posted' ? deletePostFromLinkedIn(item) : deletePost(item))"
+                                        >
+                                            <i class="fa-regular fa-trash-can text-red-500 text-lg z-50 mb-1"></i>
+                                        </button>
+
+                                        <button 
+                                            v-if="
+                                                (item.real_type && item.real_type === 'post' && item.status !== 'posted') || 
+                                                    (item.status !== 'completed' && item.type === 'campaign')"
+                                            @click="item.type === 'campaign' ? openCampaignPortalInEditMode(item, item.linkedin_user_id) : 
+                                                openPostPortalInEditMode(item, item.linkedin_user_id)"
+                                        >
+                                            <i class="fa-regular fa-pen-to-square text-blue-500 text-lg z-50"></i>
+                                        </button>
                                     </div>
                                 </div>
-                                <div>
-                                    <p class="mb-0" v-if="item.type === 'campaign'">
-                                        {{ item.name }} ({{ item.postCount }})
-                                    </p>
-                                    <p class="mb-0" v-else>
-                                        {{ translatePostType(item.post_type) }} Post
-                                    </p>
-                                    <p class="mb-0 fw-light text-muted">
-                                        {{ getUsername(userLinkedinAccounts, item.linkedin_user_id) }}
-                                    </p>
-                                </div>
                             </div>
-                        </div>
                         </div>
                     </div>
                 </template>
@@ -213,7 +233,14 @@ export default {
         }
     },
 
-    emits: ['open-campaign-portal', 'open-campaign-read-mode', 'open-post-read-mode', 'open-post-portal'],
+    emits: [
+            'open-campaign-portal', 
+            'open-campaign-read-mode', 
+            'open-post-read-mode', 
+            'open-post-portal', 
+            'open-campaign-portal-edit-mode', 
+            'open-post-portal-edit-mode'
+        ],
 
     setup() {
         const toast = useToast();
@@ -283,7 +310,7 @@ export default {
 
         openCampaignPortal() {
             if (this.selectedAccount) {
-                this.$emit('open-campaign-portal', this.selectedAccount);
+                this.$emit('open-campaign-portal', { account: this.selectedAccount });
             } else {
                 Swal.fire({
                     title: "<h3 class='text-black fw-semibold'>Compte?</h3>",
@@ -293,8 +320,19 @@ export default {
             }
         },
 
+        openCampaignPortalInEditMode(campaign, userLinkedinId) {
+            const campaignOwner = this.getLinkedinUserByID(this.userLinkedinAccounts, userLinkedinId);
+
+            this.$emit('open-campaign-portal-edit-mode', campaign, campaignOwner);
+        },
+
         openPostPortal() {
             this.$emit('open-post-portal', { post: null, readMode: false });
+        },
+
+        openPostPortalInEditMode(post, userLinkedinId) {
+            const postOwner = this.getLinkedinUserByID(this.userLinkedinAccounts, userLinkedinId);
+            this.$emit('open-post-portal-edit-mode', { post, readMode: false, account: postOwner });
         },
 
         async requestBoost(post) {
@@ -407,7 +445,7 @@ export default {
                         user_id: campaign.user_id,
                         name: campaign.name,
                         description: campaign.description,
-                        color: campaign.color || '#e0e0e0', // Fallback color
+                        color: campaign.color || '#e0e0e0',
                         start_date: campaign.start_date,
                         end_date: campaign.end_date,
                         linkedin_user_id: campaign.linkedin_user_id,
@@ -425,18 +463,31 @@ export default {
                     scheduledPostDate.setHours(0, 0, 0, 0);
 
                     if (scheduledPostDate.getTime() === checkDate.getTime()) {
+                        const content = typeof post.content === 'string' ? JSON.parse(post.content) : post.content;
                         itemsForDay.push({
-                            type: 'post',
+                            real_type: 'post',
                             id: post.id,
-                            post_type: post.type,
+                            type: post.type,
                             user_id: post.user_id,
                             linkedin_user_id: post.linkedin_user_id,
                             job_id: post.job_id,
                             status: post.status,
-                            scheduled_time: post.scheduled_time,
+                            scheduledDateTime: this.toLocalISOString(new Date(post.scheduled_time)), // Match PostPortal expectation
                             post_urn: post.post_urn,
-                            content: post.content,
-                            color: '#000000'
+                            content: {
+                                text: content.text || '',
+                                caption: content.caption || '',
+                                url: content.url || '',
+                                title: content.title || '',
+                                description: content.description || '',
+                                file_path: content.file_path || '',
+                                files: Array.isArray(content.files) ? [...content.files] : [],
+                                original_filenames: Array.isArray(content.original_filenames) ? [...content.original_filenames] : [],
+                                file: null,
+                                fileName: content.original_filename || null,
+                            },
+                            color: '#000000',
+                            tempId: `post-${post.id}-${Date.now()}` // Add tempId for consistency
                         });
                     }
                 }
@@ -552,9 +603,23 @@ export default {
         openPostReadMode(post) {
             const selectedAccount = this.getLinkedinUserByID(this.userLinkedinAccounts, post.linkedin_user_id);
             if (selectedAccount) {
-                this.$emit('open-post-read-mode', { account: selectedAccount, selectedPost: post, readMode: true });
+                const normalizedPost = {
+                    id: post.id,
+                    type: post.type,
+                    scheduledDateTime: post.scheduledDateTime,
+                    content: { ...post.content },
+                    job_id: post.job_id,
+                    post_urn: post.post_urn,
+                    status: post.status,
+                    linkedin_user_id: post.linkedin_user_id,
+                    user_id: post.user_id,
+                    tempId: post.tempId,
+                    accountId: selectedAccount.id
+                };
+                console.log('Emitting normalized post:', normalizedPost); // Debug
+                this.$emit('open-post-read-mode', { account: selectedAccount, post: normalizedPost, readMode: true });
             } else {
-                console.error('Account not found');
+                console.error('Account not found for linkedin_user_id:', post.linkedin_user_id);
                 this.toast.error('Compte introuvable !');
             }
         },
@@ -661,28 +726,50 @@ export default {
             }
         },
 
-        async deletePost(postId) {
-            this.isLoading = true;
-            try {
-                const response = await axios.delete("/linkedin/delete-post", {
-                    data: {
-                        post_id: postId,
-                        linkedin_user_id: this.selectedPost.linkedin_user_id,
-                    },
-                    headers: {
-                        "Content-Type": "application/json",
-                        "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
-                    },
-                });
+        async deletePost(post) {
+            const result = await Swal.fire({
+                title: "Vous êtes sûr ?",
+                text: "Vous ne pourrez pas revenir en arrière !",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Oui, supprimer !",
+                cancelButtonText: "Annuler"
+            });
 
-                if (response.status === 200) {
-                    this.closeModal();
-                    window.location.reload();
+            if(result.isConfirmed) {
+                this.isLoading = true;
+                try {
+                    const response = await axios.delete("/linkedin/delete-post", {
+                        data: {
+                            post_id: post.id,
+                            linkedin_user_id: post.linkedin_user_id,
+                        },
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
+                        },
+                    });
+
+                    if (response.status === 200) {
+                        await Swal.fire({
+                            title: "Post supprimé !",
+                            text: "Votre campagne a été supprimé avec succès.",
+                            icon: "success"
+                        });
+                        window.location.reload();
+                    }
+                } catch (error) {
+                    console.error("Error deleting post:", error);
+                    Swal.fire({
+                        icon: "error",
+                        title: "Oops...",
+                        text: "Une erreur s'est produite lors de la suppression du post !",
+                    });
+                } finally {
+                    this.isLoading = false;
                 }
-            } catch (error) {
-                console.error("Error deleting post:", error);
-            } finally {
-                this.isLoading = false;
             }
         },
 
@@ -702,6 +789,7 @@ export default {
                 try {
                     const urnId = post.post_urn.split(':')[3];
                     const deleteData = new FormData();
+
                     deleteData.append("post_id", post.id);
                     deleteData.append("linkedin_user_id", post.linkedin_user_id);
                     deleteData.append("urn_id", urnId);
@@ -737,6 +825,68 @@ export default {
                     });
                 }
             }
+        },
+
+        async deleteCampaign(campaignId) {
+            const result = await Swal.fire({
+                title: "Vous êtes sûr ?",
+                text: "Vous ne pourrez pas revenir en arrière !",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Oui, supprimer !",
+                cancelButtonText: "Annuler"
+            });
+    
+            if (result.isConfirmed) {
+                try {
+                    const response = await axios.delete('/campaign/delete', {
+                        data: {
+                            campaign_id: campaignId,
+                        },
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
+                        },
+                    });
+        
+                    if (response.status === 200) {
+                        await Swal.fire({
+                            title: "Campagne supprimé !",
+                            text: "Votre campagne a été supprimé avec succès.",
+                            icon: "success"
+                        });
+                        window.location.reload();
+                    } else {
+                        throw new Error("Failed to delete campaign");
+                    }
+                } catch (error) {
+                    console.error("Error deleting campaign:", error);
+                    Swal.fire({
+                        icon: "error",
+                        title: "Oops...",
+                        text: "Une erreur s'est produite lors de la suppression de la campagne !",
+                    });
+                }
+            }
+        },
+
+        showErrorToast(error) {
+            this.toast.error(`${error}`, {
+                position: "bottom-right",
+                timeout: 3000,
+                closeOnClick: true,
+                pauseOnFocusLoss: true,
+                pauseOnHover: true,
+                draggable: true,
+                draggablePercent: 0.6,
+                showCloseButtonOnHover: false,
+                hideProgressBar: false,
+                closeButton: "button",
+                icon: true,
+                rtl: false
+            });
         },
     },
 };

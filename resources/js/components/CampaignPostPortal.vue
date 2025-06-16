@@ -1,10 +1,54 @@
 <template>
     <div class="bg-black bg-opacity-50 inset-0 h-full w-full absolute"></div>
-    <div class="flex items-center w-full p-4 justify-center gap-2 absolute top-[50%] left-[50%] translate-y-[-50%] translate-x-[-50%]">
+    <div class="flex items-center w-full h-[600px] p-4 justify-center gap-2 absolute top-[50%] left-[50%] translate-y-[-50%] translate-x-[-50%]">
+        <!-- AI Assistant Section -->
+        <div class="flex flex-col justify-between gap-4 h-full p-4 bg-white rounded-lg min-w-[450px]">
+            <!-- Heading -->
+            <div class="flex items-center gap-2">
+                <i class="fa-solid fa-robot text-2xl"></i>
+                <h3 class="mb-0 mt-1 fw-semibold text-xl">Assistant AI</h3>
+            </div>
+
+            <!-- Textarea Input -->
+            <div class="flex flex-col gap-2">
+                <p class="mb-2 ml-1 fw-semibold text-black text-md">Quel est le sujet que vous souhaitez écrire ?</p>
+                <textarea 
+                    name="ai-input" 
+                    id="ai-input" 
+                    placeholder="Eg: Faites la promotion de ma nouvelle formation en marketing digitale pour attirer de nouvelles inscriptions. Les inscriptions se terminent dans 5 jours."
+                    class="p-2 bg-white border rounded-md w-full min-h-[300px]"
+                    v-model="prompt"
+                ></textarea>
+            </div>
+
+            <div class="w-full flex justify-end">
+                <div 
+                    v-if="isGenerating" 
+                    class="py-2 px-3 w-[100px] flex items-center justify-center rounded-md text-white" 
+                    style="border: 2px solid pink;"
+                >
+                    <progress-spinner 
+                        style="width: 15px; height: 15px" strokeWidth="10" fill="transparent" 
+                        animationDuration=".5s" 
+                        aria-label="Custom ProgressSpinner" 
+                    />
+                </div>
+                <button 
+                    v-else
+                    class="flex items-center gap-2 py-2 px-3 rounded-md border w-fit text-white generate-btn"
+                    @click="generateAiContent"
+                >
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    <p class="mb-0 fw-semibold">Générer</p>
+                </button>
+            </div>
+        </div>
+
+
         <!-- Post Fields -->
-        <div class="bg-white p-4 rounded-lg relative min-w-[500px]"> 
+        <div class="bg-white flex flex-col justify-between p-4 rounded-lg relative h-full min-w-[500px] overflow-y-scroll"> 
             <!-- Close Button & Title -->
-            <div class="flex w-full justify-between mb-2">
+            <div class="flex w-full justify-between mb-2 pt-2">
                 <h3 class="text-xl mb-0">{{ postToEdit ? 'Modifier le Post' : 'Créer un Post' }}</h3>
                 <button @click="handleClose">
                     <img src="/build/assets/icons/close.svg" alt="Close Icon" height="20" width="20" />
@@ -58,7 +102,7 @@
                         <!-- For Type of Text Posts -->
                         <textarea 
                             v-if="postToEdit.type === 'text'"
-                            v-model="postToEdit.content.text"
+                            v-model="postToEdit.content.caption"
                             name="caption" 
                             id="caption" 
                             class="border rounded-md w-full p-2 min-h-[300px] bg-white" 
@@ -184,7 +228,7 @@
         </div>
 
         <!-- Post Preview Section -->
-        <div class="bg-white p-3 rounded-lg min-w-[400px] max-w-[450px] min-h-[400px]">
+        <div class="bg-white p-3 h-full overflow-y-scroll rounded-lg min-w-[400px] max-w-[450px] min-h-[400px]">
             <div class="flex items-center">
                 <h3 class="text-black text-lg">Aperçu LinkedIn</h3>
             </div>
@@ -232,7 +276,7 @@
                 <!-- Preview Content -->
                 <!-- Text Type Preview -->
                 <div v-if="postToEdit.type === 'text'" class="px-2 my-2 max-h-[300px] overflow-y-scroll">
-                    <p class="mb-0 text-black">{{ postToEdit.content.text }}</p>
+                    <p class="mb-0 text-black">{{ postToEdit.content.caption }}</p>
                 </div>
 
                 <!-- Image Type Preview -->
@@ -348,6 +392,9 @@
 </template>
 
 <script>
+import axios from 'axios';
+import { useToast } from 'vue-toastification';
+
 export default {
     name: 'CampaignPostPortal',
 
@@ -385,6 +432,11 @@ export default {
 
     emits: ['close'],
 
+    setup() {
+        const toast = useToast();
+        return { toast };
+    },
+
     data() {
         const today = new Date();
 
@@ -402,6 +454,8 @@ export default {
             ],
             showConfirmExit: false,
             multiImagePreviews: [],
+            isGenerating: false,
+            prompt: '',
         };
     },
 
@@ -470,25 +524,64 @@ export default {
     },
 
     methods: {
+        async generateAiContent() {
+            const openaiKey = import.meta.env.VITE_OPENAI_API_KEY;
+            this.isGenerating = true;
+
+            try {
+                const response = await axios.post('https://api.openai.com/v1/responses', {
+                    model: 'gpt-4.1',
+                    input: `${this.prompt}` 
+                }, {
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${openaiKey}`
+                    }
+                });
+
+                if (response.status === 200) {
+                    const output = response.data.output;
+                    if (Array.isArray(output) && output.length > 0 && 
+                        Array.isArray(output[0].content) && output[0].content.length > 0) {
+                        const generatedText = output[0].content[0].text;
+                        this.prompt = generatedText;
+                    } else {
+                        console.error('Invalid response structure: output or content missing');
+                        this.prompt = 'une erreur s\'est produite';
+                    }
+                } else {
+                    this.prompt = 'une erreur s\'est produite';
+                }
+
+            } catch(error) {
+                console.error(error);
+                this.showErrorToast("Une erreur s'est produite! Veuillez réessayer.");
+
+            } finally {
+                this.isGenerating = false;
+            }
+        },
         deepCopyPost(post) {
             if (!post) return null;
             const copy = {
                 id: post.id,
-                tempId: post.tempId,
+                tempId: post.tempId || `temp-${Date.now()}`,
+                job_id: post.job_id,
                 scheduledDateTime: post.scheduledDateTime,
-                type: post.type,
+                type: post.type || 'text',
                 content: {
-                    text: post.content?.text || "",
-                    caption: post.content?.caption || "",
-                    url: post.content?.url || "",
-                    title: post.content?.title || "",
-                    description: post.content?.description || "",
-                    file_path: post.content?.file_path || "",
-                    files: Array.isArray(post.content?.files) ? [...post.content.files] : [],
-                }
+                    text: post.content?.text || '',
+                    caption: post.content?.caption || '',
+                    url: post.content?.url || '',
+                    title: post.content?.title || '',
+                    description: post.content?.description || '',
+                    file_path: post.content?.file_path || '',
+                    files: Array.isArray(post.content?.files) ? post.content.files.map(file => file) : [], // Preserve File objects
+                    original_filenames: Array.isArray(post.content?.original_filenames) ? [...post.content.original_filenames] : [],
+                },
             };
             if (post.content?.file) {
-                copy.content.file = post.content.file;
+                copy.content.file = post.content.file; // Preserve File object
                 copy.content.fileName = post.content.fileName || post.content.file.name;
             } else {
                 copy.content.file = null;
@@ -585,6 +678,35 @@ export default {
             this.$emit('close');
             this.showConfirmExit = false;
         },
+
+        showErrorToast(error) {
+            this.toast.error(`${error}`, {
+                position: "bottom-right",
+                timeout: 3000,
+                closeOnClick: true,
+                pauseOnFocusLoss: true,
+                pauseOnHover: true,
+                draggable: true,
+                draggablePercent: 0.6,
+                showCloseButtonOnHover: false,
+                hideProgressBar: false,
+                closeButton: "button",
+                icon: true,
+                rtl: false
+            });
+        },
     },
 };
 </script>
+
+
+<style scoped>
+.generate-btn {
+    background: linear-gradient(
+        135deg,
+        rgb(255 16 185) 0%,
+        rgb(255 125 82) 100%
+    );
+    border: none;
+}
+</style>

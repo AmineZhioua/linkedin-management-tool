@@ -17,7 +17,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
         body {
-            height: 100%;
+            height: 100vh;
             width: 100%;
             overflow: auto;
             font-family: "Inter", sans-serif !important;
@@ -98,7 +98,7 @@
     <!-- Header Section End -->
 
     <!-- Main Section Start -->
-    <main class="flex-1 h-[100vh]">
+    <main class="flex-1 h-full">
         <main-section
             :user="{{ json_encode($user) }}"
             :user-linkedin-accounts="{{ json_encode($userLinkedinAccounts) }}"

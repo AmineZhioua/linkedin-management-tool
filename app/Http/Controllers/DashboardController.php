@@ -59,7 +59,7 @@ class DashboardController extends Controller
         try {
             $validated = $request->validate([
                 'user_id' => 'required|integer|exists:users,id',
-                'campaign_id' => 'required|integer|exists:linkedin_campaigns,id',
+                'campaign_id' => 'nullable|integer',
                 'linkedin_user_id' => 'required|integer|exists:linkedin_users,id',
                 'event_name' => 'required|string',
                 'message' => 'required|string',
@@ -83,7 +83,9 @@ class DashboardController extends Controller
                 'error' => $e->getMessage(),
                 'data' => $request->all()
             ]);
-            return response()->json(['error' => 'Une erreur s\'est produite lors de l\'enregistrement des notifications ! ' . $e], 500);
+            return response()->json([
+                'error' => 'Une erreur s\'est produite lors de l\'enregistrement des notifications ! ' . $e
+            ], 500);
         }
     }
 

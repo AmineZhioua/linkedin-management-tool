@@ -82,6 +82,7 @@ Route::middleware(['auth', 'verified', 'linkedin.valid', 'linkedin.account.exist
     Route::post('/linkedin/schedule-post', [LinkedInController::class, 'publish']);
     Route::post('/linkedin/schedule-single-post', [LinkedInController::class, 'publishSinglePost']);
     Route::post('/linkedin/create-campaign', [LinkedInController::class, 'createCampaign']);
+    Route::put('/linkedin/update-campaign', [App\Http\Controllers\CampaignController::class, 'updateCampaign'])->name('update.campaign');
 });
 
 
@@ -113,6 +114,13 @@ Route::put('/boost-interaction/update', [App\Http\Controllers\DashboardControlle
 
 Route::get('/main/dashboard', [App\Http\Controllers\MainDashboardController::class, 'index'])->name('main.dashboard');
 Route::delete('/campaign/delete', [App\Http\Controllers\LinkedInController::class, 'deleteCampaign'])->name('delete.campaign');
+
+// Comments Routes
+Route::get('/post/comments', [App\Http\Controllers\CommentsController::class, 'getCommentsOnThePost'])->name('post.comments');
+Route::get('/post/comments/nested-comments', [App\Http\Controllers\CommentsController::class, 'getCommentsOnComments'])->name('post.nested.comments');
+Route::post('/post/comment/create', [App\Http\Controllers\CommentsController::class, 'createComment'])->name('create.comment');
+Route::delete('/post/comment/delete', [App\Http\Controllers\CommentsController::class, 'deleteComment'])->name('delete.comment');
+Route::post('/post/comment/update', [App\Http\Controllers\CommentsController::class, 'editComment'])->name('edit.comment');
 
 
 

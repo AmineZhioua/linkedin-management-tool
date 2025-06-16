@@ -135,7 +135,7 @@
                     <SplitButton 
                         icon="pi pi-eye" 
                         @click="openReadMode(slotProps.data.linkedin_user_id, slotProps.data.id)" 
-                        :model="getItemsCampaignsDatatable(slotProps.data.id)" 
+                        :model="getItemsCampaignsDatatable(slotProps.data)" 
                         style="color: red;" 
                         severity="contrast" 
                         rounded
@@ -153,6 +153,7 @@ import {
     getUsername, 
     getCampaignColor,
     formatDate,
+    getLinkedinUserByID,
 } from '../services/datatables.js';
 
 export default {
@@ -174,7 +175,7 @@ export default {
         openCampaignReadMode: Function,
     },
 
-    emits: ['delete-campaign'],
+    emits: ['delete-campaign', 'edit-campaign'],
 
     data() {
         return {
@@ -239,15 +240,39 @@ export default {
         getProfilePicture,
         getCampaignColor,
         formatDate,
+        getLinkedinUserByID,
 
-        getItemsCampaignsDatatable(id) {
-            return [
-                {
-                    label: 'Supprimer',
-                    icon: 'pi pi-times',
-                    command: () => this.emitCampaignToDelete(id)
-                },
-            ];
+        getItemsCampaignsDatatable(campaign) {
+            if(campaign.status === 'completed' || campaign.status === 'failed') {
+                return [
+                    {
+                        label: 'Supprimer',
+                        icon: 'pi pi-times',
+                        command: () => this.emitCampaignToDelete(campaign.id)
+                    },
+                ];
+            } else if(campaign.status === 'scheduled') {
+                return [
+                    {
+                        label: 'Modifier',
+                        icon: 'pi pi-file-edit',
+                        command: () => this.emitCampaignToEdit(campaign)
+                    },
+                    {
+                        label: 'Supprimer',
+                        icon: 'pi pi-times',
+                        command: () => this.emitCampaignToDelete(campaign.id)
+                    },
+                ];
+            } else if(campaign.status === 'draft') {
+                return [
+                    {
+                        label: 'Supprimer',
+                        icon: 'pi pi-times',
+                        command: () => this.emitCampaignToDelete(campaign.id)
+                    },
+                ];
+            }
         },
 
         openReadMode(linkedinUserId, campaignId) {
@@ -256,6 +281,11 @@ export default {
 
         emitCampaignToDelete(campaignId) {
             this.$emit('delete-campaign', campaignId);
+        },
+
+        emitCampaignToEdit(campaign) {
+            const campaignOwner = this.getLinkedinUserByID(this.linkedinAccounts, campaign.linkedin_user_id);
+            this.$emit('edit-campaign', campaign, campaignOwner);
         },
 
         translateStatus(status) {

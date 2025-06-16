@@ -37,7 +37,8 @@ import NotificationsBell from "./components/NotificationsBell.vue";
 import CalendarSection from "./components/CalendarSection.vue";
 import BoostRequestForm from "./components/BoostRequestForm.vue";
 import BoostRequestDatatable from "./components/BoostRequestDatatable.vue";
-
+import CommhubSection from "./components/CommhubSection.vue";
+import AICommentPortal from "./components/AICommentPortal.vue";
 
 // Importing PrimeVue for UI Components
 import PrimeVue from 'primevue/config';
@@ -72,6 +73,8 @@ import FileUpload from "primevue/fileupload";
 import Galleria from 'primevue/galleria';
 import ProgressSpinner from 'primevue/progressspinner';
 import Dialog from 'primevue/dialog';
+import RecommendationPortal from "./components/recommendationPortal.vue";
+
 
 
 const app = createApp({
@@ -122,6 +125,9 @@ app.component("notifications-bell", NotificationsBell);
 app.component("calendar-section", CalendarSection);
 app.component("boost-request-form", BoostRequestForm);
 app.component("boost-request-datatable", BoostRequestDatatable);
+app.component("commhub-section", CommhubSection);
+app.component("recommendation-portal", RecommendationPortal);
+app.component("ai-comment-portal", AICommentPortal);
 
 // PrimeVue Components
 app.component("Button", Button);

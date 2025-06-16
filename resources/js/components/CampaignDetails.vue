@@ -57,7 +57,7 @@
 
 
     <div class="flex-flex-col items-center" v-if="currentStep === 2">
-            <div class="max-h-[400px] overflow-scroll">
+            <div class="max-h-[500px] overflow-y-scroll">
                 <div 
                     v-if="getCampaignPosts().length > 0"
                 >
