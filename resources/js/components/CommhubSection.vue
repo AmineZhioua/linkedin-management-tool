@@ -16,9 +16,17 @@
         <!-- Main Section -->
         <div class="grid comment-container grid-cols-3 gap-4 mt-2 max-h-[800px]">
             <!-- Comments List -->
-            <div class="h-[800px] flex flex-col items-center gap-2 overflow-y-scroll p-2 rounded-xl" style="background-color: #18181b;">
+            <div class="h-[800px] flex flex-col relative items-center gap-2 overflow-y-scroll p-2 rounded-xl" style="background-color: #18181b;">
                 <!-- Published Posts List -->
                 <div 
+                    v-if="publishedPosts.length === 0" 
+                    class="h-full text-white absolute top-1/2"
+                >
+                    <h1 class="fw-semibold text-xl">Aucun Posts Publiés</h1>
+                </div>
+
+                <div 
+                    v-else
                     class="flex items-center w-full rounded-lg gap-3 cursor-pointer text-white" 
                     v-for="post in publishedPosts"
                     @click="changeSelectedPost(post)"
@@ -75,12 +83,21 @@
             </div>
 
             <!-- Published Post Preview -->
-            <div class="h-[800px] flex flex-col items-center gap-2 p-2 rounded-xl overflow-y-auto" style="background-color: #18181b;">
-                <linkedin-post 
-                    :key="selectedPost?.id" 
-                    :user-linkedin-accounts="userLinkedinAccounts" 
-                    :post="selectedPost"
-                />
+            <div class="h-[800px] relative flex flex-col items-center gap-2 p-2 rounded-xl" style="background-color: #18181b;">
+                <div 
+                    v-if="publishedPosts.length === 0" 
+                    class="h-full text-white absolute top-1/2"
+                >
+                    <h1 class="fw-semibold text-xl">Aucun Post selectionné</h1>
+                </div>
+
+                <div v-else>
+                    <linkedin-post 
+                        :key="selectedPost?.id" 
+                        :user-linkedin-accounts="userLinkedinAccounts" 
+                        :post="selectedPost"
+                    />
+                </div>
             </div>
 
             <!-- Comment & Engage Section -->
