@@ -19,7 +19,6 @@ class Subscription extends Model
         'discount',
         'boost_likes',
         'available_posts',
+        'boost_comments',
     ];
-
-    // No casts needed since features is removed
 }

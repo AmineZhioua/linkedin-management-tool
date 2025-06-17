@@ -31,11 +31,11 @@ class SubscriptionController extends Controller
             'monthly_price' => ['required', 'numeric', 'min:0'],
             'yearly_price' => ['required', 'numeric', 'min:0'],
             'description' => ['nullable', 'string'],
-            'features' => ['required', 'array', 'min:1'],
-            'features.*' => ['required', 'string', 'max:255'],
-            'linkedin' => ['required', 'boolean'],
             'whatsapp' => ['required', 'boolean'],
             'discount' => ['required', 'numeric', 'min:0', 'max:100'],
+            'boost_likes' => ['required', 'integer', 'min:0'],
+            'available_posts' => ['required', 'integer', 'min:0'],
+            'boost_comments' => ['required', 'integer', 'min:0'],
         ]);
 
         Subscription::create([
@@ -43,10 +43,11 @@ class SubscriptionController extends Controller
             'monthly_price' => $request->monthly_price,
             'yearly_price' => $request->yearly_price,
             'description' => $request->description,
-            'features' => $request->features,
-            'linkedin' => $request->linkedin,
             'whatsapp' => $request->whatsapp,
             'discount' => $request->discount,
+            'boost_likes' => $request->boost_likes,
+            'available_posts' => $request->available_posts,
+            'boost_comments' => $request->boost_comments,
         ]);
 
         return redirect()->route('admin.subscriptions.index')->with('success', 'Subscription created successfully.');
@@ -64,11 +65,11 @@ class SubscriptionController extends Controller
             'monthly_price' => ['required', 'numeric', 'min:0'],
             'yearly_price' => ['required', 'numeric', 'min:0'],
             'description' => ['nullable', 'string'],
-            'features' => ['required', 'array', 'min:1'],
-            'features.*' => ['required', 'string', 'max:255'],
-            'linkedin' => ['required', 'boolean'],
             'whatsapp' => ['required', 'boolean'],
             'discount' => ['required', 'numeric', 'min:0', 'max:100'],
+            'boost_likes' => ['required', 'integer', 'min:0'],
+            'available_posts' => ['required', 'integer', 'min:0'],
+            'boost_comments' => ['required', 'integer', 'min:0'],
         ]);
 
         $subscription->update([
@@ -76,10 +77,11 @@ class SubscriptionController extends Controller
             'monthly_price' => $request->monthly_price,
             'yearly_price' => $request->yearly_price,
             'description' => $request->description,
-            'features' => $request->features,
-            'linkedin' => $request->linkedin,
             'whatsapp' => $request->whatsapp,
             'discount' => $request->discount,
+            'boost_likes' => $request->boost_likes,
+            'available_posts' => $request->available_posts,
+            'boost_comments' => $request->boost_comments,
         ]);
 
         return redirect()->route('admin.subscriptions.index')->with('success', 'Subscription updated successfully.');
@@ -121,14 +123,14 @@ class SubscriptionController extends Controller
             'user_id' => ['required', 'exists:users,id'],
             'subscription_id' => ['required', 'exists:subscriptions,id'],
             'pricing_mode' => ['required', 'in:monthly,yearly'],
-            'date_expiration' => ['nullable', 'date', 'after:today'],
+            'expires_at' => ['nullable', 'date', 'after:today'],
         ]);
 
         UserSubscription::create([
             'user_id' => $request->user_id,
             'subscription_id' => $request->subscription_id,
             'pricing_mode' => $request->pricing_mode,
-            'date_expiration' => $request->date_expiration,
+            'expires_at' => $request->expires_at,
         ]);
 
         return redirect()->route('admin.subscriptions.active')->with('success', 'Active subscription created successfully.');
@@ -147,14 +149,14 @@ class SubscriptionController extends Controller
             'user_id' => ['required', 'exists:users,id'],
             'subscription_id' => ['required', 'exists:subscriptions,id'],
             'pricing_mode' => ['required', 'in:monthly,yearly'],
-            'date_expiration' => ['nullable', 'date', 'after:today'],
+            'expires_at' => ['nullable', 'date', 'after:today'],
         ]);
 
         $userSubscription->update([
             'user_id' => $request->user_id,
             'subscription_id' => $request->subscription_id,
             'pricing_mode' => $request->pricing_mode,
-            'date_expiration' => $request->date_expiration,
+            'expires_at' => $request->expires_at,
         ]);
 
         return redirect()->route('admin.subscriptions.active')->with('success', 'Active subscription updated successfully.');
@@ -186,9 +188,9 @@ class SubscriptionController extends Controller
             'type' => 'required|in:percentage,fixed',
             'expires_at' => 'nullable|date|after_or_equal:today',
         ]);
-    
+
         Coupon::create($validated);
-    
+
         return redirect()->route('admin.coupons.index')->with('success', 'Promo code created successfully.');
     }
 
@@ -205,9 +207,9 @@ class SubscriptionController extends Controller
             'type' => 'required|in:percentage,fixed',
             'expires_at' => 'nullable|date|after_or_equal:today',
         ]);
-    
+
         $coupon->update($validated);
-    
+
         return redirect()->route('admin.coupons.index')->with('success', 'Promo code updated successfully.');
     }
 

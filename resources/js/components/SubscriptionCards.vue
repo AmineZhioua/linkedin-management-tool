@@ -128,11 +128,6 @@
                                     />
                                     <input
                                         type="hidden"
-                                        name="linkedin"
-                                        :value="subscription.linkedin"
-                                    />
-                                    <input
-                                        type="hidden"
                                         name="whatsapp"
                                         :value="subscription.whatsapp"
                                     />
@@ -155,7 +150,7 @@
                                 <!-- Divider -->
                                 <hr class="my-3" />
 
-                                <!-- New Fields: Boost Likes and Available Posts -->
+                                <!-- Features -->
                                 <p class="fw-medium mb-2 text-sm">
                                     Fonctionnalités incluses
                                 </p>
@@ -167,7 +162,7 @@
                                             alt="check-icon"
                                             style="width: 20px; height: 20px;"
                                         />
-                                        <span>{{ subscription.boost_likes }} Boost Likes</span>
+                                        <span>{{ subscription.available_posts }} Publications disponibles</span>
                                     </li>
                                     <li class="d-flex align-items-center gap-2 mb-1">
                                         <img
@@ -175,7 +170,15 @@
                                             alt="check-icon"
                                             style="width: 20px; height: 20px;"
                                         />
-                                        <span>{{ subscription.available_posts }} Available Posts</span>
+                                        <span>{{ subscription.boost_likes }} Boost de J'aime</span>
+                                    </li>
+                                    <li class="d-flex align-items-center gap-2 mb-1">
+                                        <img
+                                            src="/build/assets/icons/check-green.svg"
+                                            alt="check-icon"
+                                            style="width: 20px; height: 20px;"
+                                        />
+                                        <span>{{ subscription.boost_comments }} Boost de Commentaires</span>
                                     </li>
                                 </ul>
 
@@ -217,20 +220,17 @@ export default {
         const pricingMode = ref('mensuel');
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
 
-        // Add new state for discount
         const appliedDiscount = ref({
             amount: 0,
             type: 'percentage',
         });
 
-        // Debugging: Log subscriptions prop
         onMounted(() => {
             console.log('Subscriptions:', props.subscriptions);
             console.log('User Subscriptions:', props.userSubscriptions);
             setupCouponHandler();
         });
 
-        // Check if the user is already subscribed to a specific subscription
         const isSubscribed = (subscriptionId, pricingMode) => {
             return Array.isArray(props.userSubscriptions) &&
                 props.userSubscriptions.some(sub =>
@@ -243,7 +243,6 @@ export default {
             pricingMode.value = type;
         };
 
-        // Calculate price with discount applied
         const calculateDiscountedPrice = (originalPrice) => {
             originalPrice = parseFloat(originalPrice);
             if (appliedDiscount.value.amount <= 0) {
@@ -257,7 +256,6 @@ export default {
             }
         };
 
-        // Set up coupon application handler
         const setupCouponHandler = () => {
             const applyButton = document.getElementById('apply-coupon');
             if (!applyButton) return;
@@ -312,7 +310,6 @@ export default {
                     price: finalPrice,
                     pricingMode: pricingMode.value,
                     subscription_id: subscription.id,
-                    linkedin: subscription.linkedin,
                     whatsapp: subscription.whatsapp,
                     discount: subscription.discount,
                 });

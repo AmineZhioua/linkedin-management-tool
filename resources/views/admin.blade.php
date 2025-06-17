@@ -739,245 +739,237 @@
                             @endif
                         @show
 
-                        @section('subscriptions-index')
-                            @if (Route::is('admin.subscriptions.index'))
-                                <div class="card">
-                                    <div class="card-header d-flex align-items-center justify-content-between">
-                                        <h5 class="card-title m-0 me-2">Abonnements</h5>
-                                        <a href="{{ route('admin.subscriptions.create') }}" class="btn btn-primary">Créer un abonnement</a>
-                                    </div>
-                                    <div class="table-responsive">
-                                        <table class="table table-borderless border-top">
-                                            <thead class="border-bottom">
-                                                <tr>
-                                                    <th>ID</th>
-                                                    <th>Nom</th>
-                                                    <th>Prix mensuel</th>
-                                                    <th>Prix annuel</th>
-                                                    <th>Description</th>
-                                                    <th>Fonctionnalités</th>
-                                                    <th>LinkedIn</th>
-                                                    <th>WhatsApp</th>
-                                                    <th>Réduction (%)</th>
-                                                    <th>Actions</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                @foreach ($subscriptions ?? [] as $subscription)
-                                                    <tr>
-                                                        <td>{{ $subscription->id }}</td>
-                                                        <td>{{ $subscription->name }}</td>
-                                                        <td>{{ number_format($subscription->monthly_price, 2) }}</td>
-                                                        <td>{{ number_format($subscription->yearly_price, 2) }}</td>
-                                                        <td>{{ $subscription->description ?? 'Aucune description' }}</td>
-                                                        <td>
-                                                            <ul>
-                                                                @if (is_array($subscription->features) || is_object($subscription->features))
-                                                                    @foreach ($subscription->features as $feature)
-                                                                        <li>{{ $feature }}</li>
-                                                                    @endforeach
-                                                                @else
-                                                                    <li>{{ $subscription->features ?? 'Aucune fonctionnalité' }}</li>
-                                                                @endif
-                                                            </ul>
-                                                        </td>
-                                                        <td>
-                                                            <span class="{{ $subscription->linkedin ? 'text-success' : 'text-danger' }}">
-                                                                {{ $subscription->linkedin ? 'Oui' : 'Non' }}
-                                                            </span>
-                                                        </td>
-                                                        <td>
-                                                            <span class="{{ $subscription->whatsapp ? 'text-success' : 'text-danger' }}">
-                                                                {{ $subscription->whatsapp ? 'Oui' : 'Non' }}
-                                                            </span>
-                                                        </td>
-                                                        <td>{{ number_format($subscription->discount, 2) }}</td>
-                                                        <td>
-                                                            <a href="{{ route('admin.subscriptions.edit', $subscription) }}" class="btn btn-sm btn-outline-primary me-2">Modifier</a>
-                                                            <form action="{{ route('admin.subscriptions.destroy', $subscription) }}" method="POST" style="display: inline;">
-                                                                @csrf
-                                                                @method('DELETE')
-                                                                <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Êtes-vous sûr ?')">Supprimer</button>
-                                                            </form>
-                                                        </td>
-                                                    </tr>
-                                                @endforeach
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            @endif
-                        @show
+ <!-- Subscriptions Index Section -->
+@section('subscriptions-index')
+    @if (Route::is('admin.subscriptions.index'))
+        <div class="card">
+            <div class="card-header d-flex align-items-center justify-content-between">
+                <h5 class="card-title m-0 me-2">Abonnements</h5>
+                <a href="{{ route('admin.subscriptions.create') }}" class="btn btn-primary">Créer un abonnement</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-borderless border-top">
+                    <thead class="border-bottom">
+                        <tr>
+                            <th>ID</th>
+                            <th>Nom</th>
+                            <th>Prix mensuel</th>
+                            <th>Prix annuel</th>
+                            <th>Description</th>
+                            <th>WhatsApp</th>
+                            <th>Réduction (%)</th>
+                            <th>Boost J'aime</th>
+                            <th>Publications disponibles</th>
+                            <th>Boost Commentaires</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($subscriptions ?? [] as $subscription)
+                            <tr>
+                                <td>{{ $subscription->id }}</td>
+                                <td>{{ $subscription->name }}</td>
+                                <td>{{ number_format($subscription->monthly_price, 2) }}€</td>
+                                <td>{{ number_format($subscription->yearly_price, 2) }}€</td>
+                                <td>{{ $subscription->description ?? 'Aucune description' }}</td>
+                                <td>
+                                    <span class="{{ $subscription->whatsapp ? 'text-success' : 'text-danger' }}">
+                                        {{ $subscription->whatsapp ? 'Oui' : 'Non' }}
+                                    </span>
+                                </td>
+                                <td>{{ number_format($subscription->discount, 2) }}</td>
+                                <td>{{ $subscription->boost_likes }}</td>
+                                <td>{{ $subscription->available_posts }}</td>
+                                <td>{{ $subscription->boost_comments }}</td>
+                                <td>
+                                    <a href="{{ route('admin.subscriptions.edit', $subscription) }}" class="btn btn-sm btn-outline-primary me-2">Modifier</a>
+                                    <form action="{{ route('admin.subscriptions.destroy', $subscription) }}" method="POST" style="display: inline;">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Êtes-vous sûr ?')">Supprimer</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    @endif
+@show
 
-                        @section('subscriptions-create')
-                            @if (Route::is('admin.subscriptions.create'))
-                                <div class="card">
-                                    <div class="card-header">
-                                        <h5 class="card-title mb-0">Créer un abonnement</h5>
-                                    </div>
-                                    <div class="card-body">
-                                        <form action="{{ route('admin.subscriptions.store') }}" method="POST">
-                                            @csrf
-                                            <div class="mb-3">
-                                                <label for="name" class="form-label">Nom</label>
-                                                <input type="text" class="form-control" name="name" id="name" required>
-                                                @error('name')
-                                                    <div class="text-danger mt-1">{{ $message }}</div>
-                                                @enderror
-                                            </div>
-                                            <div class="mb-3">
-                                                <label for="monthly_price" class="form-label">Prix mensuel</label>
-                                                <input type="number" step="0.01" class="form-control" name="monthly_price" id="monthly_price" required>
-                                                @error('monthly_price')
-                                                    <div class="text-danger mt-1">{{ $message }}</div>
-                                                @enderror
-                                            </div>
-                                            <div class="mb-3">
-                                                <label for="yearly_price" class="form-label">Prix annuel</label>
-                                                <input type="number" step="0.01" class="form-control" name="yearly_price" id="yearly_price" required>
-                                                @error('yearly_price')
-                                                    <div class="text-danger mt-1">{{ $message }}</div>
-                                                @enderror
-                                            </div>
-                                            <div class="mb-3">
-                                                <label for="description" class="form-label">Description</label>
-                                                <textarea class="form-control" name="description" id="description"></textarea>
-                                                @error('description')
-                                                    <div class="text-danger mt-1">{{ $message }}</div>
-                                                @enderror
-                                            </div>
-                                            <div class="mb-3">
-                                                <label for="features" class="form-label">Fonctionnalités (une par ligne)</label>
-                                                <textarea class="form-control" name="features[]" id="features" rows="3" required></textarea>
-                                                @error('features')
-                                                    <div class="text-danger mt-1">{{ $message }}</div>
-                                                @enderror
-                                                @error('features.*')
-                                                    <div class="text-danger mt-1">{{ $message }}</div>
-                                                @enderror
-                                            </div>
-                                            <div class="mb-3">
-                                                <label for="linkedin" class="form-label">Accès LinkedIn</label>
-                                                <select class="form-select" name="linkedin" id="linkedin" required>
-                                                    <option value="1">Oui</option>
-                                                    <option value="0" selected>Non</option>
-                                                </select>
-                                                @error('linkedin')
-                                                    <div class="text-danger mt-1">{{ $message }}</div>
-                                                @enderror
-                                            </div>
-                                            <div class="mb-3">
-                                                <label for="whatsapp" class="form-label">Accès WhatsApp</label>
-                                                <select class="form-select" name="whatsapp" id="whatsapp" required>
-                                                    <option value="1">Oui</option>
-                                                    <option value="0" selected>Non</option>
-                                                </select>
-                                                @error('whatsapp')
-                                                    <div class="text-danger mt-1">{{ $message }}</div>
-                                                @enderror
-                                            </div>
-                                            <div class="mb-3">
-                                                <label for="discount" class="form-label">Réduction (%)</label>
-                                                <input type="number" step="0.01" class="form-control" name="discount" id="discount" required>
-                                                @error('discount')
-                                                    <div class="text-danger mt-1">{{ $message }}</div>
-                                                @enderror
-                                            </div>
-                                            <div>
-                                                <button type="submit" class="btn btn-primary">Créer</button>
-                                                <a href="{{ route('admin.subscriptions.index') }}" class="btn btn-link">Annuler</a>
-                                            </div>
-                                        </form>
-                                    </div>
-                                </div>
-                            @endif
-                        @show
+<!-- Subscriptions Create Section -->
+@section('subscriptions-create')
+    @if (Route::is('admin.subscriptions.create'))
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Créer un abonnement</h5>
+            </div>
+            <div class="card-body">
+                <form action="{{ route('admin.subscriptions.store') }}" method="POST">
+                    @csrf
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Nom</label>
+                        <input type="text" class="form-control" name="name" id="name" required>
+                        @error('name')
+                            <div class="text-danger mt-1">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div class="mb-3">
+                        <label for="monthly_price" class="form-label">Prix mensuel</label>
+                        <input type="number" step="0.01" class="form-control" name="monthly_price" id="monthly_price" required>
+                        @error('monthly_price')
+                            <div class="text-danger mt-1">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div class="mb-3">
+                        <label for="yearly_price" class="form-label">Prix annuel</label>
+                        <input type="number" step="0.01" class="form-control" name="yearly_price" id="yearly_price" required>
+                        @error('yearly_price')
+                            <div class="text-danger mt-1">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" name="description" id="description"></textarea>
+                        @error('description')
+                            <div class="text-danger mt-1">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div class="mb-3">
+                        <label for="whatsapp" class="form-label">Accès WhatsApp</label>
+                        <select class="form-select" name="whatsapp" id="whatsapp" required>
+                            <option value="1">Oui</option>
+                            <option value="0" selected>Non</option>
+                        </select>
+                        @error('whatsapp')
+                            <div class="text-danger mt-1">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div class="mb-3">
+                        <label for="discount" class="form-label">Réduction (%)</label>
+                        <input type="number" step="0.01" class="form-control" name="discount" id="discount" required>
+                        @error('discount')
+                            <div class="text-danger mt-1">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div class="mb-3">
+                        <label for="boost_likes" class="form-label">Boost J'aime</label>
+                        <input type="number" class="form-control" name="boost_likes" id="boost_likes" required>
+                        @error('boost_likes')
+                            <div class="text-danger mt-1">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div class="mb-3">
+                        <label for="available_posts" class="form-label">Publications disponibles</label>
+                        <input type="number" class="form-control" name="available_posts" id="available_posts" required>
+                        @error('available_posts')
+                            <div class="text-danger mt-1">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div class="mb-3">
+                        <label for="boost_comments" class="form-label">Boost Commentaires</label>
+                        <input type="number" class="form-control" name="boost_comments" id="boost_comments" required>
+                        @error('boost_comments')
+                            <div class="text-danger mt-1">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div>
+                        <button type="submit" class="btn btn-primary">Créer</button>
+                        <a href="{{ route('admin.subscriptions.index') }}" class="btn btn-link">Annuler</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    @endif
+@show
 
-                        @section('subscriptions-edit')
-                            @if (Route::is('admin.subscriptions.edit'))
-                                <div class="card">
-                                    <div class="card-header">
-                                        <h5 class="card-title mb-0">Modifier un abonnement</h5>
-                                    </div>
-                                    <div class="card-body">
-                                        <form action="{{ route('admin.subscriptions.update', $subscription) }}" method="POST">
-                                            @csrf
-                                            @method('PUT')
-                                            <div class="mb-3">
-                                                <label for="name" class="form-label">Nom</label>
-                                                <input type="text" class="form-control" name="name" id="name" value="{{ old('name', $subscription->name) }}" required>
-                                                @error('name')
-                                                    <div class="text-danger mt-1">{{ $message }}</div>
-                                                @enderror
-                                            </div>
-                                            <div class="mb-3">
-                                                <label for="monthly_price" class="form-label">Prix mensuel</label>
-                                                <input type="number" step="0.01" class="form-control" name="monthly_price" id="monthly_price" value="{{ old('monthly_price', $subscription->monthly_price) }}" required>
-                                                @error('monthly_price')
-                                                    <div class="text-danger mt-1">{{ $message }}</div>
-                                                @enderror
-                                            </div>
-                                            <div class="mb-3">
-                                                <label for="yearly_price" class="form-label">Prix annuel</label>
-                                                <input type="number" step="0.01" class="form-control" name="yearly_price" id="yearly_price" value="{{ old('yearly_price', $subscription->yearly_price) }}" required>
-                                                @error('yearly_price')
-                                                    <div class="text-danger mt-1">{{ $message }}</div>
-                                                @enderror
-                                            </div>
-                                            <div class="mb-3">
-                                                <label for="description" class="form-label">Description</label>
-                                                <textarea class="form-control" name="description" id="description">{{ old('description', $subscription->description) }}</textarea>
-                                                @error('description')
-                                                    <div class="text-danger mt-1">{{ $message }}</div>
-                                                @enderror
-                                            </div>
-                                            <div class="mb-3">
-                                                <label for="features" class="form-label">Fonctionnalités (une par ligne)</label>
-                                                <textarea class="form-control" name="features[]" id="features" rows="3" required>{{ old('features', implode("\n", (array) $subscription->features)) }}</textarea>
-                                                @error('features')
-                                                    <div class="text-danger mt-1">{{ $message }}</div>
-                                                @enderror
-                                                @error('features.*')
-                                                    <div class="text-danger mt-1">{{ $message }}</div>
-                                                @enderror
-                                            </div>
-                                            <div class="mb-3">
-                                                <label for="linkedin" class="form-label">Accès LinkedIn</label>
-                                                <select class="form-select" name="linkedin" id="linkedin" required>
-                                                    <option value="1" {{ $subscription->linkedin ? 'selected' : '' }}>Oui</option>
-                                                    <option value="0" {{ !$subscription->linkedin ? 'selected' : '' }}>Non</option>
-                                                </select>
-                                                @error('linkedin')
-                                                    <div class="text-danger mt-1">{{ $message }}</div>
-                                                @enderror
-                                            </div>
-                                            <div class="mb-3">
-                                                <label for="whatsapp" class="form-label">Accès WhatsApp</label>
-                                                <select class="form-select" name="whatsapp" id="whatsapp" required>
-                                                    <option value="1" {{ $subscription->whatsapp ? 'selected' : '' }}>Oui</option>
-                                                    <option value="0" {{ !$subscription->whatsapp ? 'selected' : '' }}>Non</option>
-                                                </select>
-                                                @error('whatsapp')
-                                                    <div class="text-danger mt-1">{{ $message }}</div>
-                                                @enderror
-                                            </div>
-                                            <div class="mb-3">
-                                                <label for="discount" class="form-label">Réduction (%)</label>
-                                                <input type="number" step="0.01" class="form-control" name="discount" id="discount" value="{{ old('discount', $subscription->discount) }}" required>
-                                                @error('discount')
-                                                    <div class="text-danger mt-1">{{ $message }}</div>
-                                                @enderror
-                                            </div>
-                                            <div>
-                                                <button type="submit" class="btn btn-primary">Mettre à jour</button>
-                                                <a href="{{ route('admin.subscriptions.index') }}" class="btn btn-link">Annuler</a>
-                                            </div>
-                                        </form>
-                                    </div>
-                                </div>
-                            @endif
-                        @show
-
+<!-- Subscriptions Edit Section -->
+@section('subscriptions-edit')
+    @if (Route::is('admin.subscriptions.edit'))
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Modifier un abonnement</h5>
+            </div>
+            <div class="card-body">
+                <form action="{{ route('admin.subscriptions.update', $subscription) }}" method="POST">
+                    @csrf
+                    @method('PUT')
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Nom</label>
+                        <input type="text" class="form-control" name="name" id="name" value="{{ old('name', $subscription->name) }}" required>
+                        @error('name')
+                            <div class="text-danger mt-1">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div class="mb-3">
+                        <label for="monthly_price" class="form-label">Prix mensuel</label>
+                        <input type="number" step="0.01" class="form-control" name="monthly_price" id="monthly_price" value="{{ old('monthly_price', $subscription->monthly_price) }}" required>
+                        @error('monthly_price')
+                            <div class="text-danger mt-1">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div class="mb-3">
+                        <label for="yearly_price" class="form-label">Prix annuel</label>
+                        <input type="number" step="0.01" class="form-control" name="yearly_price" id="yearly_price" value="{{ old('yearly_price', $subscription->yearly_price) }}" required>
+                        @error('yearly_price')
+                            <div class="text-danger mt-1">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" name="description" id="description">{{ old('description', $subscription->description) }}</textarea>
+                        @error('description')
+                            <div class="text-danger mt-1">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div class="mb-3">
+                        <label for="whatsapp" class="form-label">Accès WhatsApp</label>
+                        <select class="form-select" name="whatsapp" id="whatsapp" required>
+                            <option value="1" {{ $subscription->whatsapp ? 'selected' : '' }}>Oui</option>
+                            <option value="0" {{ !$subscription->whatsapp ? 'selected' : '' }}>Non</option>
+                        </select>
+                        @error('whatsapp')
+                            <div class="text-danger mt-1">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div class="mb-3">
+                        <label for="discount" class="form-label">Réduction (%)</label>
+                        <input type="number" step="0.01" class="form-control" name="discount" id="discount" value="{{ old('discount', $subscription->discount) }}" required>
+                        @error('discount')
+                            <div class="text-danger mt-1">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div class="mb-3">
+                        <label for="boost_likes" class="form-label">Boost J'aime</label>
+                        <input type="number" class="form-control" name="boost_likes" id="boost_likes" value="{{ old('boost_likes', $subscription->boost_likes) }}" required>
+                        @error('boost_likes')
+                            <div class="text-danger mt-1">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div class="mb-3">
+                        <label for="available_posts" class="form-label">Publications disponibles</label>
+                        <input type="number" class="form-control" name="available_posts" id="available_posts" value="{{ old('available_posts', $subscription->available_posts) }}" required>
+                        @error('available_posts')
+                            <div class="text-danger mt-1">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div class="mb-3">
+                        <label for="boost_comments" class="form-label">Boost Commentaires</label>
+                        <input type="number" class="form-control" name="boost_comments" id="boost_comments" value="{{ old('boost_comments', $subscription->boost_comments) }}" required>
+                        @error('boost_comments')
+                            <div class="text-danger mt-1">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div>
+                        <button type="submit" class="btn btn-primary">Mettre à jour</button>
+                        <a href="{{ route('admin.subscriptions.index') }}" class="btn btn-link">Annuler</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    @endif
+@show
                         @section('subscriptions-active')
                             @if (Route::is('admin.subscriptions.active'))
                                 <div class="card">
