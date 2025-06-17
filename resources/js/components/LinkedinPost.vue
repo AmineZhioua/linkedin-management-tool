@@ -246,7 +246,7 @@ export default {
     mounted() {
         this.getLinkedinUserbyPost(this.post);
         this.parseContent();
-        console.log(this.post)
+        console.log(this.post);
     },
 
     computed: {
@@ -254,7 +254,8 @@ export default {
             return this.post.type === 'text' && this.parsedContent && this.parsedContent.caption && this.parsedContent.caption.length > this.maxLength;
         },
         isCaptionLong() {
-            return (this.post.type === 'video' || this.post.type === 'image') && this.parsedContent && this.parsedContent.caption && this.parsedContent.caption.length > this.maxLength;
+            return (this.post.type === 'video' || this.post.type === 'image' || this.post.type === 'multiimage') 
+                && this.parsedContent && this.parsedContent.caption && this.parsedContent.caption.length > this.maxLength;
         },
         displayedText() {
             if (this.post.type === 'text' && this.parsedContent && this.parsedContent.caption) {
@@ -263,7 +264,9 @@ export default {
             return '';
         },
         displayedCaption() {
-            if ((this.post.type === 'video' || this.post.type === 'image') && this.parsedContent && this.parsedContent.caption) {
+            if ((this.post.type === 'video' || this.post.type === 'image' || this.post.type === 'multiimage') 
+                        && this.parsedContent && this.parsedContent.caption) {
+
                 return this.isExpanded ? this.parsedContent.caption : this.parsedContent.caption.slice(0, this.maxLength) + '...';
             }
             return '';

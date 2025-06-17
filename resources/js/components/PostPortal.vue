@@ -181,7 +181,19 @@
                             class="w-full"
                             v-if="newPost.type === 'multiimage'"
                         >
-                            <div class="max-h-[300px] max-w-full overflow-scroll">
+                            <div v-if="newPost.content.file_paths">
+                                <p>Fichiers choisi:</p>
+                                <div class="flex gap-1">
+                                    <img 
+                                        v-if="newPost.type === 'multiimage'" 
+                                        v-for="image in newPost.content.file_paths"
+                                        :src="getMediaUrl(image)" 
+                                        alt="Current Image" 
+                                        style="max-width: 100px;" 
+                                    />
+                                </div>
+                            </div>
+                            <div class="max-h-[150px] max-w-[500px] mt-1 overflow-scroll">
                                 <FileUpload 
                                     name="demo[]" 
                                     :multiple="true" 
@@ -357,18 +369,12 @@
                 <!-- Preview Content -->
                 <!-- Text Type Preview -->
                 <div v-if="newPost.type === 'text'" class="px-2 my-2 max-h-[300px]">
-                    <ScrollPanel style="max-width: 700px; height: 200px;" class="p-2 rounded-lg">
-                        <p>{{ newPost.content.caption }}</p>
-                    </ScrollPanel>
-                    <!-- <p class="mb-0 text-black">{{ newPost.content.caption }}</p> -->
+                    <p class="mb-0 text-black">{{ newPost.content.caption }}</p>
                 </div>
 
                 <!-- Image Type Preview -->
                 <div v-if="newPost.type === 'image'" class="w-full h-auto">
-                    <ScrollPanel style="max-width: 700px; height: 200px;" class="p-2 rounded-lg">
-                        <p>{{ newPost.content.caption }}</p>
-                    </ScrollPanel>
-                    <!-- <p class="my-2 px-2">{{ newPost.content.caption }}</p> -->
+                    <p class="my-2 px-2">{{ newPost.content.caption }}</p>
                     <img 
                         v-if="imagePreviewUrl || newPost.content.file_path"
                         :src="imagePreviewUrl || getMediaUrl(newPost.content.file_path)" 
@@ -379,10 +385,7 @@
 
                 <!-- Multi Image Type Preview -->
                 <div v-if="newPost.type === 'multiimage'" class="w-full h-auto">
-                    <ScrollPanel style="max-width: 700px; height: 200px;" class="p-2 rounded-lg">
-                        <p>{{ newPost.content.caption }}</p>
-                    </ScrollPanel>
-                    <!-- <p class="my-2 px-2">{{ newPost.content.caption }}</p> -->
+                    <p class="my-2 px-2">{{ newPost.content.caption }}</p>
                     <div v-if="imageLayout.images.length === 1" class="w-full">
                         <img :src="imageLayout.images[0]" class="object-fill w-full" alt="Preview" />
                     </div>
@@ -407,10 +410,7 @@
 
                 <!-- Video Type Preview -->
                 <div v-if="newPost.type === 'video'" class="w-full h-auto">
-                    <ScrollPanel style="max-width: 700px; height: 200px;" class="p-2 rounded-lg">
-                        <p>{{ newPost.content.caption }}</p>
-                    </ScrollPanel>
-                    <!-- <p class="my-2 px-2">{{ newPost.content.caption }}</p> -->
+                    <p class="my-2 px-2">{{ newPost.content.caption }}</p>
                     <video 
                         v-if="videoPreviewUrl || newPost.content.file_path" 
                         controls 
@@ -423,10 +423,7 @@
 
                 <!-- Article Type Preview -->
                 <div v-if="newPost.type === 'article'" class="w-full h-auto">
-                    <ScrollPanel style="max-width: 700px; height: 200px;" class="p-2 rounded-lg">
-                        <p>{{ newPost.content.caption }}</p>
-                    </ScrollPanel>
-                    <!-- <p class="my-2 px-2">{{ newPost.content.caption }}</p> -->
+                    <p class="my-2 px-2">{{ newPost.content.caption }}</p>
                     <div class="border p-2 rounded-md">
                         <a :href="newPost.content.url || '#'" target="_blank" class="text-blue-600 hover:underline">
                             {{ newPost.content.title || 'Titre de l\'article' }}
@@ -934,6 +931,25 @@ export default {
                         }
                         break;
                         
+                    case "multiimage":
+                        contentObj.caption = this.newPost.content.caption.trim();
+                        
+                        // Handle new files
+                        if (this.newPost.content.files && this.newPost.content.files.length > 0) {
+                            // New files are being uploaded - they will replace existing files
+                            contentObj.original_filenames = this.newPost.content.files.map(file => file.name);
+                            // file_paths will be handled by the backend
+                        } else {
+                            // No new files - preserve existing file information
+                            if (this.newPost.content.file_paths) {
+                                contentObj.file_paths = [...this.newPost.content.file_paths];
+                            }
+                            if (this.newPost.content.original_filenames) {
+                                contentObj.original_filenames = [...this.newPost.content.original_filenames];
+                            }
+                        }
+                        break;
+                        
                     case "article":
                         contentObj.url = this.newPost.content.url;
                         contentObj.title = this.newPost.content.title;
@@ -945,8 +961,19 @@ export default {
                 updateData.append("content", JSON.stringify(contentObj));
                 updateData.append('_method', 'PUT');
 
-                if (this.newPost.content.file) {
-                    updateData.append('file', this.newPost.content.file);
+                // Handle file uploads based on post type
+                if (this.newPost.type === "multiimage") {
+                    // Handle multiple files for multiimage posts
+                    if (this.newPost.content.files && this.newPost.content.files.length > 0) {
+                        this.newPost.content.files.forEach((file, index) => {
+                            updateData.append(`files[${index}]`, file);
+                        });
+                    }
+                } else {
+                    // Handle single file for image/video posts
+                    if (this.newPost.content.file) {
+                        updateData.append('file', this.newPost.content.file);
+                    }
                 }
 
                 const updateResponse = await axios.post('/linkedin/update-post', updateData, {
@@ -1127,5 +1154,19 @@ export default {
         rgb(255 125 82) 100%
     );
     border: none;
+}
+
+::-webkit-scrollbar {
+    width: 6px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+.no-scroll {
+    overflow: hidden;
+}
+::-webkit-scrollbar-thumb {
+    background: transparent;
+    border-radius: 1px;
 }
 </style>

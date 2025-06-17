@@ -222,7 +222,7 @@ export default {
 </script>
 
 <style>
-::-webkit-scrollbar {
+/* ::-webkit-scrollbar {
   width: 8px;
 }
 
@@ -233,5 +233,5 @@ export default {
 ::-webkit-scrollbar-thumb {
   background: transparent;
   border-radius: 20px;
-}
+} */
 </style>

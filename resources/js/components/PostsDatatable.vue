@@ -10,7 +10,7 @@
         <div class="flex items-center gap-2">
             <!-- Filtrer par Status -->
             <div class="flex flex-col">
-                <label for="statuy">Statut</label>
+                <label for="statut">Statut</label>
                 <Select v-model="selectedPostStatus" :options="PostStatuses" showClear optionLabel="name" 
                     placeholder="Choisissez un statut" class="w-full md:w-56"
                 >
@@ -73,11 +73,15 @@
                 </template>
             </Column>
 
-            <Column field="type" header="Type"></Column>
+            <Column header="Type">
+                <template #body="slotProps">
+                    {{ formatPostType(slotProps.data.type) }}
+                </template>
+            </Column>
 
             <Column header="Heure de Publication Prévue">
                 <template #body="slotProps">
-                    {{ formatDate(slotProps.data.scheduled_time) }}
+                    {{ formatDateWithMonth(slotProps.data.scheduled_time) }}
                 </template>
             </Column>
             <Column header="Statut">
@@ -97,7 +101,7 @@
             </Column>
             <Column header="Créé en">
                 <template #body="slotProps">
-                    {{ formatDate(slotProps.data.created_at) }}
+                    {{ formatDateWithMonth(slotProps.data.created_at) }}
                 </template>
             </Column>
             <Column header="Actions">
@@ -122,6 +126,7 @@ import {
     getUsername, 
     getCampaignColor,
     formatDate,
+    formatDateWithMonth,
 } from '../services/datatables.js';
 
 export default {
@@ -195,6 +200,7 @@ export default {
         getUsername, 
         getCampaignColor,
         formatDate,
+        formatDateWithMonth,
 
 
         // THIS FUNCTION WAS MADE FOR THE ITEMS IN DATATABLE
@@ -270,6 +276,17 @@ export default {
                 'draft': 'Brouillons'
             };
             return statusMap[status] || status;
+        },
+
+        formatPostType(type) {
+            switch(type) {
+                case 'text': return "Texte";
+                case 'video': return "Vidéo";
+                case 'image': return 'Image';
+                case 'multiimage': return 'Multi-image';
+                case 'artcile': return 'Article';
+                default: return 'Inconnu'
+            }
         },
     },
 };

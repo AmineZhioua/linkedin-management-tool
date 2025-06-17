@@ -24,6 +24,7 @@
       :all-linkedin-accounts="userLinkedinAccounts"
       :all-linkedin-posts="userLinkedinPosts"
       :all-campaigns="campaigns"
+      @open-ai-recommend="handleAIRecommend"
     /> 
 
     <!-- LinkedIn Accounts Section -->
@@ -105,9 +106,14 @@
       @close-ai-comment-portal="showAICommentPortal = false"
     />
 
-    <!-- <recommendation-portal 
-
-    /> -->
+    <ai-guide
+      v-if="showAIRecommend"
+      :user-linkedin-accounts="userLinkedinAccounts"
+      :all-linkedin-posts="userLinkedinPosts"
+      :all-campaigns="campaigns"
+      @open-campaign-read-mode="handleCampaignReadMode"
+      @close-ai-recommend="handleCloseAIRecommend"
+    />
 
   </div>
 </template>
@@ -166,7 +172,7 @@ export default {
 
   data() {
     return {
-      cardToSet: "calendar",
+      cardToSet: "linkedinAccounts",
       // Portals variables
       showCampaignPostPortal: false,
       showCampaignPortal: false,
@@ -199,6 +205,7 @@ export default {
       boostRequestToUpdate: null,
       // AI Comment Portal variables
       showAICommentPortal: false,
+      showAIRecommend: false,
     };
   },
 
@@ -222,6 +229,16 @@ export default {
       this.readModeStatus = data.readMode || false;
       this.selectedAccount = data.account || null;
       this.showPortal = true;
+      console.log(this.selectedPost)
+    },
+
+    // AI RECOMMENDATION PORTAL FUNCTIONS
+    handleAIRecommend() {
+      this.showAIRecommend = true;
+    },
+
+    handleCloseAIRecommend() {
+      this.showAIRecommend = false;
     },
 
     handleOpenCampaignPostPortal(data) {

@@ -1,6 +1,6 @@
 <template>
     <div class="bg-black bg-opacity-50 inset-0 h-full w-full absolute"></div>
-    <div class="flex items-center w-full h-[600px] p-4 justify-center gap-2 absolute top-[50%] left-[50%] translate-y-[-50%] translate-x-[-50%]">
+    <div class="flex items-center w-full h-[600px] p-4 justify-center gap-2 absolute top-[50%] left-[50%] translate-y-[-50%] translate-x-[-50%] z-50">
         <!-- AI Assistant Section -->
         <div class="flex flex-col justify-between gap-4 h-full p-4 bg-white rounded-lg min-w-[450px]">
             <!-- Heading -->
@@ -115,7 +115,7 @@
                             v-if="postToEdit.type === 'image' || postToEdit.type === 'video'"
                         >
                             <div v-if="postToEdit.content.file_path">
-                                <p>Current file:</p>
+                                <p>Fichier Choisi:</p>
                                 <img v-if="postToEdit.type === 'image'" :src="getMediaUrl(postToEdit.content.file_path)" alt="Current Image" style="max-width: 100px;" />
                                 <video v-if="postToEdit.type === 'video'" controls style="max-width: 100px; z-index: 10;">
                                     <source :src="getMediaUrl(postToEdit.content.file_path)" type="video/mp4">
@@ -137,6 +137,18 @@
                             class="w-full"
                             v-if="postToEdit.type === 'multiimage'"
                         >
+                            <div class="flex gap-1">
+                                <div v-if="postToEdit.content.file_paths">
+                                    <p>Fichiers choisi:</p>
+                                    <img 
+                                        v-if="postToEdit.type === 'multiimage'" 
+                                        v-for="image in postToEdit.content.file_paths"
+                                        :src="getMediaUrl(image)" 
+                                        alt="Current Image" 
+                                        style="max-width: 100px;" 
+                                    />
+                                </div>
+                            </div>
                             <div class="max-h-[300px] max-w-full overflow-scroll">
                                 <FileUpload 
                                     name="demo[]" 
@@ -708,5 +720,18 @@ export default {
         rgb(255 125 82) 100%
     );
     border: none;
+}
+::-webkit-scrollbar {
+    width: 6px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+.no-scroll {
+    overflow: hidden;
+}
+::-webkit-scrollbar-thumb {
+    background: transparent;
+    border-radius: 1px;
 }
 </style>

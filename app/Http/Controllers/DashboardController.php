@@ -59,7 +59,7 @@ class DashboardController extends Controller
         try {
             $validated = $request->validate([
                 'user_id' => 'required|integer|exists:users,id',
-                'campaign_id' => 'nullable|integer',
+                'campaign_id' => 'nullable',
                 'linkedin_user_id' => 'required|integer|exists:linkedin_users,id',
                 'event_name' => 'required|string',
                 'message' => 'required|string',
@@ -67,7 +67,7 @@ class DashboardController extends Controller
         
                 $notification = UserNotification::create([
                     'user_id' => $validated['user_id'],
-                    'campaign_id' => $validated['campaign_id'],
+                    'campaign_id' => $validated['campaign_id'] ?? null,
                     'linkedin_user_id' => $validated['linkedin_user_id'],
                     'event_name' => $validated['event_name'],
                     'message' => $validated['message'],
@@ -84,7 +84,7 @@ class DashboardController extends Controller
                 'data' => $request->all()
             ]);
             return response()->json([
-                'error' => 'Une erreur s\'est produite lors de l\'enregistrement des notifications ! ' . $e
+                'error' => 'Une erreur s\'est produite lors de l\'enregistrement des notifications ! ' . $e->getMessage()
             ], 500);
         }
     }

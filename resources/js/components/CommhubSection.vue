@@ -742,4 +742,18 @@ export default {
     background-color: rgb(59, 58, 58);
     cursor: pointer;
 }
+
+::-webkit-scrollbar {
+    width: 6px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+.no-scroll {
+    overflow: hidden;
+}
+::-webkit-scrollbar-thumb {
+    background: transparent;
+    border-radius: 1px;
+}
 </style>

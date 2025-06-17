@@ -26,7 +26,7 @@
             overflow-y: auto;
         }
 
-        body::-webkit-scrollbar {
+        /* body::-webkit-scrollbar {
             width: 6px;
         }
 
@@ -37,7 +37,7 @@
         body::-webkit-scrollbar-thumb {
             background: linear-gradient(135deg, rgb(255 16 185) 0%, rgb(255 125 82) 100%);
             border-radius: 1px;
-        }
+        } */
 
     </style>
 </head>

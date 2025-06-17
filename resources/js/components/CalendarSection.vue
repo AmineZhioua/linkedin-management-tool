@@ -59,11 +59,6 @@
                         <h3 class="fw-semibold text-lg mb-0 text-white">{{ linkedinAccount.linkedin_firstname }} {{ linkedinAccount.linkedin_lastname }}</h3>
                         <p class="mb-0 text-sm text-gray-400">Compte personnel</p>
                     </div>
-                    <button class="cursor-pointer ml-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#ffffff">
-                            <path d="m370-80-16-128q-13-5-24.5-12T307-235l-119 50L78-375l103-78q-1-7-1-13.5v-27q0-6.5 1-13.5L78-585l110-190 119 50q11-8 23-15t24-12l16-128h220l16 128q13 5 24.5 12t22.5 15l119-50 110 190-103 78q1 7 1 13.5v27q0 6.5-2 13.5l103 78-110 190-118-50q-11 8-23 15t-24 12L590-80H370Zm70-80h79l14-106q31-8 57.5-23.5T639-327l99 41 39-68-86-65q5-14 7-29.5t2-31.5q0-16-2-31.5t-7-29.5l86-65-39-68-99 42q-22-23-48.5-38.5T533-694l-13-106h-79l-14 106q-31 8-57.5 23.5T321-633l-99-41-39 68 86 64q-5 15-7 30t-2 32q0 16 2 31t7 30l-86 65 39 68 99-42q22 23 48.5 38.5T427-266l13 106Zm42-180q58 0 99-41t41-99q0-58-41-99t-99-41q-59 0-99.5 41T342-480q0 58 40.5 99t99.5 41Zm-2-140Z"/>
-                        </svg>
-                    </button>
                 </div>
             </div>
             <div class="flex items-center gap-2">
@@ -147,7 +142,7 @@
                             >
                                 <div class="flex items-center justify-between">
                                     <div class="flex items-center gap-2"
-                                        @click="item.type === 'campaign' ? openCampaignInReadMode(item.linkedin_user_id, item.id) : openPostReadMode(item)">
+                                        @click="item.real_type === 'campaign' ? openCampaignInReadMode(item.linkedin_user_id, item.id) : openPostReadMode(item)">
                                         <div class="relative">
                                             <img 
                                                 :src="getProfilePicture(userLinkedinAccounts, item.linkedin_user_id)" 
@@ -173,7 +168,7 @@
                                                 {{ item.name }} ({{ item.postCount }})
                                             </p>
                                             <p class="mb-0" v-else>
-                                                {{ translatePostType(item.post_type) }} Post
+                                                {{ translatePostType(item.type) }} Post
                                             </p>
                                             <p class="mb-0 fw-light text-muted">
                                                 {{ getUsername(userLinkedinAccounts, item.linkedin_user_id) }}
@@ -441,6 +436,7 @@ export default {
 
                     itemsForDay.push({
                         type: 'campaign',
+                        real_type: 'campaign',
                         id: campaign.id,
                         user_id: campaign.user_id,
                         name: campaign.name,
@@ -481,7 +477,7 @@ export default {
                                 title: content.title || '',
                                 description: content.description || '',
                                 file_path: content.file_path || '',
-                                files: Array.isArray(content.files) ? [...content.files] : [],
+                                files: Array.isArray(content.file_paths) ? [...content.file_paths] : [],
                                 original_filenames: Array.isArray(content.original_filenames) ? [...content.original_filenames] : [],
                                 file: null,
                                 fileName: content.original_filename || null,
@@ -616,7 +612,7 @@ export default {
                     tempId: post.tempId,
                     accountId: selectedAccount.id
                 };
-                console.log('Emitting normalized post:', normalizedPost); // Debug
+                console.log('Emitting normalized post:', normalizedPost);
                 this.$emit('open-post-read-mode', { account: selectedAccount, post: normalizedPost, readMode: true });
             } else {
                 console.error('Account not found for linkedin_user_id:', post.linkedin_user_id);
@@ -899,5 +895,19 @@ export default {
         rgb(255 16 185) 0%,
         rgb(255 125 82) 100%
     );
+}
+
+::-webkit-scrollbar {
+    width: 6px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+.no-scroll {
+    overflow: hidden;
+}
+::-webkit-scrollbar-thumb {
+    background: transparent;
+    border-radius: 1px;
 }
 </style>

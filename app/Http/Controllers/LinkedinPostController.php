@@ -68,6 +68,8 @@ class LinkedinPostController extends Controller
             'type' => 'required|string|in:text,image,video,article,multiimage',
             'scheduled_date' => 'required|date|after:now',
             'content' => 'required|string',
+            'files.*' => 'nullable|file|mimes:jpeg,png,jpg,gif,mp4,mov,avi|max:20480', // For multiimage
+            'file' => 'nullable|file|mimes:jpeg,png,jpg,gif,mp4,mov,avi|max:20480', // For single file
         ]);
 
         $postToUpdate = ScheduledLinkedinPost::where('id', $validated['post_id'])
@@ -75,24 +77,74 @@ class LinkedinPostController extends Controller
             ->first();
 
         if ($postToUpdate) {
+            // Delete the old job
             DB::table('jobs')->where('id', $postToUpdate->job_id)->delete();
 
             $postToUpdate->type = $validated['type'];
             $postToUpdate->scheduled_time = $validated['scheduled_date'];
-            $content = $validated['content'];
+            $contentArray = json_decode($validated['content'], true);
 
-            if ($request->hasFile('file')) {
-                $filePath = $request->file('file')->store('', 'linkedin_media');
-                $contentArray = json_decode($content, true);
-                $contentArray['file_path'] = $filePath;
-                $content = json_encode($contentArray);
+            // Handle different post types
+            switch ($validated['type']) {
+                case 'text':
+                    // No file handling needed for text posts
+                    break;
+                    
+                case 'image':
+                case 'video':
+                    // Handle single file upload
+                    if ($request->hasFile('file')) {
+                        // Delete old file if it exists
+                        if (isset($contentArray['file_path']) && Storage::disk('linkedin_media')->exists($contentArray['file_path'])) {
+                            Storage::disk('linkedin_media')->delete($contentArray['file_path']);
+                        }
+                        
+                        $filePath = $request->file('file')->store('', 'linkedin_media');
+                        $contentArray['file_path'] = $filePath;
+                        $contentArray['original_filename'] = $request->file('file')->getClientOriginalName();
+                    }
+                    break;
+                    
+                case 'multiimage':
+                    // Handle multiple file uploads
+                    if ($request->hasFile('files')) {
+                        // Delete old files if they exist
+                        if (isset($contentArray['file_paths']) && is_array($contentArray['file_paths'])) {
+                            foreach ($contentArray['file_paths'] as $oldFilePath) {
+                                if (Storage::disk('linkedin_media')->exists($oldFilePath)) {
+                                    Storage::disk('linkedin_media')->delete($oldFilePath);
+                                }
+                            }
+                        }
+                        
+                        // Upload new files
+                        $filePaths = [];
+                        $originalFilenames = [];
+                        
+                        foreach ($request->file('files') as $file) {
+                            $filePath = $file->store('', 'linkedin_media');
+                            $filePaths[] = $filePath;
+                            $originalFilenames[] = $file->getClientOriginalName();
+                        }
+                        
+                        $contentArray['file_paths'] = $filePaths;
+                        $contentArray['original_filenames'] = $originalFilenames;
+                    }
+                    // If no new files uploaded, keep existing file_paths and original_filenames
+                    break;
+                    
+                case 'article':
+                    // No file handling needed for article posts
+                    break;
             }
 
-            $postToUpdate->content = $content;
+            $postToUpdate->content = json_encode($contentArray);
             $postToUpdate->save();
 
+            // Schedule the updated post
             ScheduleLinkedInPost::dispatch($postToUpdate)->delay(Carbon::parse($validated['scheduled_date']));
 
+            // Get the new job ID
             $newJobId = DB::table('jobs')
                 ->where('payload', 'like', '%ScheduleLinkedInPost%')
                 ->where('payload', 'like', '%'.$postToUpdate->id.'%')

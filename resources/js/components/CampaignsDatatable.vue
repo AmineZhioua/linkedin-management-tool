@@ -91,12 +91,12 @@
 
             <Column header="Date de début">
                 <template #body="slotProps">
-                    {{ formatDate(slotProps.data.start_date) }}
+                    {{ formatDateWithMonth(slotProps.data.start_date) }}
                 </template>
             </Column>
             <Column header="Date de fin">
                 <template #body="slotProps">
-                    {{ formatDate(slotProps.data.end_date) }}
+                    {{ formatDateWithMonth(slotProps.data.end_date) }}
                 </template>
             </Column>
             <Column header="Statut">
@@ -154,6 +154,7 @@ import {
     getCampaignColor,
     formatDate,
     getLinkedinUserByID,
+    formatDateWithMonth,
 } from '../services/datatables.js';
 
 export default {
@@ -241,6 +242,7 @@ export default {
         getCampaignColor,
         formatDate,
         getLinkedinUserByID,
+        formatDateWithMonth,
 
         getItemsCampaignsDatatable(campaign) {
             if(campaign.status === 'completed' || campaign.status === 'failed') {

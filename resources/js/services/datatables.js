@@ -61,6 +61,29 @@ function formatDateForEngagement(dateString) {
     return `${dayOfMonth}/${month}/${year}`;
 };
 
+function formatDateWithMonth(dateString) {
+    const date = new Date(dateString);
+    
+    const daysOfWeek = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+    const dayOfWeek = daysOfWeek[date.getDay()];
+    
+    const months = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Aôut', 'Septembre', 'Octobre', 'Novembre', 'Decembre'];
+    const month = months[date.getMonth()];
+
+    const dayOfMonth = date.getDate();
+    
+    const year = date.getFullYear();
+    
+    let hours = date.getHours();
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12;
+    
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    
+    return `${dayOfWeek} ${dayOfMonth}, ${month} ${year} à ${hours}:${minutes}${ampm}`;
+};
+
 
 export {
     getLinkedinUserByID,
@@ -69,4 +92,5 @@ export {
     getCampaignColor,
     formatDate,
     formatDateForEngagement,
+    formatDateWithMonth,
 };

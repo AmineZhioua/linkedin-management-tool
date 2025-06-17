@@ -19,7 +19,10 @@
                 </p>
             </div>
             
-            <button class="flex items-center gap-2 bg-black rounded-lg text-white py-2 px-3 text-xl">
+            <button 
+                @click="openAIRecommendation"
+                class="flex items-center gap-2 bg-black rounded-lg text-white py-2 px-3 text-xl"
+            >
                 <i class="fa-solid fa-robot"></i>
                 <p class="mb-0 mt-1">Recommendation AI</p>
             </button>
@@ -535,6 +538,8 @@ export default {
         },
     },
 
+    emits: ['open-ai-recommend'],
+
     data() {
         return {
             socialActionsData: {},
@@ -713,7 +718,7 @@ export default {
                 const linkedinUser = this.getUserLinkedinInfo(post.linkedin_user_id);
                 if (!linkedinUser) {
                     console.error(`No LinkedIn user found for linkedin_user_id: ${post.linkedin_user_id}`);
-                    return Promise.resolve(null); // Skip posts with no user
+                    return Promise.resolve(null);
                 }
                 return axios.get('/linkedin/get-social-actions', {
                     params: {
@@ -756,8 +761,7 @@ export default {
             });
 
             const results = await Promise.all(promises);
-            this.socialActionsData = results
-                .filter(result => result !== null)
+            this.socialActionsData = results.filter(result => result !== null)
                 .reduce((acc, { postId, likes, comments }) => {
                     acc[postId] = { likes, comments };
                     return acc;
@@ -973,6 +977,10 @@ export default {
         
         getUserLinkedinInfo(linkedinUserId) {
             return this.allLinkedinAccounts.find(account => account.id === linkedinUserId);
+        },
+
+        openAIRecommendation() {
+            this.$emit('open-ai-recommend');
         },
 
         calculateAllTimeAveragePostsPerDay() {
@@ -1317,5 +1325,18 @@ export default {
 <style scoped>
 .active-section {
     background-color: rgba(128, 128, 128, 0.445);
+}
+::-webkit-scrollbar {
+    width: 6px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+.no-scroll {
+    overflow: hidden;
+}
+::-webkit-scrollbar-thumb {
+    background: transparent;
+    border-radius: 1px;
 }
 </style>

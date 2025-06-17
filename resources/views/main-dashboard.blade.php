@@ -27,7 +27,7 @@
             width: 6px;
         }
         body::-webkit-scrollbar-track {
-            background: #ddd;
+            background: transparent;
         }
         body.no-scroll {
             overflow: hidden;

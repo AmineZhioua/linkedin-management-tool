@@ -148,7 +148,9 @@ export default {
                     read_at: null,
                 };
 
+                console.log('Before add:', notification);
                 await this.addNotification(notification);
+                console.log('After add:', notification);
                 this.notifications.unshift(notification);
                 this.notificationsNumber += 1;
                 this.showToast();
@@ -177,10 +179,12 @@ export default {
                 const notificationData = new FormData();
 
                 notificationData.append("user_id", notification.user_id);
-                notificationData.append("linkedin_user_id", notification.linkedin_user_id);
                 notificationData.append("campaign_id", notification.campaign_id);
+                notificationData.append("linkedin_user_id", notification.linkedin_user_id);
                 notificationData.append("event_name", notification.event_name);
                 notificationData.append("message", notification.message);
+
+                console.log(notification)
 
                 const response = await axios.post('/notifications', notificationData, {
                     headers: {

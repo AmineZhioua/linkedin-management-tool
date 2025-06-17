@@ -1,6 +1,6 @@
 <template>
-    <div class="bg-black bg-opacity-50 inset-0 h-[100vh] w-full absolute"></div>
-    <div class="flex items-center w-full p-4 justify-center gap-2 absolute top-[50%] left-[50%] translate-y-[-50%] translate-x-[-50%]">
+    <div class="bg-black bg-opacity-50 inset-0 h-[100vh] w-full absolute z-10"></div>
+    <div class="flex items-center w-full p-4 justify-center gap-2 absolute top-[50%] left-[50%] translate-y-[-50%] translate-x-[-50%] z-50">
         <div class="bg-white p-4 rounded-md">
             <div class="flex flex-col gap-4" v-if="currentStep === 1">
                 <div class="flex items-center justify-between mb-2">
@@ -193,19 +193,28 @@
                 <h3 class="text-lg">Les Posts de votre Campagne :</h3>
                 <div class="flex flex-col w-full items-center gap-2 max-h-[400px] overflow-y-scroll">
                     <div 
-                        v-for="post in postCards" 
-                        class="py-4 px-3 w-full rounded-lg flex items-center cursor-pointer text-black"
-                        :class="{
-                            'bg-green-200 hover:bg-green-400': post.type === 'text',
-                            'bg-yellow-200 hover:bg-yellow-400': post.type === 'image',
-                            'bg-red-200 hover:bg-red-400': post.type === 'video',
-                            'bg-purple-300 hover:bg-purple-400': post.type === 'article',
-                            'bg-pink-400 hover:bg-pink-500': post.type === 'multiimage'
-                        }"
+                        v-for="(post, index) in postCards" 
+                        class="py-4 px-3 w-full h-full rounded-lg flex items-center cursor-pointer"
+                        style="background-color: #181818;"
                         :key="post.tempId"
-                        @click="editCampaignPost(post)"
+                        
                     >
-                        {{ getPostTypeIcon(post.type) }} {{ formatTime(post.scheduledDateTime) }}
+                        <div class="w-full h-full" @click="editCampaignPost(post)">
+                            <div class="fw-semibold mb-2 px-3 py-1 bg-white rounded-full w-fit text-black">
+                                {{ `Post ${index} :` }}
+                            </div>
+                            <div class="text-md mb-0 text-white">
+                                <span class="text-xl">
+                                    {{ getPostTypeIcon(post.type) }}
+                                </span> {{ formatDateWithMonth(post.scheduledDateTime) }}
+                            </div>
+                        </div>
+                        <button 
+                            class="p-2 bg-red-500 rounded-full" 
+                            @click="removePostFromGeneratedPosts(index)"
+                        >
+                            <img src="/build/assets/icons/close-white.svg" alt="Close icon" height="15" width="15" />
+                        </button>
                     </div>
                 </div>
                 <div class="flex items-center justify-between w-full">
@@ -233,6 +242,7 @@
 import axios from 'axios';
 import CampaignDetails from './CampaignDetails.vue';
 import { toLocalISOString, formatDate, formatDateTime, formatReadableDateTime, formatTime } from '../services/dateService';
+import { formatDateWithMonth } from '../services/datatables';
 import { useToast } from "vue-toastification";
 
 export default {
@@ -436,6 +446,7 @@ export default {
         formatDateTime,
         formatReadableDateTime,
         formatTime,
+        formatDateWithMonth,
 
         loadCampaignData() {
             if (this.editMode && this.selectedCampaign) {
@@ -451,8 +462,7 @@ export default {
                 this.nomCampagne = this.selectedCampaign.name;
 
                 // Load existing posts with deep copy of content
-                this.postCards = this.linkedinPosts
-                    .filter(post => post.campaign_id === this.selectedCampaign.id)
+                this.postCards = this.linkedinPosts.filter(post => post.campaign_id === this.selectedCampaign.id)
                     .map(post => {
                         const content = typeof post.content === 'string' ? JSON.parse(post.content) : post.content;
                         return {
@@ -468,15 +478,16 @@ export default {
                                 url: content.url || '',
                                 title: content.title || '',
                                 description: content.description || '',
-                                file_path: content.file_path || '',
-                                files: Array.isArray(content.files) ? [...content.files] : [],
+                                file_path: content.file_path || '', // For single image/video
+                                file_paths: Array.isArray(content.file_paths) ? [...content.file_paths] : [], // Changed from files to file_paths
                                 original_filenames: Array.isArray(content.original_filenames) ? [...content.original_filenames] : [],
-                                file: null,
-                                fileName: content.original_filename || null,
+                                file: null, // For new file uploads
+                                fileName: content.original_filename || null, // For single image/video
                             },
                             accountId: this.selectedAccount.id,
                         };
                     });
+                console.log(this.postCards);
             }
         },
 
@@ -629,6 +640,10 @@ export default {
             this.currentStep = 2;
         },
 
+        removePostFromGeneratedPosts(postIndex) {
+            this.postCards.splice(postIndex, 1);
+        },
+
         editCampaignPost(post) {
             this.$emit('campaign-post-editing', { ...post });
         },
@@ -708,8 +723,7 @@ export default {
                         formData.append("job_id", post.job_id);
                         formData.append("post_id", post.id);
                         formData.append("_method", "PUT");
-                        console.log(post.job_id);
-                        console.log(post.id)
+                        console.log(post)
 
                         let contentObj = {};
                         switch (post.type) {
@@ -730,14 +744,24 @@ export default {
                                 }
                                 break;
                             case "multiimage":
+                                console.log(post.content)
                                 contentObj = {
                                     caption: post.content.caption.trim(),
-                                    files: post.content.files?.map(file => file.name) || [],
-                                    original_filenames: post.content.files?.map(file => file.name) || []
+                                    file_paths: [...(post.content.file_paths || [])], // Keep existing file paths
+                                    original_filenames: [...(post.content.original_filenames || [])] // Keep existing filenames
                                 };
-                                post.content.files?.forEach((file, index) => {
-                                    formData.append(`files[${index}]`, file);
-                                });
+                                
+                                // Handle new files being added
+                                if (post.content.files && post.content.files.length > 0) {
+                                    post.content.files.forEach((file, index) => {
+                                        formData.append(`files[${index}]`, file);
+                                    });
+                                    
+                                    const newFilenames = post.content.files.map(file => file.name);
+                                    contentObj.original_filenames = [...contentObj.original_filenames, ...newFilenames];
+                                }
+                                
+                                console.log(contentObj)
                                 break;
                             case "article":
                                 contentObj = {
@@ -866,18 +890,6 @@ export default {
 </script>
 
 <style scoped>
-::-webkit-scrollbar {
-    width: 6px;
-}
-
-::-webkit-scrollbar-track {
-    background: white;
-}
-
-::-webkit-scrollbar-thumb {
-    background: linear-gradient(135deg, rgb(255 16 185) 0%, rgb(255 125 82) 100%);
-}
-
 .loader {
     border: 5px solid rgba(128, 128, 128, 0.411);
     border-radius: 50%;
@@ -950,5 +962,19 @@ export default {
   0% {
     left: 0%;
   }
+}
+
+::-webkit-scrollbar {
+    width: 6px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+.no-scroll {
+    overflow: hidden;
+}
+::-webkit-scrollbar-thumb {
+    background: transparent;
+    border-radius: 1px;
 }
 </style>

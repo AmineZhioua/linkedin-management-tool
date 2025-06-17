@@ -49,7 +49,7 @@ Route::middleware(['auth', 'verified', 'suspend'])->group(function() {
 
 
 // Subscription Routes
-Route::middleware(['auth', 'verified', 'check.additional.info', 'suspend'])->group(function () {
+Route::middleware(['auth', 'verified', 'suspend'])->group(function () {
     Route::post('/session', [StripeController::class, 'session'])->name('session');
     Route::get('/success', [StripeController::class, 'success'])->name('success');
     Route::get('/cancel', [StripeController::class, 'cancel'])->name('cancel');
@@ -59,7 +59,7 @@ Route::middleware(['auth', 'verified', 'check.additional.info', 'suspend'])->gro
 });
 
 // LinkedIn Auth Routes
-Route::middleware(['auth', 'verified', 'linkedin.valid', 'check.additional.info', 'suspend'])->group(function () {
+Route::middleware(['auth', 'verified', 'linkedin.valid', 'suspend'])->group(function () {
     Route::get('/login-linkedin', [LinkedInController::class, 'index'])->name('login-linkedin');
     Route::get('/linkedin/auth', [LinkedInController::class, 'redirect'])->name('linkedin.auth');
     Route::get('/linkedin/callback', [LinkedInController::class, 'callback'])->name('linkedin.callback');
@@ -73,7 +73,8 @@ Route::middleware(['auth', 'verified', 'linkedin.valid', 'check.additional.info'
 });
 
 // LinkedIn Post Routes
-Route::middleware(['auth', 'verified', 'linkedin.valid', 'linkedin.account.exist', 'check.additional.info', 'suspend'])->group(function () {
+// add if necesasry 'check.additional.info'
+Route::middleware(['auth', 'verified', 'linkedin.valid', 'linkedin.account.exist', 'suspend', 'update.last.activity'])->group(function () {
     Route::get('/linkedin-post', [App\Http\Controllers\LinkedinPostController::class, 'index'])->name('linkedin-post');
     Route::post('/linkedin/post-text', [LinkedInController::class, 'postTextOnly']);
     Route::post('/linkedin/registermedia', [LinkedInController::class, 'registerMedia']);
@@ -83,6 +84,8 @@ Route::middleware(['auth', 'verified', 'linkedin.valid', 'linkedin.account.exist
     Route::post('/linkedin/schedule-single-post', [LinkedInController::class, 'publishSinglePost']);
     Route::post('/linkedin/create-campaign', [LinkedInController::class, 'createCampaign']);
     Route::put('/linkedin/update-campaign', [App\Http\Controllers\CampaignController::class, 'updateCampaign'])->name('update.campaign');
+    Route::get('/main/dashboard', [App\Http\Controllers\MainDashboardController::class, 'index'])->name('main.dashboard');
+    Route::delete('/linkedin/account/delete', [App\Http\Controllers\UserController::class, 'deleteLinkedinAccount'])->name('delete.account');
 });
 
 
@@ -112,7 +115,6 @@ Route::post('/boost-interaction/request', [App\Http\Controllers\DashboardControl
 Route::delete('/boost-interaction/delete', [App\Http\Controllers\DashboardController::class, 'deleteBoostRequest'])->name('delete.boost.request');
 Route::put('/boost-interaction/update', [App\Http\Controllers\DashboardController::class, 'updateBoostRequest'])->name("update.boost.request");
 
-Route::get('/main/dashboard', [App\Http\Controllers\MainDashboardController::class, 'index'])->name('main.dashboard');
 Route::delete('/campaign/delete', [App\Http\Controllers\LinkedInController::class, 'deleteCampaign'])->name('delete.campaign');
 
 // Comments Routes
@@ -126,7 +128,7 @@ Route::post('/post/comment/update', [App\Http\Controllers\CommentsController::cl
 
 
 // Plateforme de Marque Routes
-Route::middleware(['auth', 'verified', 'check.subscriptions', 'check.additional.info', 'suspend'])->group(function () {
+Route::middleware(['auth', 'verified', 'check.subscriptions', 'suspend'])->group(function () {
     Route::get('/plateforme-marque', [App\Http\Controllers\PlateformeMarqueController::class, 'index'])->name('plateforme-marque');
     Route::post('/save-platform-info', [App\Http\Controllers\PlateformeMarqueController::class, 'store'])->name('plateforme.store');
     Route::get('/marque', [App\Http\Controllers\PlateformeMarqueController::class, 'showMarque'])->name('marque.show');

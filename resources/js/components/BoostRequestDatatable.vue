@@ -1,5 +1,5 @@
 <template>
-    <div class="flex flex-col justify-between mt-5 mb-3">
+    <div class="flex flex-col justify-between mt-3 mb-3">
         <!-- Title & Icon -->
         <div class="flex items-center gap-4 mt-2">
             <i class="fa-solid fa-bolt text-4xl"></i>

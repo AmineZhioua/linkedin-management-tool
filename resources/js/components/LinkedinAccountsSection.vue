@@ -25,6 +25,10 @@
       @open-boosted-post="handleOpenBoostedPost"
       @edit-boost-request="handleEditBoostRequest"
     />
+
+    <users-datatable 
+      :user-linkedin-accounts="userLinkedinAccounts"
+    />
   </div>
 </template>
 
