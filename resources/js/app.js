@@ -41,6 +41,8 @@ import CommhubSection from "./components/CommhubSection.vue";
 import AICommentPortal from "./components/AICommentPortal.vue";
 import AIGuide from "./components/AIGuide.vue";
 import UsersDatatable from "./components/UsersDatatable.vue";
+import AlertsBell from "./components/AlertsBell.vue";
+
 
 // Importing PrimeVue for UI Components
 import PrimeVue from 'primevue/config';
@@ -131,6 +133,7 @@ app.component("recommendation-portal", RecommendationPortal);
 app.component("ai-comment-portal", AICommentPortal);
 app.component("ai-guide", AIGuide);
 app.component("users-datatable", UsersDatatable);
+app.component("alerts-bell", AlertsBell);
 
 // PrimeVue Components
 app.component("Button", Button);

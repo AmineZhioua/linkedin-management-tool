@@ -38,7 +38,7 @@
         }
     </style>
 </head>
-<body id="app" class="flex flex-col">
+<body id="app" class="flex flex-col relative">
     <!-- Header Section Start -->
     <header class="flex items-center justify-between py-0 px-3 bg-black">
         <!-- Logo Section -->
@@ -82,17 +82,10 @@
             </div>
 
             <!-- Button for Notifications -->
-            <notifications-bell :user-id="{{ Auth::user()->id }}" />
-
-            <!-- Button for Tasks & Missions -->
-            <button>
-                <img 
-                    src="/build/assets/icons/tasks-white.svg" 
-                    alt="Tasks Icon"
-                    height="30"
-                    width="30"
-                />
-            </button>
+            <notifications-bell 
+                :user-id="{{ Auth::user()->id }}" 
+                :user-linkedin-accounts="{{ json_encode($userLinkedinAccounts) }}" 
+            />
         </div>
     </header>
     <!-- Header Section End -->

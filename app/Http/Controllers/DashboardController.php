@@ -57,10 +57,11 @@ class DashboardController extends Controller
 
     public function notification(Request $request) {
         try {
+            Log::info('Données reçues :', $request->all());
             $validated = $request->validate([
                 'user_id' => 'required|integer|exists:users,id',
-                'campaign_id' => 'nullable',
                 'linkedin_user_id' => 'required|integer|exists:linkedin_users,id',
+                'campaign_id' => 'nullable|integer|exists:linkedin_campaigns,id',
                 'event_name' => 'required|string',
                 'message' => 'required|string',
             ]);

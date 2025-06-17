@@ -17,6 +17,7 @@ class UserNotification extends Model
 
     protected $casts = [
         'read_at' => 'datetime',
+        'campaign_id' => 'integer',
     ];
 
     public function user()

@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('linkedin_user_id')->constrained('linkedin_users')->onDelete('cascade'); // CAN BE CHANGED
-            $table->foreignId('campaign_id')->constrained('linkedin_campaigns')->onDelete('cascade');
+            $table->integer('campaign_id')->nullable()->constrained('linkedin_campaigns')->onDelete('cascade');
             $table->string('event_name');
             $table->text('message');
             $table->dateTime('read_at')->nullable();

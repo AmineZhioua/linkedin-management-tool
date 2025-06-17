@@ -115,6 +115,8 @@
       @close-ai-recommend="handleCloseAIRecommend"
     />
 
+    <alerts-bell />
+
   </div>
 </template>
 

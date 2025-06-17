@@ -109,7 +109,10 @@ Route::get('/linkedin/post-consistency', [App\Http\Controllers\KpiController::cl
 
 Route::post('/notifications', [App\Http\Controllers\DashboardController::class, 'notification'])->name('notifications');
 Route::get('/get-notifications', [App\Http\Controllers\NotificationsController::class, 'getNotifications'])->name('get.notifications');
+Route::delete('/notification/delete', [App\Http\Controllers\NotificationsController::class, 'deleteNotification'])->name('delete.notification');
 Route::post('/linkedin/mark-all-as-read', [App\Http\Controllers\NotificationsController::class, 'markAllAsRead'])->name('mark.as.read');
+Route::get('/alerts/all', [App\Http\Controllers\AlertController::class, 'getAlerts'])->name('get.alerts');
+
 Route::post('/boost-interaction/request', [App\Http\Controllers\DashboardController::class, 'requestBoostInteraction'])
     ->name('boost.interaction.request');
 Route::delete('/boost-interaction/delete', [App\Http\Controllers\DashboardController::class, 'deleteBoostRequest'])->name('delete.boost.request');

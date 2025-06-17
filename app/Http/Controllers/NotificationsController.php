@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\UserNotification;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
 
@@ -54,5 +55,36 @@ class NotificationsController extends Controller
             return response()->json([
                 'status' => 200
             ], 200);
+    }
+
+    public function deleteNotification(Request $request) {
+        try {
+            $validated = $request->validate([
+                "notification_id" => "required|integer|exists:user_notifications,id"
+            ]);
+
+            $notifToDelete = UserNotification::where("id", $validated['notification_id'])->first();
+
+            if(!$notifToDelete) {
+                return response()->json([
+                    'status' => 404,
+                    'message' => 'Notification à supprimer non trouvé !'
+                ], 404);
+            }
+
+            DB::beginTransaction();
+            $notifToDelete->delete();
+            DB::commit();
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Notification supprimé avec succès !'
+            ], 200);
+        } catch(\Exception $e) {
+            return response()->json([
+                'status' => 500,
+                'message' => 'Une erreur s\'est produite lors de la suppression !'
+            ], 500);
+        }
     }
 }
