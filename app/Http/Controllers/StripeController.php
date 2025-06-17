@@ -108,7 +108,8 @@ class StripeController extends Controller
             [
                 'date_expiration' => $expirationDate,
                 'boost_likes' => $subscription->boost_likes,
-                'available_posts' => $subscription->available_posts
+                'available_posts' => $subscription->available_posts,
+                'boost_comments' => $subscription->boost_comments, // Added
             ]
         );
 

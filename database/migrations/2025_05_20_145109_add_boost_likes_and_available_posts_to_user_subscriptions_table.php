@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::table('user_subscriptions', function (Blueprint $table) {
             $table->integer('boost_likes')->default(0)->after('pricing_mode');
             $table->integer('available_posts')->default(0)->after('boost_likes');
+            $table->integer('boost_comments')->default(0)->after('available_posts');
         });
     }
 

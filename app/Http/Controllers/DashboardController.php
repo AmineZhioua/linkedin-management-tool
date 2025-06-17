@@ -91,23 +91,51 @@ class DashboardController extends Controller
     }
 
 
-    public function requestBoostInteraction(Request $request) {
+  public function requestBoostInteraction(Request $request)
+    {
         try {
             $validated = $request->validate([
                 "post_id" => "required|integer|exists:scheduled_linkedin_posts,id",
                 "linkedin_user_id" => "required|integer|exists:linkedin_users,id",
                 "post_url" => "required|url",
-                "nb_likes" => "required|integer",
-                "nb_comments" => "required|integer",
+                "nb_likes" => "required|integer|min:0",
+                "nb_comments" => "required|integer|min:0",
                 "message" => "nullable|string"
             ]);
-        
+
             $userId = Auth::id();
-        
+
+            // Fetch the user's active subscription
+            $userSubscription = UserSubscription::where('user_id', $userId)
+                ->whereDate('date_expiration', '>', now())
+                ->first();
+
+            if (!$userSubscription) {
+                return response()->json([
+                    "status" => 403,
+                    "message" => "Vous n'avez pas d'abonnement actif !"
+                ], 403);
+            }
+
+            // Check if requested likes and comments exceed available amounts
+            if ($validated['nb_likes'] > $userSubscription->boost_likes) {
+                return response()->json([
+                    "status" => 400,
+                    "message" => "Vous ne pouvez pas demander autant de likes. Vous avez {$userSubscription->boost_likes} likes disponibles."
+                ], 400);
+            }
+
+            if ($validated['nb_comments'] > $userSubscription->boost_comments) {
+                return response()->json([
+                    "status" => 400,
+                    "message" => "Vous ne pouvez pas demander autant de commentaires. Vous avez {$userSubscription->boost_comments} commentaires disponibles."
+                ], 400);
+            }
+
             $post = ScheduledLinkedinPost::findOrFail($validated["post_id"]);
-            
+
             DB::beginTransaction();
-            
+
             try {
                 $boost = BoostInteraction::create([
                     "user_id" => $userId,
@@ -119,36 +147,36 @@ class DashboardController extends Controller
                     "nb_comments" => $validated["nb_comments"],
                     "message" => $validated["message"] ?? null
                 ]);
-                                
+
                 DB::commit();
-                
+
                 return response()->json([
                     "status" => 201,
                     "message" => "Votre requête de Boost a été envoyée à l'administrateur !"
                 ], 201);
-                
+
             } catch (\Exception $e) {
                 DB::rollback();
                 throw $e;
             }
-        } catch(\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             Log::warning('Post not found for boost request', [
                 'post_id' => $request->post_id,
                 'user_id' => Auth::id()
             ]);
-            
+
             return response()->json([
                 "status" => 404,
                 "message" => "Post non trouvé !"
             ], 404);
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             Log::error('Error while creating Boost request', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
                 'post_id' => $request->post_id ?? null,
                 'user_id' => Auth::id() ?? null
             ]);
-            
+
             return response()->json([
                 "status" => 500,
                 "message" => "Une erreur s'est produite lors de l'envoi de la requête !"
