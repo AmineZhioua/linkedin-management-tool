@@ -46,6 +46,7 @@ Route::middleware(['auth', 'verified', 'suspend'])->group(function() {
     Route::put('/edit-account/extra-info/update', [InfoFormController::class, 'updateExtraInformation'])->name('edit.account.extra-info.update');
 });
 
+Route::get('/api/dashboard-data', [DashboardController::class, 'fetchDashboardData'])->middleware('auth');
 
 
 // Subscription Routes

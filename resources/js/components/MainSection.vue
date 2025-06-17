@@ -32,6 +32,7 @@
       v-if="cardToSet === 'linkedinAccounts'"
       :all-user-boost-requests="userBoostRequests"
       :user-linkedin-accounts="userLinkedinAccounts"
+      :subscription-data="subscriptionData"
       @open-post-to-boost="handleOpenPostToBeBoosted"
       @open-boost-form-editmode="handleOpenBoostFormInEditMode"
     />
@@ -116,7 +117,6 @@
     />
 
     <alerts-bell />
-
   </div>
 </template>
 
@@ -149,12 +149,10 @@ export default {
       type: Array,
       required: true,
     },
-
     userBoostRequests: {
       type: Array,
       required: true,
     },
-
     campaigns: {
       type: Array,
       required: true,
@@ -164,7 +162,11 @@ export default {
       required: false,
       default: null,
     },
-
+    subscriptionData: {
+      type: Object,
+      required: true,
+      default: () => ({ boost_likes: 0, boost_comments: 0 })
+    }
   },
 
   setup() {
@@ -175,20 +177,15 @@ export default {
   data() {
     return {
       cardToSet: "linkedinAccounts",
-      // Portals variables
       showCampaignPostPortal: false,
       showCampaignPortal: false,
       showPortal: false,
-      // Selection variables
       selectedCampaign: null,
       selectedPost: null,
       selectedAccount: null,
-      // Read mode
       readModeStatus: false,
-      // Error variables
       isFormValid: false,
       campaignPostError: '',
-      // Campaign related variables
       campaignPosts: [],
       campaignStartDateTime: null,
       campaignEndDateTime: null,
@@ -198,17 +195,19 @@ export default {
       couleurCampagne: '',
       nomCampagne: '',
       campaignEditMode: false,
-      // Boost Request variables
       nbLikesToRequest: 0,
       nbCommentsToRequest: 0,
       boostMessage: '',
       displayBoostForm: false,
       postToBoost: null,
       boostRequestToUpdate: null,
-      // AI Comment Portal variables
       showAICommentPortal: false,
       showAIRecommend: false,
     };
+  },
+
+  mounted() {
+    console.log('MainSection Subscription Data:', this.subscriptionData);
   },
 
   methods: {
@@ -218,7 +217,6 @@ export default {
       this.cardToSet = card;
     },
 
-    // Event Handlers for Portal Open Requests
     handleOpenCampaignPortal(data) {
       this.selectedAccount = data.account;
       this.selectedCampaign = data.campaign || null;
@@ -231,10 +229,9 @@ export default {
       this.readModeStatus = data.readMode || false;
       this.selectedAccount = data.account || null;
       this.showPortal = true;
-      console.log(this.selectedPost)
+      console.log(this.selectedPost);
     },
 
-    // AI RECOMMENDATION PORTAL FUNCTIONS
     handleAIRecommend() {
       this.showAIRecommend = true;
     },
@@ -273,19 +270,18 @@ export default {
     openBoostForm(post) {
       this.displayBoostForm = true;
       this.postToBoost = post;
-      this.boostRequestToUpdate = null; // Explicitly null for create mode
+      this.boostRequestToUpdate = null;
     },
 
     closeBoostForm() {
       this.displayBoostForm = false;
       this.postToBoost = null;
-      this.boostRequestToUpdate = null; // Reset to null
+      this.boostRequestToUpdate = null;
     },
 
     handleOpenPostToBeBoosted(postId) {
       const post = this.userLinkedinPosts.find(post => post.id === postId);
-
-      if(post) {
+      if (post) {
         this.selectedPost = post;
         const account = this.userLinkedinAccounts.find(account => account.id === post.user_id);
         this.selectedAccount = account;
@@ -307,7 +303,6 @@ export default {
       this.showAICommentPortal = true;
     },
 
-    // Portal Close Handlers
     closeCampaignPortal() {
       this.showCampaignPortal = false;
       this.selectedCampaign = null;
@@ -402,7 +397,6 @@ export default {
           }
       }
 
-      // Deep copy the updated post
       const postToSave = {
           id: updatedPost.id,
           tempId: updatedPost.tempId || `temp-${Date.now()}`,
@@ -416,7 +410,7 @@ export default {
               title: updatedPost.content?.title || '',
               description: updatedPost.content?.description || '',
               file_path: updatedPost.content?.file_path || '',
-              files: Array.isArray(updatedPost.content?.files) ? updatedPost.content.files.map(file => file) : [], // Preserve File objects
+              files: Array.isArray(updatedPost.content?.files) ? updatedPost.content.files.map(file => file) : [],
               original_filenames: Array.isArray(updatedPost.content?.original_filenames) ? [...updatedPost.content.original_filenames] : [],
               file: updatedPost.content?.file || null,
               fileName: updatedPost.content?.fileName || (updatedPost.content?.file?.name || null),

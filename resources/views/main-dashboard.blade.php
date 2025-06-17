@@ -91,13 +91,28 @@
     <!-- Header Section End -->
 
     <!-- Main Section Start -->
+    @php
+        // Debug subscription variable
+        \Illuminate\Support\Facades\Log::info('Blade Subscription Variable: ' . json_encode($subscription));
+        // Prepare subscription data for Vue component
+        $subscriptionData = [
+            'boost_likes' => $subscription ? (int) $subscription->boost_likes : 0,
+            'boost_comments' => $subscription ? (int) $subscription->boost_comments : 0
+        ];
+        \Illuminate\Support\Facades\Log::info('Blade Subscription Data: ' . json_encode($subscriptionData));
+    @endphp
+
+    <!-- Debug output (remove after testing) -->
+    <pre>Blade Subscription Data: {{ print_r($subscriptionData, true) }}</pre>
+
     <main class="flex-1 h-full">
         <main-section
-            :user="{{ json_encode($user) }}"
-            :user-linkedin-accounts="{{ json_encode($userLinkedinAccounts) }}"
-            :user-linkedin-posts="{{ json_encode($userLinkedinPosts) }}"
-            :campaigns="{{ json_encode($userCampaigns) }}"
-            :user-boost-requests="{{ json_encode($userBoostRequests) }}"
+            :user='@json($user)'
+            :user-linkedin-accounts='@json($userLinkedinAccounts)'
+            :user-linkedin-posts='@json($userLinkedinPosts)'
+            :campaigns='@json($userCampaigns)'
+            :user-boost-requests='@json($userBoostRequests)'
+            :subscription-data='@json($subscriptionData)'
         />
     </main>
     <!-- Main Section End -->

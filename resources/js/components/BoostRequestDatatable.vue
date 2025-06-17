@@ -2,8 +2,26 @@
     <div class="flex flex-col justify-between mt-3 mb-3">
         <!-- Title & Icon -->
         <div class="flex items-center gap-4 mt-2">
-            <i class="fa-solid fa-bolt text-4xl"></i>
-            <h1 class="fw-semibold text-2xl mb-0">Demandes de Boost d'interaction :</h1>
+            <i class="fa-solid fa-bolt text-4xl text-yellow-400"></i>
+            <h1 class="fw-semibold text-2xl mb-0 text-white">Demandes de Boost d'interaction :</h1>
+        </div>
+
+        <!-- Remaining Boosts Display -->
+        <div class="mt-4 flex flex-wrap gap-4">
+            <div class="p-4 rounded-xl bg-gray-800 text-white flex items-center gap-3 w-full sm:w-auto">
+                <i class="fa-solid fa-thumbs-up text-2xl text-blue-400"></i>
+                <div>
+                    <p class="text-sm font-semibold">Likes Restants</p>
+                    <p class="text-xl font-bold">{{ subscriptionData.boost_likes ?? 0 }}</p>
+                </div>
+            </div>
+            <div class="p-4 rounded-xl bg-gray-800 text-white flex items-center gap-3 w-full sm:w-auto">
+                <i class="fa-solid fa-comment text-2xl text-green-400"></i>
+                <div>
+                    <p class="text-sm font-semibold">Commentaires Restants</p>
+                    <p class="text-xl font-bold">{{ subscriptionData.boost_comments ?? 0 }}</p>
+                </div>
+            </div>
         </div>
 
         <div class="p-2 mt-4 rounded-xl" style="background-color: #18181b;">
@@ -27,20 +45,20 @@
                                 class="rounded-full" 
                                 style="width: 32px; height: 32px;" 
                             />
-                            <span>{{ getUsername(this.linkedinAccounts, slotProps.data.linkedin_user_id) }}</span>
+                            <span class="text-white">{{ getUsername(this.linkedinAccounts, slotProps.data.linkedin_user_id) }}</span>
                         </div>
                     </template>
                 </Column>
 
                 <Column header="Nombre des Likes">
                     <template #body="slotProps">
-                        <p>{{ slotProps.data.nb_likes }}</p>
+                        <p class="text-white">{{ slotProps.data.nb_likes }}</p>
                     </template>
                 </Column>
 
                 <Column header="Nombre des Commentaires">
                     <template #body="slotProps">
-                        <p>{{ slotProps.data.nb_comments }}</p>
+                        <p class="text-white">{{ slotProps.data.nb_comments }}</p>
                     </template>
                 </Column>
 
@@ -48,7 +66,7 @@
                     <template #body="slotProps">
                         <div class="flex items-center w-full">
                             <button 
-                                class="bg-white py-2 px-3 rounded-md fw-semibold text-black"
+                                class="bg-white py-2 px-3 rounded-md fw-semibold text-black hover:bg-gray-200 transition"
                                 @click="openMessageDialog(slotProps.data.id)"
                             >
                                 Voir
@@ -61,7 +79,7 @@
                     <template #body="slotProps">
                         <div class="flex items-center w-full">
                             <button 
-                                class="bg-white py-2 px-3 rounded-md fw-semibold text-black"
+                                class="bg-white py-2 px-3 rounded-md fw-semibold text-black hover:bg-gray-200 transition"
                                 @click="emitOpenPostInReadMode(slotProps.data.post_id)"
                             >
                                 Voir
@@ -73,11 +91,11 @@
                 <Column header="Statut">
                     <template #body="slotProps">
                         <div 
-                            class="p-1 rounded-lg text-center"
+                            class="p-1 rounded-lg text-center text-white"
                             :class="{
-                                'bg-blue-600 text-white': slotProps.data.status === 'pending',
-                                'bg-green-600 text-white': slotProps.data.status === 'accepted',
-                                'bg-red-500 text-white': slotProps.data.status === 'declined',
+                                'bg-blue-600': slotProps.data.status === 'pending',
+                                'bg-green-600': slotProps.data.status === 'accepted',
+                                'bg-red-500': slotProps.data.status === 'declined',
                             }"
                         >
                             {{ translateBoostRequestStatus(slotProps.data.status) }}
@@ -89,14 +107,13 @@
                     <template #body="slotProps">
                         <div class="flex items-center w-full gap-2">
                             <button 
-                                class="bg-red-500 flex items-center py-2 px-3 rounded-md fw-semibold text-white"
+                                class="bg-red-500 flex items-center py-2 px-3 rounded-md fw-semibold text-white hover:bg-red-600 transition"
                                 @click="deleteBoostRequest(slotProps.data.id)"
                             >
                                 <i class="fa-solid fa-trash-can"></i>
                             </button>
-
                             <button 
-                                class="bg-blue-500 py-2 px-3 flex items-center rounded-md fw-semibold text-white"
+                                class="bg-blue-500 py-2 px-3 flex items-center rounded-md fw-semibold text-white hover:bg-blue-600 transition"
                                 @click="emitBoostRequestToEdit(slotProps.data)"
                             >
                                 <i class="fa-solid fa-pen-to-square"></i>
@@ -115,7 +132,7 @@
                 :style="{ width: '50rem' }" 
                 :breakpoints="{ '1199px': '75vw', '575px': '90vw' }"
             >
-                {{ selectedMessage }}
+                <p class="text-white">{{ selectedMessage || 'Pas de message' }}</p>
             </Dialog>
         </div>
     </div>
@@ -125,9 +142,18 @@
 import { getProfilePicture, getUsername } from '../services/datatables';
 import ApiService from '../services/apiCalls';
 import { useToast } from 'vue-toastification';
+import DataTable from 'primevue/datatable';
+import Column from 'primevue/column';
+import Dialog from 'primevue/dialog';
 
 export default {
     name: 'BoostRequestDatatable',
+
+    components: {
+        DataTable,
+        Column,
+        Dialog
+    },
 
     props: {
         boostRequests: {
@@ -138,9 +164,14 @@ export default {
             type: Array,
             required: true,
         },
+        subscriptionData: {
+            type: Object,
+            required: true,
+            default: () => ({ boost_likes: 0, boost_comments: 0 })
+        }
     },
 
-    emits: ['open-boosted-post', 'edit-boost-request'],
+    emits: ['open-boosted-post', 'edit-boost-request', 'refresh-data'],
 
     setup() {
         const toast = useToast();
@@ -154,20 +185,24 @@ export default {
         };
     },
 
+    mounted() {
+        console.log('BoostRequestDatatable Subscription Data:', this.subscriptionData);
+    },
+
     methods: {
         getProfilePicture,
         getUsername,
 
         translateBoostRequestStatus(status) {
             switch (status) {
-                case "pending":
-                    return "En attente";
-                case "accepted":
-                    return "Accepté";
-                case "declined":
-                    return "Refusé";
+                case 'pending':
+                    return 'En attente';
+                case 'accepted':
+                    return 'Accepté';
+                case 'declined':
+                    return 'Refusé';
                 default:
-                    return "Inconnu";
+                    return 'Inconnu';
             }
         },
 
@@ -187,18 +222,24 @@ export default {
 
         async deleteBoostRequest(requestId) {
             try {
-                // A Call to The API Service I've created
                 await ApiService.deleteBoostRequest(requestId);
-
-            } catch(error) {
-                console.error("Deletion Failed", error);
-                this.toast.error("Une erreur  s'est produite ! Veuillez réessayer");
+                this.toast.success('Demande de Boost supprimée avec succès !');
+                this.$emit('refresh-data');
+            } catch (error) {
+                console.error('Deletion Failed:', error);
+                this.toast.error('Une erreur s\'est produite lors de la suppression !');
             }
         },
 
         emitBoostRequestToEdit(boostRequest) {
             this.$emit('edit-boost-request', boostRequest);
         }
-    },
+    }
 };
 </script>
+
+<style scoped>
+.fw-semibold {
+    font-weight: 600;
+}
+</style>
