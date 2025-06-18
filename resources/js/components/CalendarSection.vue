@@ -808,9 +808,7 @@ export default {
                             text: "Votre post a été supprimé.",
                             icon: "success"
                         });
-                        setTimeout(() => {
-                            window.location.reload();
-                        }, 2500);
+                        window.location.reload();
                     }
                 } catch (error) {
                     console.error(error);

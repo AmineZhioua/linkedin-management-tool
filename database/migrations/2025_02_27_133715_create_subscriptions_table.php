@@ -17,8 +17,8 @@ return new class extends Migration
             $table->decimal('monthly_price', 8, 2);
             $table->decimal('yearly_price', 8, 2);
             $table->text('description')->nullable();
+            $table->json('features');
             $table->boolean('linkedin')->default(false);
-            $table->boolean('whatsapp')->default(false);
             $table->decimal('discount', 8, 2)->default(0);
             $table->integer('boost_likes')->default(0);
             $table->integer('available_posts')->default(0);

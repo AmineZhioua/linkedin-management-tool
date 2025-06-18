@@ -64,8 +64,10 @@ class InfoFormController extends Controller
             ExtraInformation::create($data);
             DB::commit();
 
-            return redirect()->route('main.dashboard')
-                ->with('success', 'Vos informations ont été sauvegardées avec succès !');
+            return response()->json([
+                'message' => 'Vos informations ont été sauvegardées avec succès !'
+            ], 201);
+
         } catch (\Exception $e) {
             DB::rollback();
             Log::error('Error while saving the user information', [
@@ -74,8 +76,9 @@ class InfoFormController extends Controller
                 'user_id' => $userId,
             ]);
 
-            return redirect()->route('main.dashboard')
-                ->with('error', 'Une erreur s\'est produite lors de l\'enregistrement de vos informations !');
+            return response()->json([
+                'message' => 'Vos informations ont été sauvegardées avec succès !'
+            ], 201);
         }
     }
 
@@ -110,7 +113,6 @@ class InfoFormController extends Controller
             unset($data['user_image']); // Remove and handle separately
 
             if ($request->hasFile('user_image')) {
-                // Delete old image if exists
                 if ($info->user_image) {
                     $oldPath = str_replace('images/', '', $info->user_image);
                     if (Storage::disk('public')->exists('images/' . $oldPath)) {
@@ -124,7 +126,10 @@ class InfoFormController extends Controller
             $info->update($data);
             DB::commit();
 
-            return back()->with('success', 'Vos informations ont été mises à jour avec succès !');
+            return response()->json([
+                'status' => 200,
+                'message' => 'Vos informations ont été modifié avec succès !'
+            ], 200);
         } catch (\Exception $e) {
             DB::rollback();
             Log::error('Error while updating the user information', [
@@ -133,8 +138,10 @@ class InfoFormController extends Controller
                 'user_id' => $userId,
             ]);
 
-            return redirect()->route('main.dashboard')
-                ->with('error', 'Une erreur s\'est produite lors de la mise à jour de vos informations !');
+            return response()->json([
+                'status' => 500,
+                'message' => 'Une erreur s\'est produite lors de la mise à jour de vos informations !'
+            ], 500);
         }
     }
 }

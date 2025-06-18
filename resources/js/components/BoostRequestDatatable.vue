@@ -2,26 +2,8 @@
     <div class="flex flex-col justify-between mt-3 mb-3">
         <!-- Title & Icon -->
         <div class="flex items-center gap-4 mt-2">
-            <i class="fa-solid fa-bolt text-4xl text-yellow-400"></i>
-            <h1 class="fw-semibold text-2xl mb-0 text-white">Demandes de Boost d'interaction :</h1>
-        </div>
-
-        <!-- Remaining Boosts Display -->
-        <div class="mt-4 flex flex-wrap gap-4">
-            <div class="p-4 rounded-xl bg-gray-800 text-white flex items-center gap-3 w-full sm:w-auto">
-                <i class="fa-solid fa-thumbs-up text-2xl text-blue-400"></i>
-                <div>
-                    <p class="text-sm font-semibold">Likes Restants</p>
-                    <p class="text-xl font-bold">{{ subscriptionData.boost_likes ?? 0 }}</p>
-                </div>
-            </div>
-            <div class="p-4 rounded-xl bg-gray-800 text-white flex items-center gap-3 w-full sm:w-auto">
-                <i class="fa-solid fa-comment text-2xl text-green-400"></i>
-                <div>
-                    <p class="text-sm font-semibold">Commentaires Restants</p>
-                    <p class="text-xl font-bold">{{ subscriptionData.boost_comments ?? 0 }}</p>
-                </div>
-            </div>
+            <i class="fa-solid fa-bolt text-4xl"></i>
+            <h1 class="fw-semibold text-2xl mb-0">Demandes de Boost d'interaction :</h1>
         </div>
 
         <div class="p-2 mt-4 rounded-xl" style="background-color: #18181b;">

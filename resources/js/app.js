@@ -42,6 +42,7 @@ import AICommentPortal from "./components/AICommentPortal.vue";
 import AIGuide from "./components/AIGuide.vue";
 import UsersDatatable from "./components/UsersDatatable.vue";
 import AlertsBell from "./components/AlertsBell.vue";
+import ProfileSection from "./components/ProfileSection.vue";
 
 
 // Importing PrimeVue for UI Components
@@ -134,6 +135,7 @@ app.component("ai-comment-portal", AICommentPortal);
 app.component("ai-guide", AIGuide);
 app.component("users-datatable", UsersDatatable);
 app.component("alerts-bell", AlertsBell);
+app.component("profile-section", ProfileSection);
 
 // PrimeVue Components
 app.component("Button", Button);

@@ -44,9 +44,10 @@ Route::middleware(['auth', 'verified', 'suspend'])->group(function() {
     // Route for the post request
     Route::post('/extra-info/add', [App\Http\Controllers\InfoFormController::class, 'addExtraInformation'])->name('add.extra.info');
     Route::put('/edit-account/extra-info/update', [InfoFormController::class, 'updateExtraInformation'])->name('edit.account.extra-info.update');
+    Route::delete('/profile/delete-account', [App\Http\Controllers\UserController::class, 'deleteAccount'])->name('delete.account');
 });
 
-Route::get('/api/dashboard-data', [DashboardController::class, 'fetchDashboardData'])->middleware('auth');
+// Route::get('/api/dashboard-data', [DashboardController::class, 'fetchDashboardData'])->middleware('auth');
 
 
 // Subscription Routes

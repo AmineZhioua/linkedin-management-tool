@@ -59,6 +59,14 @@
       @open-ai-comment-portal="handleOpenAICommentPortal"
     />
 
+    <profile-section 
+      v-if="cardToSet === 'profile'"
+      :user="user"
+      :user-additional-info="userAdditionalInfo"
+      :user-subscription="userSubscription"
+      :subscriptions="subscriptions"
+    />
+
     <!-- Centralized Portal Components -->
     <campaign-portal
       v-if="showCampaignPortal"
@@ -153,6 +161,19 @@ export default {
       type: Array,
       required: true,
     },
+    userAdditionalInfo: {
+      type: Object,
+      required: true,
+      default: {},
+    },
+    userSubscription: {
+      type: Object,
+      required: true,
+    },
+    subscriptions: {
+      type: Array,
+      required: true,
+    },
     campaigns: {
       type: Array,
       required: true,
@@ -176,7 +197,7 @@ export default {
 
   data() {
     return {
-      cardToSet: "linkedinAccounts",
+      cardToSet: "profile",
       showCampaignPostPortal: false,
       showCampaignPortal: false,
       showPortal: false,

@@ -47,11 +47,12 @@
                             class="card border-0 rounded-4 shadow-sm position-relative"
                             style="
                                 border: 2px solid #ffe8e0 !important;
-                                max-width: 500px;
+                                min-width: 350px;
+                                min-height: 500px;
                                 margin: 0 auto;
                             "
                         >
-                            <div class="card-body p-3">
+                            <div class="p-3 flex flex-col h-full">
                                 <!-- Title -->
                                 <h2 class="fw-bold text-lg mb-1">
                                     {{ subscription.name }}

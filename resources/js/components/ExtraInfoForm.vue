@@ -2,18 +2,17 @@
     <div class="w-full h-[100vh] flex flex-col gap-4">
         <loading-overlay :is-loading="isLoading" message="Envoi en cours..." />
         <div class="flex flex-col">
-            <label for="image">Ajouter une image : </label>
             <!-- Image Preview -->
-            <div class="flex justify-center mb-2">
+            <div class="flex mb-2">
                 <img 
                     :src="imagePreview" 
                     alt="" 
-                    class="preview relative w-[200px] h-[200px] rounded-full object-cover border" 
+                    class="preview relative w-[150px] h-[150px] rounded-full object-cover border" 
                 />
             </div>
             <input 
                 type="file" 
-                class="custom-file-input p-2 border" 
+                class="custom-file-input p-2 border rounded-lg" 
                 id="image" 
                 name="image" 
                 @change="handleFileUpload($event)"
@@ -25,7 +24,8 @@
             <input 
                 v-model="userProfession"
                 type="text" 
-                class="border" 
+                class="border py-2 px-3 rounded-lg bg-white mt-1" 
+                placeholder="E.g: Software Engineer"
                 name="profession" 
                 id="profession"
             />
@@ -36,7 +36,8 @@
             <input 
                 v-model="userAdresse"
                 type="text" 
-                class="border" 
+                class="border py-2 px-3 rounded-lg bg-white mt-1" 
+                placeholder="E.g: 75 Rue de la Liberté"
                 name="adresse" 
                 id="adresse" 
             />
@@ -44,9 +45,10 @@
 
         <div class="flex flex-col">
             <label for="numero-telephone">Numéro de Téléphone* :</label>
-            <div class="flex items-center relative">
+            <div class="flex items-center relative mt-1">
                 <div 
                     class="border p-2 gap-3 cursor-pointer flex items-center justify-between"
+                    style="border-top-left-radius: 7px; border-bottom-left-radius: 7px;"
                     @click="toggleDropdown"
                 >
                     <i class="fa-solid fa-chevron-down text-black"></i>
@@ -86,30 +88,34 @@
                 <input 
                     v-model="userPhoneNumber"
                     type="text" 
-                    class="border p-2 flex-1" 
+                    class="border py-2 px-3 bg-white flex-1" 
+                    style="border-top-right-radius: 7px; border-bottom-right-radius: 7px;"
+                    placeholder="21 345 678"
                     name="numero-telephone" 
                     id="numero-telephone" 
                 />
             </div>
         </div>
 
-        <div class="flex items-center gap-2">
-            <div class="flex flex-col">
+        <div class="flex items-center gap-2 w-full">
+            <div class="flex flex-col w-1/2">
                 <label for="nom-entreprise">Nom de l'Entreprise* :</label>
                 <input 
                     v-model="nomEntreprise"
                     type="text" 
-                    class="border" 
+                    class="border py-2 px-3 rounded-lg bg-white mt-1 flex-1" 
+                    placeholder="E.g: BraindCode"
                     name="nom-entreprise" 
                     id="nom-entreprise" 
                 />
             </div>
-            <div class="flex flex-col">
+            <div class="flex flex-col w-1/2">
                 <label for="adresse-entreprise">Adresse de l'Entreprise* :</label>
                 <input 
                     v-model="adresseEntreprise"
                     type="text" 
-                    class="border" 
+                    class="border py-2 px-3 rounded-lg bg-white mt-1 flex-1" 
+                    placeholder="E.g: 89 Technopôle al Ghazela"
                     name="adresse-entreprise" 
                     id="adresse-entreprise" 
                 />
@@ -117,11 +123,11 @@
         </div>
 
         <button 
-            @click="submitInfo"
+            @click="isUpdateMode ? updateInfo() : submitInfo()"
             id="submitBtn"
             class="px-4 py-2 bg-blue-500 text-white fw-semibold rounded-full"
         >
-            Envoyer
+            {{ isUpdateMode ? 'Modifier' : 'Envoyer' }}
         </button>
     </div>
 </template>
@@ -133,6 +139,13 @@ import { parsePhoneNumber, isValidPhoneNumber } from 'libphonenumber-js';
 
 export default {
     name: 'ExtraInfoForm',
+
+    props: {
+        userAdditionalInfo: {
+            type: Object,
+            default: () => ({}),
+        },
+    },
 
     setup() {
         const toast = useToast();
@@ -248,6 +261,25 @@ export default {
         };
     },
 
+    computed: {
+        isUpdateMode() {
+            return Object.keys(this.userAdditionalInfo).length > 0;
+        },
+    },
+
+    mounted() {
+        if (this.isUpdateMode) {
+            this.userProfession = this.userAdditionalInfo.profession || '';
+            this.userAdresse = this.userAdditionalInfo.adresse || '';
+            this.userPhoneNumber = this.userAdditionalInfo.telephone || '';
+            this.nomEntreprise = this.userAdditionalInfo.nom_entreprise || '';
+            this.adresseEntreprise = this.userAdditionalInfo.adresse_entreprise || '';
+            if (this.userAdditionalInfo.user_image) {
+                this.imagePreview = '/storage/' + this.userAdditionalInfo.user_image;
+            }
+        }
+    },
+
     methods: {
         getFlagImage(code) {
             return `https://flagcdn.com/w20/${code.toLowerCase()}.png`;
@@ -269,7 +301,7 @@ export default {
                 this.imagePreview = URL.createObjectURL(file);
             } else {
                 this.userImage = null;
-                this.imagePreview = null;
+                this.imagePreview = this.isUpdateMode && this.userAdditionalInfo.user_image ? '/storage/' + this.userAdditionalInfo.user_image : null;
             }
         },
 
@@ -286,35 +318,40 @@ export default {
             }
         },
 
-        async submitInfo() {
-            if (!this.userImage || !(this.userImage instanceof File)) {
+        validateForm() {
+            if (!this.isUpdateMode && !this.userImage) {
                 this.toast.error("Veuillez sélectionner une image.");
-                return;
+                return false;
             }
             if (!this.userProfession) {
                 this.toast.error("Veuillez remplir le champ Profession.");
-                return;
+                return false;
             }
             if (!this.userAdresse) {
                 this.toast.error("Veuillez remplir le champ Adresse.");
-                return;
+                return false;
             }
             if (!this.userPhoneNumber) {
                 this.toast.error("Veuillez remplir le champ Numéro de Téléphone.");
-                return;
+                return false;
             }
             if (!this.validatePhoneNumber()) {
                 this.toast.error("Veuillez entrer un numéro de téléphone valide pour le pays sélectionné.");
-                return;
+                return false;
             }
             if (!this.nomEntreprise) {
                 this.toast.error("Veuillez remplir le champ Nom de l'Entreprise.");
-                return;
+                return false;
             }
             if (!this.adresseEntreprise) {
                 this.toast.error("Veuillez remplir le champ Adresse de l'Entreprise.");
-                return;
+                return false;
             }
+            return true;
+        },
+
+        async submitInfo() {
+            if (!this.validateForm()) return;
 
             this.isLoading = true;
             try {
@@ -325,7 +362,6 @@ export default {
                 infoData.append("telephone", this.userPhoneNumber);
                 infoData.append("nom_entreprise", this.nomEntreprise);
                 infoData.append("adresse_entreprise", this.adresseEntreprise);
-                // infoData.append("country_code", this.selectedCountry); // RE-CHECK ON THIS
 
                 const infoResponse = await axios.post('/extra-info/add', infoData, {
                     headers: {
@@ -336,7 +372,7 @@ export default {
 
                 if (infoResponse.data.status === 201) {
                     this.toast.success("Vos informations ont été enregistrées avec succès !", {
-                        position: "top-right",
+                        position: "bottom-right",
                         timeout: 2000,
                         closeOnClick: true,
                         pauseOnFocusLoss: true,
@@ -351,9 +387,8 @@ export default {
                     });
 
                     document.getElementById("submitBtn").disabled = true;
-
                     setTimeout(() => {
-                        window.location.href = "/dashboard/linkedin"; 
+                        window.location.reload()
                     }, 2000);
                 }
             } catch (error) {
@@ -370,23 +405,65 @@ export default {
                 this.isLoading = false;
             }
         },
+
+        async updateInfo() {
+            if (!this.validateForm()) return;
+
+            this.isLoading = true;
+            try {
+                const infoData = new FormData();
+                if (this.userImage) {
+                    infoData.append("user_image", this.userImage);
+                }
+                infoData.append("profession", this.userProfession);
+                infoData.append("adresse", this.userAdresse);
+                infoData.append("telephone", this.userPhoneNumber);
+                infoData.append("nom_entreprise", this.nomEntreprise);
+                infoData.append("adresse_entreprise", this.adresseEntreprise);
+                infoData.append("_method", "PUT"); // For Laravel to treat as PUT request
+
+                const infoResponse = await axios.post('/edit-account/extra-info/update', infoData, {
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                        "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    }
+                });
+
+                if (infoResponse.data.status === 200) {
+                    this.toast.success("Vos informations ont été mises à jour avec succès !", {
+                        position: "bottom-right",
+                        timeout: 2000,
+                        closeOnClick: true,
+                        pauseOnFocusLoss: true,
+                        pauseOnHover: true,
+                        draggable: true,
+                        draggablePercent: 0.6,
+                        showCloseButtonOnHover: false,
+                        hideProgressBar: false,
+                        closeButton: "button",
+                        icon: true,
+                        rtl: false
+                    });
+
+                    document.getElementById("submitBtn").disabled = true;
+                    setTimeout(() => {
+                        window.location.reload()
+                    }, 2000);
+                }
+            } catch (error) {
+                if (error.response && error.response.status === 422) {
+                    const errors = error.response.data.errors;
+                    for (let field in errors) {
+                        this.toast.error(errors[field][0]);
+                    }
+                } else {
+                    console.error(error);
+                    this.toast.error("Une erreur s'est produite lors de la mise à jour !");
+                }
+            } finally {
+                this.isLoading = false;
+            }
+        },
     },
 }
 </script>
-
-<style scoped>
-/* .custom-file-input::-webkit-file-upload-button {
-  visibility: hidden;
-} */
-
-.preview::before {
-    content: "Image Preview";
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    text-align: center;
-    font-weight: 500;
-    color: black;
-}
-</style>

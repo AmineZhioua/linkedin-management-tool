@@ -63,7 +63,7 @@
                 <!-- Profile Image Button -->
                 <button id="profileDropdownBtn" class="h-[40px] w-[40px] cursor-pointer focus:outline-none">
                     <img 
-                        src="{{ Auth::user()->extraInformation?->user_image ? '/storage/' . Auth::user()->extraInformation->user_image : '/build/assets/images/default-profile.png' }}"
+                        src="{{ $userImage ?? '/build/assets/images/default-profile.png' }}"
                         alt="User Profile" 
                         class="rounded-full object-cover"
                     />
@@ -71,7 +71,6 @@
 
                 <!-- Dropdown Menu -->
                 <div id="profileDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded shadow-lg z-50">
-                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 rounded hover:bg-gray-100" @click.prevent="showEditProfile = true">Éditer profil</a>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button type="submit" class="w-full text-left block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
@@ -90,21 +89,6 @@
     </header>
     <!-- Header Section End -->
 
-    <!-- Main Section Start -->
-    @php
-        // Debug subscription variable
-        \Illuminate\Support\Facades\Log::info('Blade Subscription Variable: ' . json_encode($subscription));
-        // Prepare subscription data for Vue component
-        $subscriptionData = [
-            'boost_likes' => $subscription ? (int) $subscription->boost_likes : 0,
-            'boost_comments' => $subscription ? (int) $subscription->boost_comments : 0
-        ];
-        \Illuminate\Support\Facades\Log::info('Blade Subscription Data: ' . json_encode($subscriptionData));
-    @endphp
-
-    <!-- Debug output (remove after testing) -->
-    <pre>Blade Subscription Data: {{ print_r($subscriptionData, true) }}</pre>
-
     <main class="flex-1 h-full">
         <main-section
             :user='@json($user)'
@@ -113,19 +97,12 @@
             :campaigns='@json($userCampaigns)'
             :user-boost-requests='@json($userBoostRequests)'
             :subscription-data='@json($subscriptionData)'
+            :user-additional-info='@json($userAdditionalInfo)'
+            :user-subscription='@json($userSubscription)'
+            :subscriptions='@json($subscriptions)'
         />
     </main>
     <!-- Main Section End -->
-
-    <!-- Edit Profile Popup -->
-    <edit-account
-        v-if="showEditProfile"
-        :initial-profile="{{ json_encode($user) }}"
-        :initial-extra-info="{{ json_encode($userAdditionalInfo) }}"
-        :flash-success="{{ json_encode(session('success')) }}"
-        :flash-error="{{ json_encode(session('error')) }}"
-        @close="showEditProfile = false"
-    ></edit-account>
 
     <!-- Script to toggle dropdown -->
     <script>

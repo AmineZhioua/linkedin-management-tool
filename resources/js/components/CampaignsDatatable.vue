@@ -277,6 +277,17 @@ export default {
             }
         },
 
+        checkCampaignPublishedPosts(campaignId) {
+            const campaignPosts = this.linkedinPosts.filter(post => post.campaign_id === campaignId);
+            for(let i = 0; i < campaignPosts.length; i++) {
+                if(campaignPosts[i].status === 'posted') {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+        },
+
         openReadMode(linkedinUserId, campaignId) {
             this.openCampaignReadMode(linkedinUserId, campaignId);
         },

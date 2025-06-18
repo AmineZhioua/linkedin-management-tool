@@ -70,7 +70,7 @@
             <input 
                 type="text" 
                 id="coupon-code" 
-                class="py-2 px-6 border rounded-full mr-2" 
+                class="py-2 px-6 border rounded-full mr-2 bg-white" 
                 placeholder="Entrez votre Code Promo"
             />
             <button 

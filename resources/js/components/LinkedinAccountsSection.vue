@@ -1,22 +1,42 @@
-
 <template>
   <div class="w-full h-full p-4 overflow-y-scroll">
     <!-- Title & Icon -->
-    <div class="flex flex-col">
-      <div class="flex items-center gap-3 text-black">
-          <img 
-              src="/build/assets/icons/linkedin-black.svg" 
-              alt="KPI Icon" 
-              class="mb-1"
-              height="45"
-              width="45"
-          />
-          <h1 class="mb-0 fw-semibold">Espace Linkedin</h1>
+    <div class="flex w-full items-center justify-between">
+      <div class="flex flex-col">
+        <div class="flex items-center gap-3 text-black">
+            <img 
+                src="/build/assets/icons/linkedin-black.svg" 
+                alt="KPI Icon" 
+                class="mb-1"
+                height="45"
+                width="45"
+            />
+            <h1 class="mb-0 fw-semibold">Espace Linkedin</h1>
+        </div>
+        <p class="mt-2 text-lg text-muted">
+          Votre centre de commande ! 
+          Boostez vos publications en un clic et gérer vos compte LinkedIn !
+        </p>
       </div>
-      <p class="mt-2 text-lg text-muted">
-        Votre centre de commande ! 
-        Boostez vos publications en un clic et gérer vos compte LinkedIn !
-      </p>
+
+       <!-- Remaining Boosts Display -->
+        <div class="mt-4 flex flex-wrap gap-4">
+            <div class="p-4 rounded-xl bg-gray-800 text-white flex items-center gap-3 w-full sm:w-auto">
+                <i class="fa-solid fa-thumbs-up text-2xl text-blue-400"></i>
+                <div>
+                    <p class="text-sm font-semibold">Likes Restants</p>
+                    <p class="text-xl font-bold">{{ subscriptionData.boost_likes ?? 0 }}</p>
+                </div>
+            </div>
+            <div class="p-4 rounded-xl bg-gray-800 text-white flex items-center gap-3 w-full sm:w-auto">
+                <i class="fa-solid fa-comment text-2xl text-green-400"></i>
+                <div>
+                    <p class="text-sm font-semibold">Commentaires Restants</p>
+                    <p class="text-xl font-bold">{{ subscriptionData.boost_comments ?? 0 }}</p>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <!-- Datatable for the Boost Requests -->
