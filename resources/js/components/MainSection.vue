@@ -197,7 +197,7 @@ export default {
 
   data() {
     return {
-      cardToSet: "profile",
+      cardToSet: "userPosts",
       showCampaignPostPortal: false,
       showCampaignPortal: false,
       showPortal: false,
