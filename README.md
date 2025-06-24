@@ -1,6 +1,5 @@
+# linkedin-management-tool
 # lemonade
-
-
 
 ## Getting started
 
