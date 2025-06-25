@@ -21,7 +21,7 @@
                 class="bg-red-500 flex items-center gap-2 text-white p-2 rounded-lg shadow-md"
             >
                 <i class="fa-solid fa-trash-can"></i>
-                <p class="mb-0 fw-semibold">Supprimer votre compte</p>
+                <p class="mb-0 fw-semibold">Supprimer le Compte</p>
             </button>
         </div>
 
