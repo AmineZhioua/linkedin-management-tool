@@ -25,7 +25,13 @@
                 ></textarea>
             </div>
 
-            <div class="w-full flex justify-end">
+            <div class="w-full flex justify-end gap-2">
+                <button 
+                    class="py-2 px-3 rounded-md border w-fit text-black bg-gray-100 hover:bg-gray-300"
+                    @click="useAIContent"
+                >
+                    Utilisez
+                </button>
                 <div 
                     v-if="isGenerating" 
                     class="py-2 px-3 w-[100px] flex items-center justify-center rounded-md text-white" 
@@ -1128,6 +1134,11 @@ export default {
                 this.isGenerating = false;
             }
         },
+
+        useAIContent() {
+            this.newPost.content.caption = this.prompt;
+        },
+
 
         handleClose() {
             this.showConfirmExit = true;

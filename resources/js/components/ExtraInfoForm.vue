@@ -144,6 +144,7 @@ export default {
         userAdditionalInfo: {
             type: Object,
             default: () => ({}),
+            required: false,
         },
     },
 
@@ -263,7 +264,12 @@ export default {
 
     computed: {
         isUpdateMode() {
-            return Object.keys(this.userAdditionalInfo).length > 0;
+            if(this.userAdditionalInfo) {
+                return Object.keys(this.userAdditionalInfo).length > 0;
+            } else {
+                return {};
+            }
+            // return Object.keys(this.userAdditionalInfo).length > 0;
         },
     },
 

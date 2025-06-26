@@ -19,7 +19,6 @@ class SubscriptionSeeder extends Seeder
                 'boost_comments' => 20,
                 'available_posts' => 10,
                 'linkedin' => 1,
-                'whatsapp' => 0,
                 'discount' => 0,
             ],
             [
@@ -31,7 +30,6 @@ class SubscriptionSeeder extends Seeder
                 'boost_comments' => 100,
                 'available_posts' => 50,
                 'linkedin' => 1,
-                'whatsapp' => 1,
                 'discount' => 10,
             ],
             [
@@ -43,7 +41,6 @@ class SubscriptionSeeder extends Seeder
                 'boost_comments' => 700,
                 'available_posts' => 1000,
                 'linkedin' => 1,
-                'whatsapp' => 0,
                 'discount' => 0,
             ],
         ];

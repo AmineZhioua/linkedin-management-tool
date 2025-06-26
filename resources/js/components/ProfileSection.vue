@@ -3,7 +3,16 @@
         <div class="flex items-center w-full justify-between pb-4 mb-4" style="border-bottom: 1px solid #ddd;">
             <div class="flex items-center gap-4">
                 <img 
+                    v-if="userActiveSubscription"
                     :src="userAdditionalInfo.user_image ? '/storage/' + userAdditionalInfo.user_image : '/build/assets/images/default-profile.png'" 
+                    alt="Profile Picture" 
+                    height="120"
+                    width="120"
+                    class="rounded-full"
+                />
+                <img 
+                    v-else
+                    src="/build/assets/images/default-profile.png" 
                     alt="Profile Picture" 
                     height="120"
                     width="120"
