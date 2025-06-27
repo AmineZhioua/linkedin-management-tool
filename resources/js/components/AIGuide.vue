@@ -53,7 +53,7 @@
                     <button class="bg-white rounded-full px-3 py-1" @click="currentStep -= 1;">
                         <i class="fa-solid fa-chevron-left text-black"></i>
                     </button>
-                    <h3 class="mb-0 fw-semibold mt-1 text-xlt text-white">Sélectionner les Posts :</h3>
+                    <h3 class="mb-0 fw-semibold mt-1 text-xlt text-white">Sélectionner vos Posts :</h3>
                 </div>
                 <button @click="handleClose">
                     <img src="/build/assets/icons/close-white.svg" alt="Close Icon" height="22" width="22" />
