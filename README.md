@@ -1,6 +1,6 @@
 # Lemonade: LinkedIn Management Tool for Personal Accounts
 
-Lemonade is a lightweight, user-friendly LinkedIn automation and content management tool designed specifically for **individual users** who want to grow and maintain their presence on LinkedIn without the complexity of enterprise solutions.
+Lemonade (weird name i know lol) is a lightweight, user-friendly LinkedIn automation and content management tool designed specifically for **individual users** who want to grow and maintain their presence on LinkedIn without the complexity of enterprise solutions.
 
 ## 🚀 Features
 
