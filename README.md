@@ -47,13 +47,6 @@ Lemonade (weird name i know lol) is a lightweight, user-friendly LinkedIn automa
 - Monitor performance metrics
 - Manage drafts and templates
 
-## 📍 Roadmap
-
-- ✅ MVP with core posting features
-- ⏳ Add support for image and video uploads
-- ⏳ Notifications and reminders
-- ⏳ Multi-account support
-
 ## 🤝 Contributing
 
 Contributions are welcome! To get started:
